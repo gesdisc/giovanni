@@ -16,8 +16,6 @@ function handleVariableSelect(e: Event) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOMContentLoaded!')
-
     document
         .getElementById('variable-selector')
         ?.addEventListener('change', handleVariableSelect)

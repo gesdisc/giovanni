@@ -8,6 +8,7 @@ import { setup } from 'xstate'
 
 const machine = setup({
     types: {
+        // these types are purely here to support Typescript: https://stately.ai/docs/typescript#specifying-types
         context: {} as AppContext,
         events: {} as AppEvents,
     },
