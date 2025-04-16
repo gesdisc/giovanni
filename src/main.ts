@@ -1,24 +1,24 @@
-import './style.css'
-import typescriptLogo from './typescript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.ts'
+import { AppActions } from './types'
+import { createActor } from 'xstate'
+import { machine } from './state/machine'
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
-  </div>
-`
+const actor = createActor(machine)
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+actor.subscribe(snapshot => {
+    console.log('State is now:', snapshot.value, snapshot)
+})
+
+actor.start()
+
+function handleVariableSelect(e: Event) {
+    const select = e.target as HTMLSelectElement
+    actor.send({ type: AppActions.SELECT_VARIABLES, variables: [select.value] })
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOMContentLoaded!')
+
+    document
+        .getElementById('variable-selector')
+        ?.addEventListener('change', handleVariableSelect)
+})

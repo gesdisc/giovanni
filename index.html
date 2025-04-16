@@ -1,13 +1,30 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + TS</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>NASA Giovanni</title>
+    </head>
+    <body>
+        <div class="app-container">
+            <h1>NASA Giovanni</h1>
+
+            <div class="selection-panel">
+                <div class="selection-group">
+                    <h2>Select Variables</h2>
+
+                    <select id="variable-selector">
+                        <option value="">Select One</option>
+                        <option value="test 1">Test 1</option>
+                        <option value="test 2">Test 2</option>
+                        <option value="test 3">Test 3</option>
+                    </select>
+                </div>
+
+                <button id="generate-plot-btn" disabled>Generate Plot</button>
+            </div>
+        </div>
+
+        <script type="module" src="src/main.ts"></script>
+    </body>
 </html>
