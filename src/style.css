@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+.sidebar {
+    width: 520px;
+    transition: width 0.3s ease-in-out;
+}
+
+.sidebar-closed {
+    width: 0;
+    overflow: hidden;
+}
+
+#sidebar-toggle:focus-visible {
+    outline: 2px solid #4299e1;
+    outline-offset: 2px;
+}

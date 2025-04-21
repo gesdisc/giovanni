@@ -14,9 +14,18 @@ const machine = setup({
     },
     actions: {
         updateVariables: ({ context, event }) => {
-            if (event.type === AppActions.SELECT_VARIABLES) {
-                context.variables = ([] as Variable[]).concat(context.variables, event.variables)
+            if (event.type !== AppActions.SELECT_VARIABLES) {
+                return
             }
+
+            context.variables = ([] as Variable[]).concat(context.variables, event.variables)
+        },
+        updateSpatialArea: ({ context, event }) => {
+            if (event.type !== AppActions.SELECT_SPATIAL_AREA) {
+                return
+            }
+            
+            context.spatialArea = event.spatialArea
         },
     },
 }).createMachine({
@@ -33,6 +42,9 @@ const machine = setup({
             on: {
                 [AppActions.SELECT_VARIABLES]: {
                     actions: 'updateVariables',
+                },
+                [AppActions.SELECT_SPATIAL_AREA]: {
+                    actions: 'updateSpatialArea',
                 },
             },
         },

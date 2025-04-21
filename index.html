@@ -4,24 +4,126 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>NASA Giovanni</title>
+
+        <link href="src/style.css" rel="stylesheet" />
+        
+        <!-- TODO: can we move these to use npm imports? Right now, terra components are installed as devDependencies to use just the types -->
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.26/cdn/themes/horizon.css"
+        />
+        <script
+            type="module"
+            src="https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.26/cdn/terra-ui-components-autoloader.js"
+        ></script>
     </head>
-    <body>
-        <div class="app-container">
-            <h1>NASA Giovanni</h1>
 
-            <div class="selection-panel">
-                <div class="selection-group">
-                    <h2>Select Variables</h2>
+    <body class="h-screen overflow-hidden">
+        <div class="flex h-screen">
+            <aside
+                id="sidebar"
+                class="sidebar bg-gray-800 text-white overflow-y-auto"
+                aria-labelledby="sidebar-heading"
+            >
+                <div class="p-6">
+                    <h2 id="sidebar-heading" class="text-xl font-bold mb-6">
+                        Giovanni
+                    </h2>
 
-                    <select id="variable-selector">
-                        <option value="">Select One</option>
-                        <option value="test 1">Test 1</option>
-                        <option value="test 2">Test 2</option>
-                        <option value="test 3">Test 3</option>
-                    </select>
+                    <details>
+                        <summary>Plot Type</summary>
+
+                        <div class="p-3">TODO</div>
+                    </details>
+
+                    <details open>
+                        <summary>Variables</summary>
+
+                        <div class="p-3">
+                            <select id="variable-selector">
+                                <option value="">Select One</option>
+                                <option value="test 1">Test 1</option>
+                                <option value="test 2">Test 2</option>
+                                <option value="test 3">Test 3</option>
+                            </select>
+
+                            <terra-button>Add a variable</terra-button>
+                        </div>
+                    </details>
+
+                    <details open>
+                        <summary>Location</summary>
+
+                        <div class="p-3">
+                            <terra-spatial-picker
+                                id="spatial-picker"
+                                hide-label="true"
+                                is-expanded="true"
+                                inline="true"
+                            ></terra-spatial-picker>
+                        </div>
+                    </details>
+
+                    <details open>
+                        <summary>Date Range</summary>
+
+                        <div class="p-3">TODO</div>
+                    </details>
+
+                    <details>
+                        <summary>History</summary>
+
+                        <div class="p-3">TODO</div>
+                    </details>
                 </div>
+            </aside>
 
-                <button id="generate-plot-btn" disabled>Generate Plot</button>
+            <div class="flex flex-col flex-grow">
+                <header class="bg-white shadow h-12 flex items-center px-4">
+                    <button
+                        id="sidebar-toggle"
+                        class="p-2 rounded-md hover:bg-gray-200 focus:outline-none"
+                        aria-expanded="true"
+                        aria-controls="sidebar"
+                        aria-label="Toggle sidebar menu"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-6 w-6"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            aria-hidden="true"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16"
+                            />
+                        </svg>
+                        <span class="sr-only">Menu</span>
+                    </button>
+                </header>
+
+                <main class="flex-grow p-6 bg-gray-100 overflow-y-auto">
+                    <h2 class="text-2xl font-bold mb-4">Main Content</h2>
+                    <p class="mb-4">
+                        This is the main content area that expands to fill available
+                        space.
+                    </p>
+                    <div class="bg-white p-6 rounded shadow">
+                        <h3 class="text-lg font-semibold mb-2">Content Section</h3>
+                        <p>
+                            Your content goes here. The sidebar can be toggled using
+                            the hamburger icon in the header.
+                        </p>
+                        <p class="mt-4">
+                            This version includes proper ARIA attributes for
+                            accessibility.
+                        </p>
+                    </div>
+                </main>
             </div>
         </div>
 
