@@ -23,9 +23,9 @@ export class SelectSpatialAreaComponent {
     }
 
     #setupEffects() {
-        effect(() => {
-            console.log('called for SA ', spatialArea.value)
-        })
+            effect(() => {
+                console.log('spatial area changed: ', spatialArea.value)
+            })
     }
 
     #handleChange(e: TerraMapChangeEvent) {

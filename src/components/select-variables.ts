@@ -39,6 +39,8 @@ export class SelectVariablesComponent {
 
     #setupEffects() {
         effect(() => {
+            console.log('selected variables changed: ', variables.value)
+                    
             variables.value.forEach(v => this.#selectedVariablesList.appendChild(v.element))
         })
     }
