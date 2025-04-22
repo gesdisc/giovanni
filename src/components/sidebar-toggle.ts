@@ -1,6 +1,6 @@
 import { assert } from '../utilities/error'
 
-export class SidebarToggle {
+export class SidebarToggleComponent {
     #toggleButton: HTMLButtonElement
     #sidebarEl: HTMLElement
 

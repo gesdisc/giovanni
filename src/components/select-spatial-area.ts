@@ -4,22 +4,22 @@ import { spatialArea } from '../state'
 import { SpatialAreaType } from '../types'
 import type { TerraMapChangeEvent, TerraSpatialPicker } from '@nasa-terra/components'
 
-export class SelectSpatialArea {
-    private element: TerraSpatialPicker
+export class SelectSpatialAreaComponent {
+    #element: TerraSpatialPicker
 
     constructor(selector: string) {
         const el = document.querySelector<TerraSpatialPicker>(selector)
 
         assert(el, `Element matching selector was not found: ${selector}`)
 
-        this.element = el
+        this.#element = el
 
         this.#bindEvents()
         this.#setupEffects()
     }
 
     #bindEvents() {
-        this.element.addEventListener('terra-map-change', this.#handleChange.bind(this))
+        this.#element.addEventListener('terra-map-change', this.#handleChange.bind(this))
     }
 
     #setupEffects() {

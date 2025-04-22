@@ -1,9 +1,9 @@
-import { SelectSpatialArea } from './components/select-spatial-area'
-import { SelectVariables } from './components/select-variables'
-import { SidebarToggle } from './components/sidebar-toggle'
+import { SelectSpatialAreaComponent } from './components/select-spatial-area'
+import { SelectVariablesComponent } from './components/select-variables'
+import { SidebarToggleComponent } from './components/sidebar-toggle'
 
 document.addEventListener('DOMContentLoaded', () => {
-    new SidebarToggle('#sidebar-toggle', '#sidebar')
-    new SelectVariables('#variable-selector')
-    new SelectSpatialArea('#spatial-picker')
+    new SidebarToggleComponent('#sidebar-toggle', '#sidebar')
+    new SelectVariablesComponent('#variable-selector', '#selected-variables')
+    new SelectSpatialAreaComponent('#spatial-picker')
 })
