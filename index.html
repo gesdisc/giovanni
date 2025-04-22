@@ -10,11 +10,11 @@
         <!-- TODO: can we move these to use npm imports? Right now, terra components are installed as devDependencies to use just the types -->
         <link
             rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.26/cdn/themes/horizon.css"
+            href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.28/cdn/themes/horizon.css"
         />
         <script
             type="module"
-            src="https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.26/cdn/terra-ui-components-autoloader.js"
+            src="https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.28/cdn/terra-ui-components-autoloader.js"
         ></script>
     </head>
 
@@ -40,14 +40,13 @@
                         <summary>Variables</summary>
 
                         <div class="p-3">
-                            <select id="variable-selector">
-                                <option value="">Select One</option>
-                                <option value="test 1">Test 1</option>
-                                <option value="test 2">Test 2</option>
-                                <option value="test 3">Test 3</option>
-                            </select>
-
-                            <terra-button>Add a variable</terra-button>
+                            <terra-dialog id="variable-selector-dialog" width="1000px">
+                                <terra-browse-variables id="variable-selector"></terra-browse-variables>
+                            </terra-dialog>
+                        
+                            <terra-button for-dialog="variable-selector-dialog">
+                                Add a variable
+                            </button>
                         </div>
                     </details>
 
@@ -112,17 +111,6 @@
                         This is the main content area that expands to fill available
                         space.
                     </p>
-                    <div class="bg-white p-6 rounded shadow">
-                        <h3 class="text-lg font-semibold mb-2">Content Section</h3>
-                        <p>
-                            Your content goes here. The sidebar can be toggled using
-                            the hamburger icon in the header.
-                        </p>
-                        <p class="mt-4">
-                            This version includes proper ARIA attributes for
-                            accessibility.
-                        </p>
-                    </div>
                 </main>
             </div>
         </div>
