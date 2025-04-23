@@ -6,8 +6,8 @@ import type { TerraMapChangeEvent, TerraSpatialPicker } from '@nasa-terra/compon
 export class SelectSpatialAreaComponent {
     #element: TerraSpatialPicker
 
-    constructor(selector: string) {
-        this.#element = document.querySelector<TerraSpatialPicker>(selector)!
+    constructor() {
+        this.#element = document.querySelector<TerraSpatialPicker>('#spatial-picker')!
 
         this.#bindEvents()
         this.#setupEffects()

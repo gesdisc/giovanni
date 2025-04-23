@@ -6,9 +6,9 @@ export class SelectDateTimeRangeComponent {
     #startDateEl: HTMLInputElement
     #endDateEl: HTMLInputElement
 
-    constructor(startDateSelector: string, endDateSelector: string) {
-        this.#startDateEl = document.querySelector<HTMLInputElement>(startDateSelector)!
-        this.#endDateEl = document.querySelector<HTMLInputElement>(endDateSelector)!
+    constructor() {
+        this.#startDateEl = document.querySelector<HTMLInputElement>('#start-date')!
+        this.#endDateEl = document.querySelector<HTMLInputElement>('#end-date')!
 
         this.#bindEvents()
         this.#setupEffects()

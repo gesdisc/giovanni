@@ -11,8 +11,8 @@ import { Variable } from '../types'
 export class PlotsListComponent {
     #listEl: HTMLElement
 
-    constructor(listSelector: string) {
-        this.#listEl = document.querySelector<HTMLElement>(listSelector)!
+    constructor() {
+        this.#listEl = document.querySelector<HTMLElement>('#plots')!
 
         this.#bindEvents()
         this.#setupEffects()

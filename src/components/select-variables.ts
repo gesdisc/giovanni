@@ -10,11 +10,11 @@ export class SelectVariablesComponent {
     #element: TerraBrowseVariables
     #selectedVariablesList: HTMLElement
 
-    constructor(selector: string, selectedVariablesListSelector: string) {
-        this.#element = document.querySelector<TerraBrowseVariables>(selector)!
-        this.#selectedVariablesList = document.querySelector<HTMLElement>(
-            selectedVariablesListSelector
-        )!
+    constructor() {
+        this.#element =
+            document.querySelector<TerraBrowseVariables>('#variable-selector')!
+        this.#selectedVariablesList =
+            document.querySelector<HTMLElement>('#selected-variables')!
 
         this.#bindEvents()
         this.#setupEffects()
@@ -30,16 +30,20 @@ export class SelectVariablesComponent {
     #setupEffects() {
         effect(() => {
             console.log('selected variables changed: ', variables.value)
-                    
-            variables.value.forEach(v => this.#selectedVariablesList.appendChild(v.element))
+
+            variables.value.forEach(v =>
+                this.#selectedVariablesList.appendChild(v.element)
+            )
         })
     }
 
     #handleChange(e: TerraVariablesChangeEvent) {
         // destroy any existing variables
         // we'll render the variable list from scratch anytime the user makes a selection
-        variables.value.forEach(v => v.destroy()) 
+        variables.value.forEach(v => v.destroy())
 
-        variables.value = e.detail.selectedVariables.map(v => new VariableComponent(v))
+        variables.value = e.detail.selectedVariables.map(
+            v => new VariableComponent(v)
+        )
     }
 }

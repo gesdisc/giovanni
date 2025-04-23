@@ -6,9 +6,9 @@ export class AddVariableDialogComponent {
     #buttonEl: TerraButton
     #dialogEl: TerraDialog
 
-    constructor(buttonSelector: string, dialogSelector: string) {
-        this.#buttonEl = document.querySelector<TerraButton>(buttonSelector)!
-        this.#dialogEl = document.querySelector<TerraDialog>(dialogSelector)!
+    constructor() {
+        this.#buttonEl = document.querySelector<TerraButton>('#add-variable-button')!
+        this.#dialogEl = document.querySelector<TerraDialog>('#add-variable-dialog')!
 
         this.#bindEvents()
         this.#setupEffects()

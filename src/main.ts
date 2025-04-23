@@ -6,10 +6,10 @@ import { SelectVariablesComponent } from './components/select-variables'
 import { SidebarToggleComponent } from './components/sidebar-toggle'
 
 document.addEventListener('DOMContentLoaded', () => {
-    new SidebarToggleComponent('#sidebar-toggle', '#sidebar')
-    new AddVariableDialogComponent('#add-variable-button', '#add-variable-dialog')
-    new SelectVariablesComponent('#variable-selector', '#selected-variables')
-    new SelectSpatialAreaComponent('#spatial-picker')
-    new SelectDateTimeRangeComponent('#start-date', '#end-date')
-    new PlotsListComponent('#plots')
+    new SidebarToggleComponent()
+    new AddVariableDialogComponent()
+    new SelectVariablesComponent()
+    new SelectSpatialAreaComponent()
+    new SelectDateTimeRangeComponent()
+    new PlotsListComponent()
 })
