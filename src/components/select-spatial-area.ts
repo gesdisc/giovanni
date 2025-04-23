@@ -1,4 +1,3 @@
-import { assert } from '../utilities/error'
 import { effect } from '@preact/signals-core'
 import { spatialArea } from '../state'
 import { SpatialAreaType } from '../types'
@@ -7,25 +6,24 @@ import type { TerraMapChangeEvent, TerraSpatialPicker } from '@nasa-terra/compon
 export class SelectSpatialAreaComponent {
     #element: TerraSpatialPicker
 
-    constructor(selector: string) {
-        const el = document.querySelector<TerraSpatialPicker>(selector)
-
-        assert(el, `Element matching selector was not found: ${selector}`)
-
-        this.#element = el
+    constructor() {
+        this.#element = document.querySelector<TerraSpatialPicker>('#spatial-picker')!
 
         this.#bindEvents()
         this.#setupEffects()
     }
 
     #bindEvents() {
-        this.#element.addEventListener('terra-map-change', this.#handleChange.bind(this))
+        this.#element.addEventListener(
+            'terra-map-change',
+            this.#handleChange.bind(this)
+        )
     }
 
     #setupEffects() {
-            effect(() => {
-                console.log('spatial area changed: ', spatialArea.value)
-            })
+        effect(() => {
+            console.log('spatial area changed: ', spatialArea.value)
+        })
     }
 
     #handleChange(e: TerraMapChangeEvent) {

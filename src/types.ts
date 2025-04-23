@@ -19,6 +19,6 @@ export type SpatialArea =
     | { type: SpatialAreaType.BOUNDING_BOX; value: [number, number, number, number] }
 
 export type DateTimeRange = {
-    startDate: string
-    endDate: string
+    startDate: string | undefined
+    endDate: string | undefined
 }

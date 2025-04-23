@@ -1,18 +1,10 @@
-import { assert } from '../utilities/error'
-
 export class SidebarToggleComponent {
     #toggleButton: HTMLButtonElement
     #sidebarEl: HTMLElement
 
-    constructor(toggleSelector: string, sidebarSelector: string) {
-        const toggleButton = document.querySelector<HTMLButtonElement>(toggleSelector)
-        const sidebarEl = document.querySelector<HTMLElement>(sidebarSelector)
-
-        assert(toggleButton, `Toggle button not found: ${toggleSelector}`)
-        assert(sidebarEl, `Sidebar not found: ${sidebarSelector}`)
-
-        this.#toggleButton = toggleButton
-        this.#sidebarEl = sidebarEl
+    constructor() {
+        this.#toggleButton = document.querySelector<HTMLButtonElement>('#sidebar-toggle')!
+        this.#sidebarEl = document.querySelector<HTMLElement>('#sidebar')!
 
         this.#bindEvents()
     }
