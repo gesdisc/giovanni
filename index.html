@@ -6,16 +6,7 @@
         <title>NASA Giovanni</title>
 
         <link href="src/style.css" rel="stylesheet" />
-        
-        <!-- TODO: can we move these to use npm imports? Right now, terra components are installed as devDependencies to use just the types -->
-        <link
-            rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.29/cdn/themes/horizon.css"
-        />
-        <script
-            type="module"
-            src="https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.29/cdn/terra-ui-components-autoloader.js"
-        ></script>
+        <script type="module" src="src/main.ts"></script>
     </head>
 
     <body class="h-screen overflow-hidden">
@@ -42,13 +33,18 @@
                         <div class="p-3">
                             <div id="selected-variables"></div>
 
-                            <terra-dialog width="1000px" id="add-variable-dialog">
-                                <terra-browse-variables id="variable-selector"></terra-browse-variables>
+                            <terra-dialog
+                                id="add-variable-dialog"
+                                width="clamp(350px, 77%, 1280px)"
+                            >
+                                <terra-browse-variables
+                                    id="variable-selector"
+                                ></terra-browse-variables>
                             </terra-dialog>
-                        
+
                             <terra-button id="add-variable-button">
                                 Add a variable
-                            </button>
+                            </terra-button>
                         </div>
                     </details>
 
@@ -69,7 +65,8 @@
                         <summary>Date Range</summary>
 
                         <div class="p-3">
-                            <input type="date" id="start-date" name="startDate" /> to <input type="date" id="end-date" name="endDate" />
+                            <input type="date" id="start-date" name="startDate" /> to
+                            <input type="date" id="end-date" name="endDate" />
                         </div>
                     </details>
 
@@ -138,7 +135,5 @@
                 </main>
             </div>
         </div>
-
-        <script type="module" src="src/main.ts"></script>
     </body>
 </html>
