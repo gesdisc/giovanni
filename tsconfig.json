@@ -20,6 +20,7 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     "strictNullChecks": true,
+    "strictFunctionTypes": true,
   },
   "include": ["src"]
 }

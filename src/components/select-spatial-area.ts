@@ -19,13 +19,16 @@ export class SelectSpatialAreaComponent {
     }
 
     #bindEvents() {
-        this.#element.addEventListener('terra-map-change', this.#handleChange.bind(this))
+        this.#element.addEventListener(
+            'terra-map-change',
+            this.#handleChange.bind(this)
+        )
     }
 
     #setupEffects() {
-            effect(() => {
-                console.log('spatial area changed: ', spatialArea.value)
-            })
+        effect(() => {
+            console.log('spatial area changed: ', spatialArea.value)
+        })
     }
 
     #handleChange(e: TerraMapChangeEvent) {

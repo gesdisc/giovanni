@@ -10,11 +10,11 @@
         <!-- TODO: can we move these to use npm imports? Right now, terra components are installed as devDependencies to use just the types -->
         <link
             rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.28/cdn/themes/horizon.css"
+            href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.29/cdn/themes/horizon.css"
         />
         <script
             type="module"
-            src="https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.28/cdn/terra-ui-components-autoloader.js"
+            src="https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.29/cdn/terra-ui-components-autoloader.js"
         ></script>
     </head>
 
@@ -42,11 +42,11 @@
                         <div class="p-3">
                             <div id="selected-variables"></div>
 
-                            <terra-dialog id="variable-selector-dialog" width="1000px">
+                            <terra-dialog width="1000px" id="add-variable-dialog">
                                 <terra-browse-variables id="variable-selector"></terra-browse-variables>
                             </terra-dialog>
                         
-                            <terra-button for-dialog="variable-selector-dialog">
+                            <terra-button id="add-variable-button">
                                 Add a variable
                             </button>
                         </div>
@@ -110,11 +110,31 @@
                 </header>
 
                 <main class="flex-grow p-6 bg-gray-100 overflow-y-auto">
-                    <h2 class="text-2xl font-bold mb-4">Main Content</h2>
-                    <p class="mb-4">
-                        This is the main content area that expands to fill available
-                        space.
-                    </p>
+                    <div class="bg-orange-100 border-l-4 border-orange-500 text-orange-700 p-4 mb-5" role="alert">
+                        <span class="font-bold flex align-middle mb-4">
+                            <svg class="mr-2" width="20px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+                                viewBox="0 0 512 512" xml:space="preserve">
+                                <path style="fill:#FFA055;" d="M467.862,512H44.138c-4.875,0-8.828-3.953-8.828-8.828v-17.655c0-4.875,3.953-8.828,8.828-8.828
+                                    h423.724c4.875,0,8.828,3.953,8.828,8.828v17.655C476.69,508.047,472.737,512,467.862,512z"/>
+                                <path style="fill:#FFB45A;" d="M269.3,0h-26.6c-7.819,0-14.707,5.143-16.928,12.64L88.276,476.69h335.448L286.228,12.64
+                                    C284.007,5.143,277.119,0,269.3,0z"/>
+                                <g>
+                                    <polygon style="fill:#FFEBBE;" points="171.975,194.207 340.025,194.207 319.101,123.586 192.899,123.586 	"/>
+                                    <polygon style="fill:#FFEBBE;" points="119.662,370.759 392.338,370.759 371.413,300.138 140.587,300.138 	"/>
+                                </g>
+                                <g>
+                                    <polygon style="fill:#FFA055;" points="219.055,35.31 292.945,35.31 287.714,17.655 224.286,17.655 	"/>
+                                    <polygon style="fill:#FFA055;" points="208.593,70.621 303.407,70.621 298.176,52.966 213.824,52.966 	"/>
+                                </g>
+                            </svg>
+                            Work in Progress
+                        </span>
+                        <p>This is not a finished product!</p>
+                    </div>
+                    
+                    <div id="plots">
+                        Waiting for user to make selections
+                    </div>
                 </main>
             </div>
         </div>
