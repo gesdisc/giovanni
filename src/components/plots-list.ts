@@ -1,4 +1,3 @@
-import { assert } from '../utilities/error'
 import {
     canGeneratePlots,
     dateTimeRange,
@@ -13,11 +12,7 @@ export class PlotsListComponent {
     #listEl: HTMLElement
 
     constructor(listSelector: string) {
-        const listEl = document.querySelector<HTMLElement>(listSelector)
-
-        assert(listEl, `List selector was not found: ${listSelector}`)
-
-        this.#listEl = listEl
+        this.#listEl = document.querySelector<HTMLElement>(listSelector)!
 
         this.#bindEvents()
         this.#setupEffects()

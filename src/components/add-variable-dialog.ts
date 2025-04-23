@@ -1,4 +1,3 @@
-import { assert } from '../utilities/error'
 import { effect } from '@preact/signals-core'
 import { TerraButton, TerraDialog } from '@nasa-terra/components'
 import { variables } from '../state'
@@ -8,14 +7,8 @@ export class AddVariableDialogComponent {
     #dialogEl: TerraDialog
 
     constructor(buttonSelector: string, dialogSelector: string) {
-        const buttonEl = document.querySelector<TerraButton>(buttonSelector)
-        const dialogEl = document.querySelector<TerraDialog>(dialogSelector)
-
-        assert(buttonEl, `Button selector was not found ${buttonSelector}`)
-        assert(dialogEl, `Dialog selector was not found ${dialogSelector}`)
-
-        this.#buttonEl = buttonEl
-        this.#dialogEl = dialogEl
+        this.#buttonEl = document.querySelector<TerraButton>(buttonSelector)!
+        this.#dialogEl = document.querySelector<TerraDialog>(dialogSelector)!
 
         this.#bindEvents()
         this.#setupEffects()

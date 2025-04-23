@@ -1,4 +1,3 @@
-import { assert } from '../utilities/error'
 import { effect } from '@preact/signals-core'
 import { spatialArea } from '../state'
 import { SpatialAreaType } from '../types'
@@ -8,11 +7,7 @@ export class SelectSpatialAreaComponent {
     #element: TerraSpatialPicker
 
     constructor(selector: string) {
-        const el = document.querySelector<TerraSpatialPicker>(selector)
-
-        assert(el, `Element matching selector was not found: ${selector}`)
-
-        this.#element = el
+        this.#element = document.querySelector<TerraSpatialPicker>(selector)!
 
         this.#bindEvents()
         this.#setupEffects()

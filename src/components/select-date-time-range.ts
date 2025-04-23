@@ -1,4 +1,3 @@
-import { assert } from '../utilities/error'
 import { dateTimeRange } from '../state'
 import { DateTimeRange } from '../types'
 import { effect } from '@preact/signals-core'
@@ -8,14 +7,8 @@ export class SelectDateTimeRangeComponent {
     #endDateEl: HTMLInputElement
 
     constructor(startDateSelector: string, endDateSelector: string) {
-        const startDateEl = document.querySelector<HTMLInputElement>(startDateSelector)
-        const endDateEl = document.querySelector<HTMLInputElement>(endDateSelector)
-
-        assert(startDateEl, `Start date selector was not found: ${startDateSelector}`)
-        assert(endDateEl, `End date selector was not found: ${endDateSelector}`)
-
-        this.#startDateEl = startDateEl
-        this.#endDateEl = endDateEl
+        this.#startDateEl = document.querySelector<HTMLInputElement>(startDateSelector)!
+        this.#endDateEl = document.querySelector<HTMLInputElement>(endDateSelector)!
 
         this.#bindEvents()
         this.#setupEffects()
