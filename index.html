@@ -7,133 +7,480 @@
 
         <link href="src/style.css" rel="stylesheet" />
         <script type="module" src="src/main.ts"></script>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+            rel="stylesheet"
+        />
+
+        <style>
+            :root {
+                --nasa-blue: #0b3d91;
+                --nasa-red: #fc3d21;
+                --nasa-white: #ffffff;
+                --nasa-light-gray: #f5f5f5;
+                --nasa-dark-gray: #4a4a4a;
+            }
+
+            .nasa-blue {
+                color: var(--nasa-blue);
+            }
+            .nasa-bg-blue {
+                background-color: var(--nasa-blue);
+            }
+            .nasa-red {
+                color: var(--nasa-red);
+            }
+            .nasa-bg-red {
+                background-color: var(--nasa-red);
+            }
+
+            .inter {
+                font-family: "Inter", sans-serif;
+                font-optical-sizing: auto;
+                font-weight: 400;
+                font-style: normal;
+            }
+
+            .inter-bold {
+                font-weight: 700;
+            }
+
+            .inter-italic {
+                font-style: italic;
+            }
+
+            /* Custom scrollbar for sidebar */
+            .custom-scrollbar::-webkit-scrollbar {
+                width: 6px;
+            }
+            .custom-scrollbar::-webkit-scrollbar-track {
+                background: #f1f1f1;
+                border-radius: 3px;
+            }
+            .custom-scrollbar::-webkit-scrollbar-thumb {
+                background: #c1c1c1;
+                border-radius: 3px;
+            }
+            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                background: #a8a8a8;
+            }
+
+            /* Hover effects for interactive elements */
+            .hover-lift:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            }
+
+            /* Focus styles for accessibility */
+            .focus-ring:focus {
+                outline: 2px solid var(--nasa-blue);
+                outline-offset: 2px;
+            }
+
+            /* Animation for loading state */
+            @keyframes pulse-glow {
+                0%,
+                100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.5;
+                }
+            }
+            .pulse-glow {
+                animation: pulse-glow 2s ease-in-out infinite;
+            }
+        </style>
     </head>
 
-    <body class="h-screen overflow-hidden">
+    <body class="bg-gray-50 font-sans">
         <div class="flex h-screen">
             <aside
-                id="sidebar"
-                class="sidebar bg-gray-800 text-white overflow-y-auto"
-                aria-labelledby="sidebar-heading"
+                class="w-80 bg-white shadow-lg border-r border-gray-200 flex flex-col"
             >
-                <div class="p-6">
-                    <h2 id="sidebar-heading" class="text-xl font-bold mb-6">
-                        Giovanni
-                    </h2>
+                <div class="nasa-bg-blue text-white p-4 flex items-center space-x-3">
+                    <div>
+                        <h1 class="text-2xl inter inter-bold inter-italic">Giovanni</h1>
+                        <p class="text-xs opacity-90 inter-italic">The bridge between data and science</p>
+                    </div>
+                </div>
 
-                    <details>
-                        <summary>Plot Type</summary>
-
-                        <div class="p-3">TODO</div>
-                    </details>
-
-                    <details open>
-                        <summary>Variables</summary>
-
-                        <div class="p-3">
-                            <div id="selected-variables"></div>
-
-                            <terra-dialog
-                                id="add-variable-dialog"
-                                width="clamp(350px, 77%, 1280px)"
+                <div class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-6">
+                    <section>
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Selected Variables
+                            </label>
+                            <span
+                                class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full"
+                                id="variable-count"
                             >
-                                <terra-browse-variables
-                                    id="variable-selector"
-                                ></terra-browse-variables>
-                            </terra-dialog>
-
-                            <terra-button id="add-variable-button">
-                                Add a variable
-                            </terra-button>
+                                3 selected
+                            </span>
                         </div>
-                    </details>
 
-                    <details open>
-                        <summary>Location</summary>
+                        <div
+                            class="space-y-2"
+                            role="list"
+                            aria-describedby="variables-help"
+                        >
+                            <div
+                                class="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg group hover-lift transition-all duration-200"
+                                role="listitem"
+                            >
+                                <div class="flex items-center space-x-3">
+                                    <div
+                                        class="w-3 h-3 nasa-bg-blue rounded-full"
+                                    ></div>
+                                    <div>
+                                        <span
+                                            class="text-sm font-medium text-gray-800"
+                                            >Temperature</span
+                                        >
+                                        <p class="text-xs text-gray-600">
+                                            Surface air temperature (°C)
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all focus-ring rounded p-1"
+                                    aria-label="Remove Temperature variable"
+                                >
+                                    <svg
+                                        class="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
 
-                        <div class="p-3">
-                            <terra-spatial-picker
-                                id="spatial-picker"
-                                hide-label="true"
-                                is-expanded="true"
-                                inline="true"
-                            ></terra-spatial-picker>
+                            <div
+                                class="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg group hover-lift transition-all duration-200"
+                                role="listitem"
+                            >
+                                <div class="flex items-center space-x-3">
+                                    <div
+                                        class="w-3 h-3 bg-green-500 rounded-full"
+                                    ></div>
+                                    <div>
+                                        <span
+                                            class="text-sm font-medium text-gray-800"
+                                            >Precipitation</span
+                                        >
+                                        <p class="text-xs text-gray-600">
+                                            Total precipitation (mm)
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all focus-ring rounded p-1"
+                                    aria-label="Remove Precipitation variable"
+                                >
+                                    <svg
+                                        class="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div
+                                class="flex items-center justify-between p-3 bg-purple-50 border border-purple-200 rounded-lg group hover-lift transition-all duration-200"
+                                role="listitem"
+                            >
+                                <div class="flex items-center space-x-3">
+                                    <div
+                                        class="w-3 h-3 bg-purple-500 rounded-full"
+                                    ></div>
+                                    <div>
+                                        <span
+                                            class="text-sm font-medium text-gray-800"
+                                            >Wind Speed</span
+                                        >
+                                        <p class="text-xs text-gray-600">
+                                            10m wind speed (m/s)
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all focus-ring rounded p-1"
+                                    aria-label="Remove Wind Speed variable"
+                                >
+                                    <svg
+                                        class="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
-                    </details>
 
-                    <details open>
-                        <summary>Date Range</summary>
+                        <p id="variables-help" class="text-xs text-gray-500 mt-2">
+                            Variables selected for analysis and visualization
+                        </p>
 
-                        <div class="p-3">
-                            <input type="date" id="start-date" name="startDate" /> to
-                            <input type="date" id="end-date" name="endDate" />
+                        <button
+                            class="w-full mt-3 p-2 border border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-700 transition-colors focus-ring"
+                        >
+                            <div class="flex items-center justify-center space-x-2">
+                                <svg
+                                    class="w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                    />
+                                </svg>
+                                <span class="text-sm">Add Variable</span>
+                            </div>
+                        </button>
+                    </section>
+                    
+                    <section>
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">
+                            Date Range
+                        </label>
+                        <div
+                            class="border border-gray-300 rounded-lg p-3 bg-gray-50 hover-lift transition-all duration-200"
+                        >
+                            <div class="flex items-center space-x-2 text-gray-600">
+                                <svg
+                                    class="w-5 h-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                    />
+                                </svg>
+                                <span class="text-sm">Web component placeholder</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">
+                                Your existing date range component will be inserted
+                                here
+                            </p>
                         </div>
-                    </details>
+                    </section>
 
-                    <details>
-                        <summary>History</summary>
+                    <section>
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">
+                            Spatial Area
+                        </label>
+                        <div
+                            class="border border-gray-300 rounded-lg p-3 bg-gray-50 hover-lift transition-all duration-200"
+                        >
+                            <div class="flex items-center space-x-2 text-gray-600">
+                                <svg
+                                    class="w-5 h-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                    />
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                    />
+                                </svg>
+                                <span class="text-sm">Web component placeholder</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">
+                                Your existing spatial selector component will be
+                                inserted here
+                            </p>
+                        </div>
+                    </section>
+                </div>
 
-                        <div class="p-3">TODO</div>
-                    </details>
+                <div class="p-4 border-t border-gray-200 space-y-2">
+                    <button
+                        class="w-full nasa-bg-blue text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-800 transition-colors focus-ring hover-lift"
+                    >
+                        Plot Data
+                    </button>
                 </div>
             </aside>
 
-            <div class="flex flex-col flex-grow">
-                <header class="bg-white shadow h-12 flex items-center px-4">
-                    <button
-                        id="sidebar-toggle"
-                        class="p-2 rounded-md hover:bg-gray-200 focus:outline-none"
-                        aria-expanded="true"
-                        aria-controls="sidebar"
-                        aria-label="Toggle sidebar menu"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-6 w-6"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            aria-hidden="true"
+            <main class="flex-1 flex flex-col bg-white">
+                <header
+                    class="bg-white border-b border-gray-200 p-4 flex items-center justify-between"
+                >
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800">
+                            Visualization Output
+                        </h2>
+                        <p class="text-sm text-gray-600">
+                            Interactive plots and maps based on your selection
+                        </p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button
+                            class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors focus-ring"
+                            aria-label="Download visualization"
                         >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M4 6h16M4 12h16M4 18h16"
-                            />
-                        </svg>
-                        <span class="sr-only">Menu</span>
-                    </button>
+                            <svg
+                                class="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                />
+                            </svg>
+                        </button>
+                        <button
+                            class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors focus-ring"
+                            aria-label="Share visualization"
+                        >
+                            <svg
+                                class="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
+                                />
+                            </svg>
+                        </button>
+                        <button
+                            class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors focus-ring"
+                            aria-label="Fullscreen view"
+                        >
+                            <svg
+                                class="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+                                />
+                            </svg>
+                        </button>
+                    </div>
                 </header>
 
-                <main class="flex-grow p-6 bg-gray-100 overflow-y-auto">
-                    <div class="bg-orange-100 border-l-4 border-orange-500 text-orange-700 p-4 mb-5" role="alert">
-                        <span class="font-bold flex align-middle mb-4">
-                            <svg class="mr-2" width="20px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
-                                viewBox="0 0 512 512" xml:space="preserve">
-                                <path style="fill:#FFA055;" d="M467.862,512H44.138c-4.875,0-8.828-3.953-8.828-8.828v-17.655c0-4.875,3.953-8.828,8.828-8.828
-                                    h423.724c4.875,0,8.828,3.953,8.828,8.828v17.655C476.69,508.047,472.737,512,467.862,512z"/>
-                                <path style="fill:#FFB45A;" d="M269.3,0h-26.6c-7.819,0-14.707,5.143-16.928,12.64L88.276,476.69h335.448L286.228,12.64
-                                    C284.007,5.143,277.119,0,269.3,0z"/>
-                                <g>
-                                    <polygon style="fill:#FFEBBE;" points="171.975,194.207 340.025,194.207 319.101,123.586 192.899,123.586 	"/>
-                                    <polygon style="fill:#FFEBBE;" points="119.662,370.759 392.338,370.759 371.413,300.138 140.587,300.138 	"/>
-                                </g>
-                                <g>
-                                    <polygon style="fill:#FFA055;" points="219.055,35.31 292.945,35.31 287.714,17.655 224.286,17.655 	"/>
-                                    <polygon style="fill:#FFA055;" points="208.593,70.621 303.407,70.621 298.176,52.966 213.824,52.966 	"/>
-                                </g>
-                            </svg>
-                            Work in Progress
-                        </span>
-                        <p>This is not a finished product!</p>
+                <div class="flex-1 p-6 bg-gray-50">
+                    <div
+                        class="h-full bg-white rounded-lg border border-gray-200 shadow-sm flex items-center justify-center"
+                    >
+                        <!-- Placeholder for visualization -->
+                        <div class="text-center max-w-md mx-auto">
+                            <div
+                                class="nasa-bg-blue rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center pulse-glow"
+                            >
+                                <svg
+                                    class="w-8 h-8 text-white"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                                    />
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">
+                                Ready for Visualization
+                            </h3>
+                            <p class="text-gray-600 mb-4">
+                                Configure your plot settings in the sidebar and click
+                                "Generate Visualization" to create your custom plot or
+                                map.
+                            </p>
+                            <div class="text-sm text-gray-500">
+                                <p class="mb-1">• Select plot type and date range</p>
+                                <p class="mb-1">• Choose spatial area of interest</p>
+                                <p>• Add variables to analyze</p>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div id="plots">
-                        Waiting for user to make selections
-                    </div>
-                </main>
-            </div>
+                </div>
+            </main>
         </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const removeButtons = document.querySelectorAll(
+                    '[aria-label*="Remove"]'
+                )
+                removeButtons.forEach(button => {
+                    button.addEventListener('click', function () {
+                        const variableItem = this.closest('[role="listitem"]')
+                        variableItem.style.opacity = '0.5'
+                        variableItem.style.transform = 'translateX(-10px)'
+
+                        setTimeout(() => {
+                            variableItem.remove()
+                            updateVariableCount()
+                        }, 200)
+                    })
+                })
+
+                function updateVariableCount() {
+                    const count =
+                        document.querySelectorAll('[role="listitem"]').length
+                    document.getElementById('variable-count').textContent =
+                        `${count} selected`
+                }
+            })
+        </script>
     </body>
 </html>
