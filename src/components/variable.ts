@@ -1,4 +1,5 @@
 import { Variable } from '../types'
+import { variables } from '../state'
 
 export class VariableComponent {
     variable: Variable
@@ -8,6 +9,14 @@ export class VariableComponent {
         this.variable = variable
         this.element = document.createElement('div')
 
+        this.render()
+    }
+
+    destroy() {
+        this.element.parentElement?.removeChild(this.element)
+    }
+
+    render() {
         this.element.innerHTML = `
             <div
                 class="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg group hover-lift transition-all duration-200"
@@ -48,9 +57,9 @@ export class VariableComponent {
                 </button>
             </div>    
         `
-    }
 
-    destroy() {
-        this.element.parentElement?.removeChild(this.element)
+        this.element.querySelector('button')?.addEventListener('click', () => {
+            variables.value = variables.value.filter(v => v !== this)
+        })
     }
 }

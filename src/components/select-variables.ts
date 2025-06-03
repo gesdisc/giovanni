@@ -31,6 +31,14 @@ export class SelectVariablesComponent {
         effect(() => {
             console.log('selected variables changed: ', variables.value)
 
+            this.#selectedVariablesList.innerHTML = variables.value.length === 0 ? `
+                <div class="w-full mt-3 p-2 border border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-700 transition-colors focus-ring">
+                    <div class="flex items-center justify-center space-x-2">
+                        <span class="text-sm">No variables selected yet</span>
+                    </div>
+                </div>
+            ` : ''
+
             variables.value.forEach(v =>
                 this.#selectedVariablesList.appendChild(v.element)
             )
