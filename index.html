@@ -14,86 +14,6 @@
             href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
             rel="stylesheet"
         />
-
-        <style>
-            :root {
-                --nasa-blue: #0b3d91;
-                --nasa-red: #fc3d21;
-                --nasa-white: #ffffff;
-                --nasa-light-gray: #f5f5f5;
-                --nasa-dark-gray: #4a4a4a;
-            }
-
-            .nasa-blue {
-                color: var(--nasa-blue);
-            }
-            .nasa-bg-blue {
-                background-color: var(--nasa-blue);
-            }
-            .nasa-red {
-                color: var(--nasa-red);
-            }
-            .nasa-bg-red {
-                background-color: var(--nasa-red);
-            }
-
-            .inter {
-                font-family: "Inter", sans-serif;
-                font-optical-sizing: auto;
-                font-weight: 400;
-                font-style: normal;
-            }
-
-            .inter-bold {
-                font-weight: 700;
-            }
-
-            .inter-italic {
-                font-style: italic;
-            }
-
-            /* Custom scrollbar for sidebar */
-            .custom-scrollbar::-webkit-scrollbar {
-                width: 6px;
-            }
-            .custom-scrollbar::-webkit-scrollbar-track {
-                background: #f1f1f1;
-                border-radius: 3px;
-            }
-            .custom-scrollbar::-webkit-scrollbar-thumb {
-                background: #c1c1c1;
-                border-radius: 3px;
-            }
-            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                background: #a8a8a8;
-            }
-
-            /* Hover effects for interactive elements */
-            .hover-lift:hover {
-                transform: translateY(-1px);
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            }
-
-            /* Focus styles for accessibility */
-            .focus-ring:focus {
-                outline: 2px solid var(--nasa-blue);
-                outline-offset: 2px;
-            }
-
-            /* Animation for loading state */
-            @keyframes pulse-glow {
-                0%,
-                100% {
-                    opacity: 1;
-                }
-                50% {
-                    opacity: 0.5;
-                }
-            }
-            .pulse-glow {
-                animation: pulse-glow 2s ease-in-out infinite;
-            }
-        </style>
     </head>
 
     <body class="bg-gray-50 font-sans">
@@ -185,176 +105,35 @@
                                 class="space-y-2"
                                 role="list"
                                 aria-describedby="variables-help"
+                                id="selected-variables"
                             >
-                                <div
-                                    class="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg group hover-lift transition-all duration-200"
-                                    role="listitem"
-                                >
-                                    <div class="flex items-center space-x-3">
-                                        <div
-                                            class="w-3 h-3 nasa-bg-blue rounded-full"
-                                        ></div>
-                                        <div>
-                                            <span
-                                                class="text-sm font-medium text-gray-800"
-                                                >Temperature</span
-                                            >
-                                            <p class="text-xs text-gray-600">
-                                                Surface air temperature (°C)
-                                            </p>
-                                        </div>
+                                <div class="w-full mt-3 p-2 border border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-700 transition-colors focus-ring">
+                                    <div class="flex items-center justify-center space-x-2">
+                                        <span class="text-sm">No variables selected yet</span>
                                     </div>
-                                    <button
-                                        class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all focus-ring rounded p-1"
-                                        aria-label="Remove Temperature variable"
-                                    >
-                                        <svg
-                                            class="w-4 h-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M6 18L18 6M6 6l12 12"
-                                            />
-                                        </svg>
-                                    </button>
-                                </div>
-
-                                <div
-                                    class="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg group hover-lift transition-all duration-200"
-                                    role="listitem"
-                                >
-                                    <div class="flex items-center space-x-3">
-                                        <div
-                                            class="w-3 h-3 bg-green-500 rounded-full"
-                                        ></div>
-                                        <div>
-                                            <span
-                                                class="text-sm font-medium text-gray-800"
-                                                >Precipitation</span
-                                            >
-                                            <p class="text-xs text-gray-600">
-                                                Total precipitation (mm)
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <button
-                                        class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all focus-ring rounded p-1"
-                                        aria-label="Remove Precipitation variable"
-                                    >
-                                        <svg
-                                            class="w-4 h-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M6 18L18 6M6 6l12 12"
-                                            />
-                                        </svg>
-                                    </button>
-                                </div>
-
-                                <div
-                                    class="flex items-center justify-between p-3 bg-purple-50 border border-purple-200 rounded-lg group hover-lift transition-all duration-200"
-                                    role="listitem"
-                                >
-                                    <div class="flex items-center space-x-3">
-                                        <div
-                                            class="w-3 h-3 bg-purple-500 rounded-full"
-                                        ></div>
-                                        <div>
-                                            <span
-                                                class="text-sm font-medium text-gray-800"
-                                                >Wind Speed</span
-                                            >
-                                            <p class="text-xs text-gray-600">
-                                                10m wind speed (m/s)
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <button
-                                        class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all focus-ring rounded p-1"
-                                        aria-label="Remove Wind Speed variable"
-                                    >
-                                        <svg
-                                            class="w-4 h-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M6 18L18 6M6 6l12 12"
-                                            />
-                                        </svg>
-                                    </button>
                                 </div>
                             </div>
 
-                            <p id="variables-help" class="text-xs text-gray-500 mt-2">
-                                Variables selected for analysis and visualization
-                            </p>
+                            <terra-button id="add-variable-button" class="w-full mt-3" outline variant="primary">
+                                <terra-icon name="outline-plus" library="heroicons" class="mr-2"></terra-icon> Add a variable
+                            </terra-button>
 
-                            <button
-                                class="w-full mt-3 p-2 border border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-700 transition-colors focus-ring"
+                            <terra-dialog
+                                id="add-variable-dialog"
+                                width="clamp(350px, 77%, 1280px)"
                             >
-                                <div class="flex items-center justify-center space-x-2">
-                                    <svg
-                                        class="w-4 h-4"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                        />
-                                    </svg>
-                                    <span class="text-sm">Add Variable</span>
-                                </div>
-                            </button>
+                                <terra-browse-variables
+                                    id="variable-selector"
+                                ></terra-browse-variables>
+                            </terra-dialog>
                         </section>
                         
                         <section>
                             <label class="block text-sm font-semibold text-gray-700 mb-3">
                                 Date Range
                             </label>
-                            <div
-                                class="border border-gray-300 rounded-lg p-3 bg-gray-50 hover-lift transition-all duration-200"
-                            >
-                                <div class="flex items-center space-x-2 text-gray-600">
-                                    <svg
-                                        class="w-5 h-5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                        />
-                                    </svg>
-                                    <span class="text-sm">Web component placeholder</span>
-                                </div>
-                                <p class="text-xs text-gray-500 mt-2">
-                                    Your existing date range component will be inserted
-                                    here
-                                </p>
-                            </div>
+
+                            <terra-date-picker range show-months="2"></terra-date-picker>
                         </section>
 
                         <section>
