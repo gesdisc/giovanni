@@ -5,6 +5,8 @@ import { Variable } from '../types'
 
 export class PlotsListComponent {
     #listEl: HTMLElement
+    #activePlots: Map<string, TimeSeriesPlotComponent> = new Map()
+    #hasClearedDefaultView = false
 
     constructor() {
         this.#listEl = document.querySelector<HTMLElement>('#plots')!
@@ -17,16 +19,38 @@ export class PlotsListComponent {
 
     #setupEffects() {
         effect(() => {
-            this.#listEl.innerHTML = variables.value.length ? '' : this.getNoPlotsHtml()
+            if (!variables.value.length) {
+                this.#listEl.innerHTML = this.getNoPlotsHtml()
+                this.#hasClearedDefaultView = false
+                return
+            }
 
-            if (canGeneratePlots.value) {
-                // TODO: how do we handle multiple variables? this just handles one
-                this.#addTimeSeriesPlotForVariable(variables.value[0].variable)
+            // Only clear the default view once when we first start adding plots
+            if (!this.#hasClearedDefaultView) {
+                this.#listEl.innerHTML = ''
+                this.#hasClearedDefaultView = true
+            }
+
+            // Remove plots for variables that are no longer in the list
+            for (const [variableId, plot] of this.#activePlots) {
+                if (!variables.value.some(v => v.variable.dataFieldId === variableId)) {
+                    plot.destroy()
+                    this.#activePlots.delete(variableId)
+                }
+            }
+
+            // Add plots for new variables
+            for (const { variable } of variables.value) {
+                if (!this.#activePlots.has(variable.dataFieldId)) {
+                    this.#addTimeSeriesPlotForVariable(variable)
+                }
             }
         })
     }
 
     async #addTimeSeriesPlotForVariable(variable: Variable) {
+        if (!canGeneratePlots.value) return
+
         console.log(
             'add time series plot for variable ',
             variable,
@@ -40,8 +64,16 @@ export class PlotsListComponent {
             dateTimeRange: dateTimeRange.value!,
         })
 
-        this.#listEl.innerHTML = 'Loading plot...please wait'
-        this.#listEl.appendChild(plot.element)
+        // Create a container for this plot
+        const plotContainer = document.createElement('div')
+        plotContainer.className = 'mb-6'
+        plotContainer.appendChild(plot.element)
+
+        // Add the plot to the list
+        this.#listEl.appendChild(plotContainer)
+        
+        // Store the plot in our active plots map
+        this.#activePlots.set(variable.dataFieldId, plot)
     }
 
     private getNoPlotsHtml() {
