@@ -13,7 +13,7 @@
     },
     "devDependencies": {
         "@gesdisc/prettier-config": "^1.2.0",
-        "@nasa-terra/components": "^0.0.42",
+        "@nasa-terra/components": "^0.0.43",
         "@tailwindcss/vite": "^4.1.4",
         "@types/plotly.js-dist-min": "^2.3.4",
         "lint-staged": "^15.5.1",

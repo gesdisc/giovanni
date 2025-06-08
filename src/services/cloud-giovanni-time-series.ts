@@ -35,21 +35,46 @@ export class CloudGiovanniTimeSeriesService implements TimeSeriesService {
      * this function parses the CSV data and returns an object of the metadata and the data
      */
     #parseTimeSeriesCsv(text: string) {
-        const lines = text.split('\n')
+        const lines = text
+            .split('\n')
+            .map(line => line.trim())
+            .filter(Boolean)
+
         const metadata: Partial<TimeSeriesMetadata> = {}
         const data: TimeSeriesDataRow[] = []
 
-        lines.forEach(line => {
-            if (line.includes('=')) {
-                const [key, value] = line.split('=')
-                metadata[key] = value
-            } else if (line.includes(',')) {
-                const [timestamp, value] = line.split(',')
-                if (timestamp && value) {
-                    data.push({ timestamp, value })
+        let inDataSection = false
+        let dataHeaders: string[] = []
+
+        for (const line of lines) {
+            if (!inDataSection) {
+                if (line === 'Timestamp (UTC),Data') {
+                    // This marks the beginning of the data section
+                    dataHeaders = line.split(',').map(h => h.trim())
+                    inDataSection = true
+                    continue
+                }
+
+                // Otherwise, treat as metadata (key,value)
+                const [key, value] = line.split(',')
+                if (key && value !== undefined) {
+                    metadata[key.trim()] = value.trim()
+                }
+            } else {
+                // Now parsing data rows
+                const parts = line.split(',')
+                if (parts.length === dataHeaders.length) {
+                    const row: Record<string, string> = {}
+                    for (let i = 0; i < dataHeaders.length; i++) {
+                        row[dataHeaders[i]] = parts[i].trim()
+                    }
+                    data.push({
+                        timestamp: row['Timestamp (UTC)'],
+                        value: row['Data'],
+                    })
                 }
             }
-        })
+        }
 
         return { metadata, data } as TimeSeriesData
     }
