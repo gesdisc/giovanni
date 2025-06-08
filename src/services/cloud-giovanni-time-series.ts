@@ -4,7 +4,7 @@ import { TimeSeriesData, TimeSeriesDataRow, TimeSeriesMetadata } from '@nasa-ter
 import { TimeSeriesRequest, TimeSeriesService } from './types'
 
 export class CloudGiovanniTimeSeriesService implements TimeSeriesService {
-    #baseUrl = 'https://8weebb031a.execute-api.us-east-1.amazonaws.com/SIT/timeseries-no-user'
+    #baseUrl = 'https://8weebb031a.execute-api.us-east-1.amazonaws.com/SIT/'
 
     async getData({
         variable,

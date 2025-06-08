@@ -1,22 +1,19 @@
 import { dateTimeRange } from '../state'
-import { DateTimeRange } from '../types'
 import { effect } from '@preact/signals-core'
+import { TerraDatePicker } from '@nasa-terra/components'
 
 export class SelectDateTimeRangeComponent {
-    #startDateEl: HTMLInputElement
-    #endDateEl: HTMLInputElement
+    #el: HTMLInputElement
 
     constructor() {
-        this.#startDateEl = document.querySelector<HTMLInputElement>('#start-date')!
-        this.#endDateEl = document.querySelector<HTMLInputElement>('#end-date')!
+        this.#el = document.querySelector<HTMLInputElement>('#date-range')!
 
         this.#bindEvents()
         this.#setupEffects()
     }
 
     #bindEvents() {
-        this.#startDateEl.addEventListener('change', this.#handleChange.bind(this))
-        this.#endDateEl.addEventListener('change', this.#handleChange.bind(this))
+        this.#el.addEventListener('terra-change', this.#handleChange.bind(this))
     }
 
     #setupEffects() {
@@ -26,11 +23,11 @@ export class SelectDateTimeRangeComponent {
     }
 
     #handleChange(e: Event) {
-        const input = e.currentTarget as HTMLInputElement
-        
+        const datePicker = e.currentTarget as TerraDatePicker
+
         dateTimeRange.value = {
-            ...dateTimeRange.value,
-            [input.name]: input.value,
-        } as DateTimeRange
+            startDate: datePicker.selectedDates.startDate,
+            endDate: datePicker.selectedDates.endDate,
+        }
     }
 }
