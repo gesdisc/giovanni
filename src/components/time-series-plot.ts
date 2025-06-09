@@ -4,13 +4,17 @@ import { TimeSeriesRequest } from '../services/types'
 import { TimeSeriesServiceFactory } from '../factories/time-series-service'
 import type { PlotData } from 'plotly.js-dist-min'
 
+interface TimeSeriesPlotRequest extends TimeSeriesRequest {
+    variableLongName: string
+}
+
 export class TimeSeriesPlotComponent {
     element: HTMLElement
     #plotEl: TerraPlot
     #loadingDialog: HTMLDialogElement
     #isLoading = false
 
-    constructor(request: TimeSeriesRequest) {
+    constructor(request: TimeSeriesPlotRequest) {
         this.element = document.createElement('div')
         this.#plotEl = document.createElement('terra-plot')
         this.#loadingDialog = document.createElement('dialog')
@@ -20,6 +24,28 @@ export class TimeSeriesPlotComponent {
         document.body.appendChild(this.#loadingDialog)
         
         this.element.appendChild(this.#plotEl)
+
+        this.#plotEl.layout = {
+            xaxis: {
+                title: 'Time',
+                showgrid: false,
+                zeroline: false,
+            },
+            yaxis: {
+                title: request.variableLongName,
+                showline: false,
+            },
+            title: {
+                text: request.variableLongName,
+            },
+        }
+
+        this.#plotEl.config = {
+            displayModeBar: true,
+            displaylogo: false,
+            modeBarButtonsToRemove: ['toImage', 'zoom2d', 'resetScale2d'],
+            responsive: true,
+        }
 
         this.#loadData(request)
     }
@@ -47,7 +73,7 @@ export class TimeSeriesPlotComponent {
         this.#loadingDialog.appendChild(cancelButton)
     }
 
-    async #loadData(request: TimeSeriesRequest) {
+    async #loadData(request: TimeSeriesPlotRequest) {
         this.#isLoading = true
         this.#loadingDialog.showModal()
 

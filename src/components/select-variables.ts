@@ -51,7 +51,7 @@ export class SelectVariablesComponent {
         variables.value.forEach(v => v.destroy())
 
         variables.value = e.detail.selectedVariables.map(
-            v => new VariableComponent(v)
+            v => new VariableComponent(v, v.dataFieldLongName)
         )
     }
 }

@@ -40,15 +40,21 @@ export class PlotsListComponent {
             }
 
             // Add plots for new variables
-            for (const { variable } of variables.value) {
-                if (!this.#activePlots.has(variable.dataFieldId)) {
-                    this.#addTimeSeriesPlotForVariable(variable)
+            for (const v of variables.value) {
+                if (!this.#activePlots.has(v.variable.dataFieldId)) {
+                    this.#addTimeSeriesPlotForVariable(
+                        v.variable,
+                        v.variableLongName
+                    )
                 }
             }
         })
     }
 
-    async #addTimeSeriesPlotForVariable(variable: Variable) {
+    async #addTimeSeriesPlotForVariable(
+        variable: Variable,
+        variableLongName: string
+    ) {
         if (!canGeneratePlots.value) return
 
         console.log(
@@ -62,6 +68,7 @@ export class PlotsListComponent {
             variable,
             spatialArea: spatialArea.value!,
             dateTimeRange: dateTimeRange.value!,
+            variableLongName,
         })
 
         // Create a container for this plot

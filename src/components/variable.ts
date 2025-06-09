@@ -3,10 +3,12 @@ import { variables } from '../state'
 
 export class VariableComponent {
     variable: Variable
+    variableLongName: string
     element: HTMLElement
 
-    constructor(variable: Variable) {
+    constructor(variable: Variable, variableLongName: string) {
         this.variable = variable
+        this.variableLongName = variableLongName
         this.element = document.createElement('div')
 
         this.render()
@@ -29,7 +31,7 @@ export class VariableComponent {
                     <div>
                         <span
                             class="text-sm font-medium text-gray-800"
-                            >${this.variable.dataFieldLongName}</span
+                            >${this.variableLongName}</span
                         >
                         <p class="text-xs text-gray-600">
                             ${this.variable.dataFieldShortName}
