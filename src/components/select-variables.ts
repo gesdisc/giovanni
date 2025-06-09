@@ -5,10 +5,12 @@ import type {
     TerraBrowseVariables,
     TerraVariablesChangeEvent,
 } from '@nasa-terra/components'
+import Sortable from 'sortablejs'
 
 export class SelectVariablesComponent {
     #element: TerraBrowseVariables
     #selectedVariablesList: HTMLElement
+    #sortable: Sortable | null = null
 
     constructor() {
         this.#element =
@@ -42,6 +44,34 @@ export class SelectVariablesComponent {
             variables.value.forEach(v =>
                 this.#selectedVariablesList.appendChild(v.element)
             )
+
+            // Initialize or reinitialize Sortable
+            if (variables.value.length > 0) {
+                this.#initializeSortable()
+            } else {
+                this.#sortable?.destroy()
+                this.#sortable = null
+            }
+        })
+    }
+
+    #initializeSortable() {
+        if (this.#sortable) {
+            this.#sortable.destroy()
+        }
+
+        this.#sortable = new Sortable(this.#selectedVariablesList, {
+            animation: 150,
+            handle: '.drag-handle',
+            ghostClass: 'sortable-ghost',
+            onEnd: (evt) => {
+                // Update the variables array to match the new order
+                const newOrder = Array.from(this.#selectedVariablesList.children).map(
+                    (el) => variables.value.find(v => v.element === el)
+                ).filter((v): v is VariableComponent => v !== undefined)
+                
+                variables.value = newOrder
+            }
         })
     }
 

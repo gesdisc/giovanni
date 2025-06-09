@@ -10,7 +10,9 @@
     },
     "dependencies": {
         "@preact/signals-core": "^1.8.0",
-        "idb": "^8.0.3"
+        "@types/sortablejs": "^1.15.8",
+        "idb": "^8.0.3",
+        "sortablejs": "^1.15.6"
     },
     "devDependencies": {
         "@gesdisc/prettier-config": "^1.2.0",
