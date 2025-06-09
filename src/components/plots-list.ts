@@ -26,10 +26,17 @@ export class PlotsListComponent {
                 return
             }
 
-            // Only clear the default view once when we first start adding plots
-            if (!this.#hasClearedDefaultView) {
+            // Only clear the default view when we have valid plots to show
+            if (!this.#hasClearedDefaultView && canGeneratePlots.value) {
                 this.#listEl.innerHTML = ''
                 this.#hasClearedDefaultView = true
+            }
+
+            // If we don't have all required settings, show the default view
+            if (!canGeneratePlots.value) {
+                this.#listEl.innerHTML = this.getNoPlotsHtml()
+                this.#hasClearedDefaultView = false
+                return
             }
 
             // Remove plots for variables that are no longer in the list
