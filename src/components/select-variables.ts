@@ -76,12 +76,24 @@ export class SelectVariablesComponent {
     }
 
     #handleChange(e: TerraVariablesChangeEvent) {
-        // destroy any existing variables
-        // we'll render the variable list from scratch anytime the user makes a selection
-        variables.value.forEach(v => v.destroy())
-
-        variables.value = e.detail.selectedVariables.map(
-            v => new VariableComponent(v, v.dataFieldLongName)
+        // Get existing variables that are still selected
+        const existingVariables = variables.value.filter(v => 
+            e.detail.selectedVariables.some(newV => newV.dataFieldId === v.variable.dataFieldId)
         )
+
+        // Get new variables that weren't previously selected
+        const newVariables = e.detail.selectedVariables
+            .filter(v => !variables.value.some(existing => existing.variable.dataFieldId === v.dataFieldId))
+            .map(v => new VariableComponent(v, v.dataFieldLongName))
+
+        // Destroy variables that are no longer selected
+        variables.value.forEach(v => {
+            if (!e.detail.selectedVariables.some(newV => newV.dataFieldId === v.variable.dataFieldId)) {
+                v.destroy()
+            }
+        })
+
+        // Update variables array, preserving order of existing variables and appending new ones
+        variables.value = [...existingVariables, ...newVariables]
     }
 }

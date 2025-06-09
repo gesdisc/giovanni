@@ -49,6 +49,22 @@ export class PlotsListComponent {
                     )
                 }
             }
+
+            // Reorder plots to match variable order
+            const plotContainers = Array.from(this.#listEl.children)
+            const orderedContainers = variables.value.map(v => {
+                const container = plotContainers.find(container => 
+                    container.getAttribute('data-variable-id') === v.variable.dataFieldId
+                )
+                if (!container) {
+                    console.warn(`Could not find container for variable ${v.variable.dataFieldId}`)
+                }
+                return container
+            }).filter((container): container is Element => container !== undefined)
+
+            // Remove all containers and append them in the new order
+            plotContainers.forEach(container => container.remove())
+            orderedContainers.forEach(container => this.#listEl.appendChild(container))
         })
 
         // Effect for handling date range changes
@@ -95,6 +111,7 @@ export class PlotsListComponent {
         // Create a container for this plot
         const plotContainer = document.createElement('div')
         plotContainer.className = 'mb-6'
+        plotContainer.setAttribute('data-variable-id', variable.dataFieldId)
         plotContainer.appendChild(plot.element)
 
         // Add the plot to the list
