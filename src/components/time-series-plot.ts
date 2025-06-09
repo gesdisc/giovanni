@@ -3,6 +3,7 @@ import { TimeSeriesData } from '@nasa-terra/components/dist/components/time-seri
 import { TimeSeriesRequest } from '../services/types'
 import { TimeSeriesServiceFactory } from '../factories/time-series-service'
 import type { PlotData } from 'plotly.js-dist-min'
+import { DateTimeRange, SpatialArea } from '../types'
 
 interface TimeSeriesPlotRequest extends TimeSeriesRequest {
     variableLongName: string
@@ -13,11 +14,13 @@ export class TimeSeriesPlotComponent {
     #plotEl: TerraPlot
     #loadingDialog: HTMLDialogElement
     #isLoading = false
+    #currentRequest: TimeSeriesPlotRequest
 
     constructor(request: TimeSeriesPlotRequest) {
         this.element = document.createElement('div')
         this.#plotEl = document.createElement('terra-plot')
         this.#loadingDialog = document.createElement('dialog')
+        this.#currentRequest = request
         this.#setupLoadingDialog()
 
         // Add the dialog to the document body
@@ -85,7 +88,24 @@ export class TimeSeriesPlotComponent {
             
             console.log('Plotting with data ', plotlyData)
             
+            // Clear existing data and update with new data
+            this.#plotEl.data = []
             this.#plotEl.data = plotlyData
+            
+            // Force a redraw of the plot
+            if (timeSeries.data.length > 0) {
+                const currentLayout = this.#plotEl.layout as any
+                this.#plotEl.layout = {
+                    ...currentLayout,
+                    xaxis: {
+                        ...currentLayout.xaxis,
+                        range: [
+                            timeSeries.data[0].timestamp,
+                            timeSeries.data[timeSeries.data.length - 1].timestamp
+                        ]
+                    }
+                }
+            }
         } catch (error) {
             console.error('Error loading plot data:', error)
             // TODO: Show error message to user
@@ -107,6 +127,28 @@ export class TimeSeriesPlotComponent {
             x: timeSeries.data.map(row => row.timestamp),
             y: timeSeries.data.map(row => row.value),
         }]
+    }
+
+    async updateDateTimeRange(newDateTimeRange: DateTimeRange) {
+        if (this.#isLoading) return
+        
+        this.#currentRequest = {
+            ...this.#currentRequest,
+            dateTimeRange: newDateTimeRange
+        }
+        
+        await this.#loadData(this.#currentRequest)
+    }
+
+    async updateSpatialArea(newSpatialArea: SpatialArea) {
+        if (this.#isLoading) return
+        
+        this.#currentRequest = {
+            ...this.#currentRequest,
+            spatialArea: newSpatialArea
+        }
+        
+        await this.#loadData(this.#currentRequest)
     }
 
     destroy() {

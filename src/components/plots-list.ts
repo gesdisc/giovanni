@@ -18,6 +18,7 @@ export class PlotsListComponent {
     #bindEvents() {}
 
     #setupEffects() {
+        // Effect for handling variables changes
         effect(() => {
             if (!variables.value.length) {
                 this.#listEl.innerHTML = this.getNoPlotsHtml()
@@ -47,6 +48,26 @@ export class PlotsListComponent {
                         v.variableLongName
                     )
                 }
+            }
+        })
+
+        // Effect for handling date range changes
+        effect(() => {
+            if (!canGeneratePlots.value || !dateTimeRange.value) return
+            
+            // Update all active plots with new date range
+            for (const plot of this.#activePlots.values()) {
+                plot.updateDateTimeRange(dateTimeRange.value)
+            }
+        })
+
+        // Effect for handling spatial area changes
+        effect(() => {
+            if (!canGeneratePlots.value || !spatialArea.value) return
+            
+            // Update all active plots with new spatial area
+            for (const plot of this.#activePlots.values()) {
+                plot.updateSpatialArea(spatialArea.value)
             }
         })
     }
