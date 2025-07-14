@@ -7,31 +7,77 @@
 
         <link href="src/style.css" rel="stylesheet" />
         <script type="module" src="src/main.ts"></script>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+            rel="stylesheet"
+        />
     </head>
 
-    <body class="h-screen overflow-hidden">
-        <div class="flex h-screen">
-            <aside
-                id="sidebar"
-                class="sidebar bg-gray-800 text-white overflow-y-auto"
-                aria-labelledby="sidebar-heading"
+    <body class="bg-gray-50 font-sans">
+        <div class="flex flex-col h-screen">
+            <header
+                class="bg-white border-b border-gray-200 p-4 flex items-center justify-between nasa-bg-blue text-white"
             >
-                <div class="p-6">
-                    <h2 id="sidebar-heading" class="text-xl font-bold mb-6">
-                        Giovanni
-                    </h2>
+                <div class="flex items-center space-x-3">
+                    <div>
+                        <h1 class="text-2xl inter inter-bold inter-italic">
+                            Giovanni
+                        </h1>
+                        <p class="text-xs opacity-90 inter-italic">
+                            The bridge between data and science
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <terra-button>
+                        <terra-icon library="heroicons" name="outline-arrow-right-end-on-rectangle" slot="prefix"></terra-icon>
+                        Login
+                    </terra-button>
+                </div>
+            </header>
 
-                    <details>
-                        <summary>Plot Type</summary>
+            <div class="flex flex-1">
+                <aside
+                    class="w-[500px] bg-white shadow-lg border-r border-gray-200 flex flex-col"
+                >
+                    <div
+                        class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-6"
+                    >
+                        <section>
+                            <div class="flex items-center justify-between mb-3">
+                                <label
+                                    class="block text-sm font-semibold text-gray-700"
+                                >
+                                    Selected Variables
+                                </label>
+                                <span
+                                    class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full"
+                                    id="variable-count"
+                                ></span>
+                            </div>
 
-                        <div class="p-3">TODO</div>
-                    </details>
+                            <div
+                                class="space-y-2"
+                                role="list"
+                                aria-describedby="variables-help"
+                                id="selected-variables"
+                            ></div>
 
-                    <details open>
-                        <summary>Variables</summary>
-
-                        <div class="p-3">
-                            <div id="selected-variables"></div>
+                            <terra-button
+                                id="add-variable-button"
+                                class="w-full mt-3"
+                                variant="primary"
+                            >
+                                <terra-icon
+                                    name="outline-plus"
+                                    library="heroicons"
+                                    class="mr-2"
+                                ></terra-icon>
+                                Add a variable
+                            </terra-button>
 
                             <terra-dialog
                                 id="add-variable-dialog"
@@ -41,99 +87,59 @@
                                     id="variable-selector"
                                 ></terra-browse-variables>
                             </terra-dialog>
+                        </section>
 
-                            <terra-button id="add-variable-button">
-                                Add a variable
-                            </terra-button>
-                        </div>
-                    </details>
+                        <section>
+                            <terra-date-picker
+                                label="Date Range"
+                                range
+                                show-months="2"
+                                class="w-full"
+                                id="date-range"
+                            ></terra-date-picker>
+                        </section>
 
-                    <details open>
-                        <summary>Location</summary>
-
-                        <div class="p-3">
+                        <section>
                             <terra-spatial-picker
+                                label="Spatial Area"
                                 id="spatial-picker"
-                                hide-label="true"
-                                is-expanded="true"
-                                inline="true"
+                                class="w-full"
                             ></terra-spatial-picker>
-                        </div>
-                    </details>
-
-                    <details open>
-                        <summary>Date Range</summary>
-
-                        <div class="p-3">
-                            <input type="date" id="start-date" name="startDate" /> to
-                            <input type="date" id="end-date" name="endDate" />
-                        </div>
-                    </details>
-
-                    <details>
-                        <summary>History</summary>
-
-                        <div class="p-3">TODO</div>
-                    </details>
-                </div>
-            </aside>
-
-            <div class="flex flex-col flex-grow">
-                <header class="bg-white shadow h-12 flex items-center px-4">
-                    <button
-                        id="sidebar-toggle"
-                        class="p-2 rounded-md hover:bg-gray-200 focus:outline-none"
-                        aria-expanded="true"
-                        aria-controls="sidebar"
-                        aria-label="Toggle sidebar menu"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-6 w-6"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            aria-hidden="true"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M4 6h16M4 12h16M4 18h16"
-                            />
-                        </svg>
-                        <span class="sr-only">Menu</span>
-                    </button>
-                </header>
-
-                <main class="flex-grow p-6 bg-gray-100 overflow-y-auto">
-                    <div class="bg-orange-100 border-l-4 border-orange-500 text-orange-700 p-4 mb-5" role="alert">
-                        <span class="font-bold flex align-middle mb-4">
-                            <svg class="mr-2" width="20px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
-                                viewBox="0 0 512 512" xml:space="preserve">
-                                <path style="fill:#FFA055;" d="M467.862,512H44.138c-4.875,0-8.828-3.953-8.828-8.828v-17.655c0-4.875,3.953-8.828,8.828-8.828
-                                    h423.724c4.875,0,8.828,3.953,8.828,8.828v17.655C476.69,508.047,472.737,512,467.862,512z"/>
-                                <path style="fill:#FFB45A;" d="M269.3,0h-26.6c-7.819,0-14.707,5.143-16.928,12.64L88.276,476.69h335.448L286.228,12.64
-                                    C284.007,5.143,277.119,0,269.3,0z"/>
-                                <g>
-                                    <polygon style="fill:#FFEBBE;" points="171.975,194.207 340.025,194.207 319.101,123.586 192.899,123.586 	"/>
-                                    <polygon style="fill:#FFEBBE;" points="119.662,370.759 392.338,370.759 371.413,300.138 140.587,300.138 	"/>
-                                </g>
-                                <g>
-                                    <polygon style="fill:#FFA055;" points="219.055,35.31 292.945,35.31 287.714,17.655 224.286,17.655 	"/>
-                                    <polygon style="fill:#FFA055;" points="208.593,70.621 303.407,70.621 298.176,52.966 213.824,52.966 	"/>
-                                </g>
-                            </svg>
-                            Work in Progress
-                        </span>
-                        <p>This is not a finished product!</p>
+                        </section>
                     </div>
-                    
-                    <div id="plots">
-                        Waiting for user to make selections
-                    </div>
+                </aside>
+
+                <main class="flex-1 flex flex-col bg-white">
+                    <div class="flex-1 p-6 bg-gray-50" id="plots"></div>
                 </main>
             </div>
         </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const removeButtons = document.querySelectorAll(
+                    '[aria-label*="Remove"]'
+                )
+                removeButtons.forEach(button => {
+                    button.addEventListener('click', function () {
+                        const variableItem = this.closest('[role="listitem"]')
+                        variableItem.style.opacity = '0.5'
+                        variableItem.style.transform = 'translateX(-10px)'
+
+                        setTimeout(() => {
+                            variableItem.remove()
+                            updateVariableCount()
+                        }, 200)
+                    })
+                })
+
+                function updateVariableCount() {
+                    const count =
+                        document.querySelectorAll('[role="listitem"]').length
+                    document.getElementById('variable-count').textContent =
+                        `${count} selected`
+                }
+            })
+        </script>
     </body>
 </html>

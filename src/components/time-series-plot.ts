@@ -1,44 +1,45 @@
-import { TerraPlot } from '@nasa-terra/components'
-import { TimeSeriesData } from '@nasa-terra/components/dist/components/time-series/time-series.types.js'
+import { TerraTimeSeries } from '@nasa-terra/components'
 import { TimeSeriesRequest } from '../services/types'
-import { TimeSeriesServiceFactory } from '../factories/time-series-service'
-import type { PlotData } from 'plotly.js-dist-min'
+import { DateTimeRange, SpatialArea, SpatialAreaType } from '../types'
+
+interface TimeSeriesPlotRequest extends TimeSeriesRequest {
+    variableLongName: string
+}
 
 export class TimeSeriesPlotComponent {
     element: HTMLElement
+    #plotEl: TerraTimeSeries
 
-    #plotEl: TerraPlot
-
-    constructor(request: TimeSeriesRequest) {
+    constructor(request: TimeSeriesPlotRequest) {
         this.element = document.createElement('div')
-        this.#plotEl = document.createElement('terra-plot')
-
+        this.#plotEl = document.createElement('terra-time-series')
+        
         this.element.appendChild(this.#plotEl)
-
-        TimeSeriesServiceFactory.getService().getData(request).then(timeSeries => {
-            console.log('Returned time series data ', timeSeries)
-
-            const plotlyData = this.#convertDataToPlotlyFormat(timeSeries)
-            
-            console.log('Plotting with data ', plotlyData)
-            
-            this.#plotEl.data = plotlyData
-        })
-    }
-
-    #convertDataToPlotlyFormat(timeSeries: TimeSeriesData): Partial<PlotData>[] {
-        return [{
-            // holds the default Plotly configuration options.
-            // see https://plotly.com/javascript/time-series/
-            type: 'scatter',
-            mode: 'lines',
-            line: { color: 'rgb(28, 103, 227)' },
-            x: timeSeries.data.map(row => row.timestamp),
-            y: timeSeries.data.map(row => row.value),
-        }]
+        
+        this.#plotEl.variableEntryId = request.variable.dataFieldId
+        this.updateDateTimeRange(request.dateTimeRange)
+        this.updateSpatialArea(request.spatialArea)
     }
 
     destroy() {
         this.element.parentElement?.removeChild(this.element)
     }
+
+    
+    async updateDateTimeRange(newDateTimeRange: DateTimeRange) {
+        this.#plotEl.startDate = newDateTimeRange.startDate!
+        this.#plotEl.endDate = newDateTimeRange.endDate!
+    }
+
+    async updateSpatialArea(newSpatialArea: SpatialArea) {
+        if (newSpatialArea.type == SpatialAreaType.COORDINATES) {
+            const { lat, lng } = newSpatialArea.value
+
+            this.#plotEl.location = `${lat},${lng}`
+        } else {
+            // TODO: support bounding box and shapes
+            console.error('Unsupported spatial area ', newSpatialArea)
+        }
+    }
+
 }

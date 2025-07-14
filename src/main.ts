@@ -4,15 +4,15 @@ import { SelectDateTimeRangeComponent } from './components/select-date-time-rang
 import { SelectSpatialAreaComponent } from './components/select-spatial-area'
 import { SelectVariablesComponent } from './components/select-variables'
 import { setBasePath } from '@nasa-terra/components'
-import { SidebarToggleComponent } from './components/sidebar-toggle'
+import { VariableCountComponent } from './components/variable-count'
 
 setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.29/cdn/')
 
 document.addEventListener('DOMContentLoaded', () => {
-    new SidebarToggleComponent()
     new AddVariableDialogComponent()
     new SelectVariablesComponent()
     new SelectSpatialAreaComponent()
     new SelectDateTimeRangeComponent()
     new PlotsListComponent()
+    new VariableCountComponent()
 })

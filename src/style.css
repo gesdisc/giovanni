@@ -1,17 +1,100 @@
 @import '@nasa-terra/components/dist/themes/horizon.css';
 @import 'tailwindcss';
 
-.sidebar {
-    width: 520px;
-    transition: width 0.3s ease-in-out;
+:root {
+    --nasa-blue: #0b3d91;
+    --nasa-red: #fc3d21;
+    --nasa-white: #ffffff;
+    --nasa-light-gray: #f5f5f5;
+    --nasa-dark-gray: #4a4a4a;
 }
 
-.sidebar-closed {
-    width: 0;
-    overflow: hidden;
+.nasa-blue {
+    color: var(--nasa-blue);
+}
+.nasa-bg-blue {
+    background-color: var(--nasa-blue);
+}
+.nasa-red {
+    color: var(--nasa-red);
+}
+.nasa-bg-red {
+    background-color: var(--nasa-red);
 }
 
-#sidebar-toggle:focus-visible {
-    outline: 2px solid #4299e1;
+.inter {
+    font-family: 'Inter', sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.inter-bold {
+    font-weight: 700;
+}
+
+.inter-italic {
+    font-style: italic;
+}
+
+/* Custom scrollbar for sidebar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Hover effects for interactive elements */
+.hover-lift:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Focus styles for accessibility */
+.focus-ring:focus {
+    outline: 2px solid var(--nasa-blue);
     outline-offset: 2px;
+}
+
+/* Animation for loading state */
+@keyframes pulse-glow {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+.pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Sortable.js styles */
+.sortable-ghost {
+    opacity: 0.5;
+    background: #f0f9ff !important;
+    border: 2px dashed #3b82f6 !important;
+}
+
+.sortable-ghost * {
+    visibility: hidden;
+}
+
+.drag-handle {
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+.drag-handle:hover {
+    opacity: 1;
 }
