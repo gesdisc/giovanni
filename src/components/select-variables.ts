@@ -5,10 +5,12 @@ import type {
     TerraBrowseVariables,
     TerraVariablesChangeEvent,
 } from '@nasa-terra/components'
+import Sortable from 'sortablejs'
 
 export class SelectVariablesComponent {
     #element: TerraBrowseVariables
     #selectedVariablesList: HTMLElement
+    #sortable: Sortable | null = null
 
     constructor() {
         this.#element =
@@ -42,16 +44,56 @@ export class SelectVariablesComponent {
             variables.value.forEach(v =>
                 this.#selectedVariablesList.appendChild(v.element)
             )
+
+            // Initialize or reinitialize Sortable
+            if (variables.value.length > 0) {
+                this.#initializeSortable()
+            } else {
+                this.#sortable?.destroy()
+                this.#sortable = null
+            }
+        })
+    }
+
+    #initializeSortable() {
+        if (this.#sortable) {
+            this.#sortable.destroy()
+        }
+
+        this.#sortable = new Sortable(this.#selectedVariablesList, {
+            animation: 150,
+            handle: '.drag-handle',
+            ghostClass: 'sortable-ghost',
+            onEnd: (evt) => {
+                // Update the variables array to match the new order
+                const newOrder = Array.from(this.#selectedVariablesList.children).map(
+                    (el) => variables.value.find(v => v.element === el)
+                ).filter((v): v is VariableComponent => v !== undefined)
+                
+                variables.value = newOrder
+            }
         })
     }
 
     #handleChange(e: TerraVariablesChangeEvent) {
-        // destroy any existing variables
-        // we'll render the variable list from scratch anytime the user makes a selection
-        variables.value.forEach(v => v.destroy())
-
-        variables.value = e.detail.selectedVariables.map(
-            v => new VariableComponent(v, v.dataFieldLongName)
+        // Get existing variables that are still selected
+        const existingVariables = variables.value.filter(v => 
+            e.detail.selectedVariables.some(newV => newV.dataFieldId === v.variable.dataFieldId)
         )
+
+        // Get new variables that weren't previously selected
+        const newVariables = e.detail.selectedVariables
+            .filter(v => !variables.value.some(existing => existing.variable.dataFieldId === v.dataFieldId))
+            .map(v => new VariableComponent(v, v.dataFieldLongName))
+
+        // Destroy variables that are no longer selected
+        variables.value.forEach(v => {
+            if (!e.detail.selectedVariables.some(newV => newV.dataFieldId === v.variable.dataFieldId)) {
+                v.destroy()
+            }
+        })
+
+        // Update variables array, preserving order of existing variables and appending new ones
+        variables.value = [...existingVariables, ...newVariables]
     }
 }

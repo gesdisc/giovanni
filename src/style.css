@@ -78,3 +78,23 @@
 .pulse-glow {
     animation: pulse-glow 2s ease-in-out infinite;
 }
+
+/* Sortable.js styles */
+.sortable-ghost {
+    opacity: 0.5;
+    background: #f0f9ff !important;
+    border: 2px dashed #3b82f6 !important;
+}
+
+.sortable-ghost * {
+    visibility: hidden;
+}
+
+.drag-handle {
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+.drag-handle:hover {
+    opacity: 1;
+}

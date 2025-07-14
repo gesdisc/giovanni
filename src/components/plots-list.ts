@@ -18,6 +18,7 @@ export class PlotsListComponent {
     #bindEvents() {}
 
     #setupEffects() {
+        // Effect for handling variables changes
         effect(() => {
             if (!variables.value.length) {
                 this.#listEl.innerHTML = this.getNoPlotsHtml()
@@ -25,10 +26,17 @@ export class PlotsListComponent {
                 return
             }
 
-            // Only clear the default view once when we first start adding plots
-            if (!this.#hasClearedDefaultView) {
+            // Only clear the default view when we have valid plots to show
+            if (!this.#hasClearedDefaultView && canGeneratePlots.value) {
                 this.#listEl.innerHTML = ''
                 this.#hasClearedDefaultView = true
+            }
+
+            // If we don't have all required settings, show the default view
+            if (!canGeneratePlots.value) {
+                this.#listEl.innerHTML = this.getNoPlotsHtml()
+                this.#hasClearedDefaultView = false
+                return
             }
 
             // Remove plots for variables that are no longer in the list
@@ -47,6 +55,42 @@ export class PlotsListComponent {
                         v.variableLongName
                     )
                 }
+            }
+
+            // Reorder plots to match variable order
+            const plotContainers = Array.from(this.#listEl.children)
+            const orderedContainers = variables.value.map(v => {
+                const container = plotContainers.find(container => 
+                    container.getAttribute('data-variable-id') === v.variable.dataFieldId
+                )
+                if (!container) {
+                    console.warn(`Could not find container for variable ${v.variable.dataFieldId}`)
+                }
+                return container
+            }).filter((container): container is Element => container !== undefined)
+
+            // Remove all containers and append them in the new order
+            plotContainers.forEach(container => container.remove())
+            orderedContainers.forEach(container => this.#listEl.appendChild(container))
+        })
+
+        // Effect for handling date range changes
+        effect(() => {
+            if (!canGeneratePlots.value || !dateTimeRange.value) return
+            
+            // Update all active plots with new date range
+            for (const plot of this.#activePlots.values()) {
+                plot.updateDateTimeRange(dateTimeRange.value)
+            }
+        })
+
+        // Effect for handling spatial area changes
+        effect(() => {
+            if (!canGeneratePlots.value || !spatialArea.value) return
+            
+            // Update all active plots with new spatial area
+            for (const plot of this.#activePlots.values()) {
+                plot.updateSpatialArea(spatialArea.value)
             }
         })
     }
@@ -74,6 +118,7 @@ export class PlotsListComponent {
         // Create a container for this plot
         const plotContainer = document.createElement('div')
         plotContainer.className = 'mb-6'
+        plotContainer.setAttribute('data-variable-id', variable.dataFieldId)
         plotContainer.appendChild(plot.element)
 
         // Add the plot to the list

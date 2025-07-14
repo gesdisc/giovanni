@@ -25,6 +25,11 @@ export class VariableComponent {
                 role="listitem"
             >
                 <div class="flex items-center space-x-3">
+                    <div class="drag-handle cursor-move">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+                        </svg>
+                    </div>
                     <div
                         class="w-3 h-3 bg-green-500 rounded-full"
                     ></div>
@@ -41,7 +46,7 @@ export class VariableComponent {
 
                 <button
                     class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all focus-ring rounded p-1"
-                    aria-label="Remove Precipitation variable"
+                    aria-label="Remove ${this.variableLongName} variable"
                 >
                     <svg
                         class="w-4 h-4"
