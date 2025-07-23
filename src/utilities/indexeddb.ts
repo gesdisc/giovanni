@@ -33,6 +33,12 @@ export async function withDb<T>(callback: (db: IDBPDatabase) => Promise<T>) {
     }
 }
 
+export async function getAllData<T>(store: IndexedDbStores): Promise<T[]> {
+    return withDb(async db => {
+        return await db.getAll(store)
+    })
+}
+
 export function getDataByKey<T>(store: IndexedDbStores, key: string): Promise<T> {
     return withDb(async db => {
         return await db.get(store, key)
