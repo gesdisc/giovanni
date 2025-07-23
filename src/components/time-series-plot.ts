@@ -1,6 +1,5 @@
 import { TerraTimeSeries } from '@nasa-terra/components'
-import { TimeSeriesRequest } from '../services/types'
-import { DateTimeRange, SpatialArea, SpatialAreaType } from '../types'
+import { DateTimeRange, SpatialArea, SpatialAreaType, TimeSeriesRequest } from '../types'
 
 interface TimeSeriesPlotRequest extends TimeSeriesRequest {
     variableLongName: string

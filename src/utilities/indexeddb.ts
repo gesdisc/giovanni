@@ -1,9 +1,9 @@
 import { openDB, type IDBPDatabase } from 'idb'
 
-const DB_NAME = 'terra'
+const DB_NAME = 'giovanni'
 
 export enum IndexedDbStores {
-    TIME_SERIES = 'time-series',
+    HISTORY = 'history',
 }
 
 /**
@@ -12,7 +12,7 @@ export enum IndexedDbStores {
 export async function getDb() {
     return await openDB(DB_NAME, 1, {
         upgrade(db) {
-            db.createObjectStore(IndexedDbStores.TIME_SERIES, {
+            db.createObjectStore(IndexedDbStores.HISTORY, {
                 keyPath: 'key',
             })
         },

@@ -2,6 +2,7 @@ import { canGeneratePlots, dateTimeRange, spatialArea, variables } from '../stat
 import { effect } from '@preact/signals-core'
 import { TimeSeriesPlotComponent } from './time-series-plot'
 import { Variable } from '../types'
+import { storeTimeSeriesRequestInHistory } from '../history'
 
 export class PlotsListComponent {
     #listEl: HTMLElement
@@ -108,6 +109,13 @@ export class PlotsListComponent {
             dateTimeRange.value
         )
 
+        // store this plot in our history
+        await storeTimeSeriesRequestInHistory({
+            variable,
+            spatialArea: spatialArea.value!,
+            dateTimeRange: dateTimeRange.value!,
+        })
+
         const plot = new TimeSeriesPlotComponent({
             variable,
             spatialArea: spatialArea.value!,
@@ -133,7 +141,6 @@ export class PlotsListComponent {
             <div
                 class="h-full bg-white rounded-lg border border-gray-200 shadow-sm flex items-center justify-center"
             >
-                <!-- Placeholder for visualization -->
                 <div class="text-center max-w-md mx-auto">
                     <div
                         class="nasa-bg-blue rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center"
