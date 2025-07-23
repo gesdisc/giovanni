@@ -15,8 +15,15 @@ export class HistoryPanelComponent {
         this.#loadHistory()
     }
 
+    // Public method to refresh history data
+    async refresh() {
+        await this.#loadHistory()
+    }
+
     async #loadHistory() {
-        this.#history = await getAllData<TimeSeriesRequestHistoryItem>(IndexedDbStores.HISTORY)
+        this.#history = await getAllData<TimeSeriesRequestHistoryItem>(
+            IndexedDbStores.HISTORY
+        )
         this.#history.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 
         this.#render()
@@ -28,7 +35,7 @@ export class HistoryPanelComponent {
             this.#panelEl.style.display = 'none'
             return
         }
-        
+
         this.#panelEl.style.display = 'block'
         this.#panelEl.innerHTML = `
             <div class="bg-white shadow-lg rounded-t-lg border border-gray-200">
@@ -36,16 +43,20 @@ export class HistoryPanelComponent {
                     <span>History</span>
                     <svg class="w-4 h-4 transition-transform duration-200" style="transform: rotate(${this.#expanded ? 180 : 0}deg)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                
+
                 <div id="history-content" class="overflow-y-auto transition-all duration-300" style="max-height: ${this.#expanded ? '260px' : '0'};">
                     <!-- history items here -->
                 </div>
             </div>
         `
 
-        this.#headerEl = this.#panelEl.querySelector('#history-header') as HTMLElement | undefined
-        this.#contentEl = this.#panelEl.querySelector('#history-content') as HTMLElement | undefined
-        
+        this.#headerEl = this.#panelEl.querySelector('#history-header') as
+            | HTMLElement
+            | undefined
+        this.#contentEl = this.#panelEl.querySelector('#history-content') as
+            | HTMLElement
+            | undefined
+
         if (this.#headerEl) {
             this.#headerEl.addEventListener('click', () => this.#toggle())
         }
@@ -58,33 +69,39 @@ export class HistoryPanelComponent {
         }
 
         if (this.#history.length === 0) {
-            this.#contentEl.innerHTML = '<div class="p-6 text-center text-gray-500 text-sm">No history yet</div>'
+            this.#contentEl.innerHTML =
+                '<div class="p-6 text-center text-gray-500 text-sm">No history yet</div>'
             return
         }
 
-        this.#contentEl.innerHTML = this.#history.map(item => {
-            const v = item.request.variable
-            const area = item.request.spatialArea
-            const range = item.request.dateTimeRange
-            let areaStr = ''
+        this.#contentEl.innerHTML = this.#history
+            .map(item => {
+                const v = item.request.variable
+                const area = item.request.spatialArea
+                const range = item.request.dateTimeRange
+                let areaStr = ''
 
-            if (area.type === 'global') {
-                areaStr = 'Global'
-            } else if (area.type === 'coordinates') {
-                areaStr = area.value && typeof area.value.lat === 'number' && typeof area.value.lng === 'number'
-                ? `Lat: ${area.value.lat.toFixed(4)}, Lng: ${area.value.lng.toFixed(4)}`
-                : 'Coordinates: (invalid or missing)'
-            } else if (area.type === 'bounding_box') {
-                areaStr = Array.isArray(area.value)
-                ? `BBox: ${area.value.join(', ')}`
-                : 'BBox: (invalid or missing)'
-            }
+                if (area.type === 'global') {
+                    areaStr = 'Global'
+                } else if (area.type === 'coordinates') {
+                    areaStr =
+                        area.value &&
+                        typeof area.value.lat === 'number' &&
+                        typeof area.value.lng === 'number'
+                            ? `Lat: ${area.value.lat.toFixed(4)}, Lng: ${area.value.lng.toFixed(4)}`
+                            : 'Coordinates: (invalid or missing)'
+                } else if (area.type === 'bounding_box') {
+                    areaStr = Array.isArray(area.value)
+                        ? `BBox: ${area.value.join(', ')}`
+                        : 'BBox: (invalid or missing)'
+                }
 
-            const dateStr = range.startDate && range.endDate 
-                ? `${range.startDate} → ${range.endDate}`
-                : 'No date range'
-            
-            return `
+                const dateStr =
+                    range.startDate && range.endDate
+                        ? `${range.startDate} → ${range.endDate}`
+                        : 'No date range'
+
+                return `
                 <div class="border-b border-gray-100 last:border-b-0">
                     <button class="w-full text-left p-4 hover:bg-gray-50 hover:shadow-sm hover:-translate-y-0.5 focus:outline-none focus:bg-gray-50 transition-all duration-200 cursor-pointer" data-id="${item.id}">
                         <div class="flex items-start justify-between mb-2">
@@ -100,7 +117,7 @@ export class HistoryPanelComponent {
                                 </div>
 
                                 <div class="text-xs text-gray-400">
-                                    ${new Date(item.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                    ${new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </div>
                             </div>
                         </div>
@@ -124,8 +141,9 @@ export class HistoryPanelComponent {
                     </button>
                 </div>
             `
-        }).join('')
-        
+            })
+            .join('')
+
         this.#contentEl.querySelectorAll('button[data-id]').forEach(btn => {
             btn.addEventListener('click', e => {
                 const id = (e.currentTarget as HTMLElement).getAttribute('data-id')!
@@ -135,16 +153,14 @@ export class HistoryPanelComponent {
                 }
             })
         })
-
-        this.#render() // Call #render to update panel visibility
     }
 
     #toggle() {
         this.#expanded = !this.#expanded
         this.#render()
-        
+
         if (this.#expanded) {
             this.#renderItems()
         }
     }
-} 
+}
