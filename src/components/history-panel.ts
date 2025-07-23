@@ -19,10 +19,17 @@ export class HistoryPanelComponent {
         this.#history = await getAllData<TimeSeriesRequestHistoryItem>(IndexedDbStores.HISTORY)
         this.#history.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 
-        this.#renderItems()
+        this.#render()
     }
 
     #render() {
+        // Hides the panel if there areno history items
+        if (this.#history.length === 0) {
+            this.#panelEl.style.display = 'none'
+            return
+        }
+        
+        this.#panelEl.style.display = 'block'
         this.#panelEl.innerHTML = `
             <div class="bg-white shadow-lg rounded-t-lg border border-gray-200">
                 <button id="history-header" class="w-full flex items-center justify-between px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-t-lg focus:outline-none">
@@ -38,7 +45,7 @@ export class HistoryPanelComponent {
 
         this.#headerEl = this.#panelEl.querySelector('#history-header') as HTMLElement | undefined
         this.#contentEl = this.#panelEl.querySelector('#history-content') as HTMLElement | undefined
-
+        
         if (this.#headerEl) {
             this.#headerEl.addEventListener('click', () => this.#toggle())
         }
@@ -128,11 +135,14 @@ export class HistoryPanelComponent {
                 }
             })
         })
+
+        this.#render() // Call #render to update panel visibility
     }
 
     #toggle() {
         this.#expanded = !this.#expanded
         this.#render()
+        
         if (this.#expanded) {
             this.#renderItems()
         }
