@@ -3,14 +3,17 @@ import { effect } from '@preact/signals-core'
 import { TimeSeriesPlotComponent } from './time-series-plot'
 import { Variable } from '../types'
 import { storeTimeSeriesRequestInHistory } from '../history'
+import { HistoryPanelComponent } from './history-panel'
 
 export class PlotsListComponent {
     #listEl: HTMLElement
     #activePlots: Map<string, TimeSeriesPlotComponent> = new Map()
     #hasClearedDefaultView = false
+    #historyPanel: HistoryPanelComponent
 
     constructor() {
         this.#listEl = document.querySelector<HTMLElement>('#plots')!
+        this.#historyPanel = new HistoryPanelComponent()
 
         this.#bindEvents()
         this.#setupEffects()
@@ -115,6 +118,8 @@ export class PlotsListComponent {
             spatialArea: spatialArea.value!,
             dateTimeRange: dateTimeRange.value!,
         })
+
+        await this.#historyPanel.refresh()
 
         const plot = new TimeSeriesPlotComponent({
             variable,
