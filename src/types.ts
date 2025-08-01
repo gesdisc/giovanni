@@ -34,3 +34,11 @@ export type TimeSeriesRequest = {
     spatialArea: SpatialArea
     dateTimeRange: DateTimeRange
 }
+
+// there are more properties not typed here, see https://urs.earthdata.nasa.gov/documentation/for_integrators/api_documentation#/api/users/%7Buserid%7D
+export type User = {
+    uid: string
+    first_name: string
+    last_name: string
+    email_address: string
+}
