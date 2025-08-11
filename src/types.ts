@@ -22,3 +22,15 @@ export type DateTimeRange = {
     startDate: string | null
     endDate: string | null
 }
+
+export type TimeSeriesRequestHistoryItem = {
+    id: string
+    request: TimeSeriesRequest
+    createdAt: string
+}
+
+export type TimeSeriesRequest = {
+    variable: Variable
+    spatialArea: SpatialArea
+    dateTimeRange: DateTimeRange
+}
