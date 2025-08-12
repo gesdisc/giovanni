@@ -1,8 +1,8 @@
 import { computed, signal } from '@preact/signals-core'
-import { DateTimeRange, SpatialArea, User } from './types'
+import { DateTimeRange, SpatialArea, UserState } from './types'
 import { VariableComponent } from './components/variable'
 
-export const user = signal<User | null | undefined>(undefined)
+export const userState = signal<UserState>({ userChecked: false, user: null })
 export const variables = signal<VariableComponent[]>([])
 export const spatialArea = signal<SpatialArea | null>(null) // TODO: can we set default spatial area that's not null?
 export const dateTimeRange = signal<DateTimeRange | null>(null) // TODO: can we set default date/time range that's not null?
@@ -16,8 +16,20 @@ export const hasValidDateTimeRange = computed(() => {
 
 export const canGeneratePlots = computed(() => {
     return (
+        userState.value.user !== null && // User must be logged in
         variables.value.length > 0 &&
         spatialArea.value !== null &&
         hasValidDateTimeRange.value
     )
+})
+
+export const needsLogin = computed(() => {
+    if (localStorage.getItem('terra-token') && !userState.value.userChecked) {
+        // if the user has a token, assume they are logged in, we'll check in the background and update the user state if they aren't
+        return false
+    }
+
+    // if the user does not have a "terra-token" in their local storage, require login
+    // if they do, but don't have a user, meaning the token is invalid, require login
+    return !localStorage.getItem('terra-token') || !userState.value.user
 })

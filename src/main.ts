@@ -6,6 +6,7 @@ import { SelectVariablesComponent } from './components/select-variables'
 import { setBasePath } from '@nasa-terra/components'
 import { VariableCountComponent } from './components/variable-count'
 import { LoginComponent } from './components/login'
+import { LoginModalComponent } from './components/login-modal'
 
 setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.29/cdn/')
 
@@ -14,6 +15,7 @@ localStorage.setItem('terra-environment', 'uat')
 
 document.addEventListener('DOMContentLoaded', () => {
     new LoginComponent(),
+    new LoginModalComponent()
     new AddVariableDialogComponent()
     new SelectVariablesComponent()
     new SelectSpatialAreaComponent()

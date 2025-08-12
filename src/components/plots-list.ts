@@ -15,11 +15,8 @@ export class PlotsListComponent {
         this.#listEl = document.querySelector<HTMLElement>('#plots')!
         this.#historyPanel = new HistoryPanelComponent()
 
-        this.#bindEvents()
         this.#setupEffects()
     }
-
-    #bindEvents() {}
 
     #setupEffects() {
         // Effect for handling variables changes

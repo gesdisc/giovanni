@@ -118,6 +118,31 @@
 
         <div id="history-panel" class="fixed bottom-0 left-0 z-200 w-[340px] max-w-full"></div>
 
+        <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center modal" style="display: none;">
+            <div id="login-overlay" class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full mx-4">
+                <div class="text-center">
+                    <div class="nasa-bg-blue rounded-full w-16 h-16 mx-auto mb-6 flex items-center justify-center">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </div>
+                    
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Login Required</h2>
+                    
+                    <p class="text-gray-600 mb-8">
+                        Please log in to your NASA Earthdata account to create plots and access data.
+                    </p>
+                    
+                    <button id="login-modal-button" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center mx-auto cursor-pointer">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                        </svg>
+                        Login to NASA Earthdata
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 const removeButtons = document.querySelectorAll(

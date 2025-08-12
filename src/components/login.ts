@@ -1,5 +1,5 @@
 import { TerraLogin, TerraLoginEvent } from '@nasa-terra/components'
-import { user } from '../state'
+import { userState } from '../state'
 import { User } from '../types'
 import { effect } from '@preact/signals-core'
 
@@ -19,13 +19,17 @@ export class LoginComponent {
 
     #bindEvents() {
         this.#loginEl.addEventListener('terra-login', (e: TerraLoginEvent) => {
-            user.value = e.detail.user as User
+            userState.value = {
+                ...userState.value,
+                user: e.detail.user?.uid ? e.detail.user as User : null,
+                userChecked: true
+            }
         })
     }
 
     #setupEffects() {
         effect(() => {
-            this.#setupLogoutButton(user.value)
+            this.#setupLogoutButton(userState.value.user)
         })
     }
 
@@ -36,7 +40,7 @@ export class LoginComponent {
             this.#logoutSection.querySelector<HTMLAnchorElement>('a')!.addEventListener('click', (e: any) => {
                 e.preventDefault()
 
-                const logoutUrl = e.currentTarget.href
+                const logoutUrl = e.currentTarget.href  
 
                 // use token based logout
                 this.#loginEl.logout()
