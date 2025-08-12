@@ -1,4 +1,4 @@
-import { needsLogin } from '../state'
+import { needsLogin, userState } from '../state'
 import { effect } from '@preact/signals-core'
 
 export class LoginModalComponent {
@@ -26,7 +26,7 @@ export class LoginModalComponent {
 
     #setupEffects() {
         effect(() => {
-            if (needsLogin.value) {
+            if (needsLogin.value || !userState.value.user?.uid) {
                 this.show()
             } else {
                 this.hide()
