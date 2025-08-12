@@ -12,7 +12,7 @@ export class TimeSeriesPlotComponent {
     constructor(request: TimeSeriesPlotRequest) {
         this.element = document.createElement('div')
         this.#plotEl = document.createElement('terra-time-series')
-        
+
         this.element.appendChild(this.#plotEl)
         
         this.#plotEl.variableEntryId = request.variable.dataFieldId
@@ -31,12 +31,21 @@ export class TimeSeriesPlotComponent {
     }
 
     async updateSpatialArea(newSpatialArea: SpatialArea) {
-        if (newSpatialArea.type == SpatialAreaType.COORDINATES) {
+        if (newSpatialArea.type == SpatialAreaType.BOUNDING_BOX) {
+            const coordinates = [
+                newSpatialArea.value.getWest(),
+                newSpatialArea.value.getSouth(),
+                newSpatialArea.value.getEast(),
+                newSpatialArea.value.getNorth(),
+            ]
+
+            this.#plotEl.location = coordinates.join(',')
+        } else if (newSpatialArea.type == SpatialAreaType.COORDINATES) {
             const { lat, lng } = newSpatialArea.value
 
             this.#plotEl.location = `${lat},${lng}`
         } else {
-            // TODO: support bounding box and shapes
+            // TODO: support shapes
             console.error('Unsupported spatial area ', newSpatialArea)
         }
     }

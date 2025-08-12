@@ -31,7 +31,13 @@
                         </p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-3" id="login"></div>
+                <div class="flex items-center space-x-3">
+                    <terra-login id="login" button-label="Login">
+                        <div slot="logged-in" id="logout">
+                            <!-- empty container that will be populated with the logout button -->
+                        </div>
+                    </terra-login>
+                </div>
             </header>
 
             <div class="flex flex-1">

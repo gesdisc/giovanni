@@ -27,10 +27,18 @@ export class SelectSpatialAreaComponent {
     }
 
     #handleChange(e: TerraMapChangeEvent) {
-        // TODO: support bounding box and global
-        spatialArea.value = {
-            type: SpatialAreaType.COORDINATES,
-            value: e.detail.latLng,
+        if (e.detail.type === 'bbox') {
+            spatialArea.value = {
+                type: SpatialAreaType.BOUNDING_BOX,
+                value: e.detail.bounds,
+            }
+        } else if (e.detail.type === 'point') {
+            spatialArea.value = {
+                type: SpatialAreaType.COORDINATES,
+                value: e.detail.latLng,
+            }
         }
-    }
+
+        // we'll ignore any other types of map events for now
+    }   
 }
