@@ -1,6 +1,7 @@
 import { computed, signal } from '@preact/signals-core'
 import { DateTimeRange, SpatialArea, UserState } from './types'
 import { VariableComponent } from './components/variable'
+import { getValidDateRangeFromVariables } from './utilities/date'
 
 export const userState = signal<UserState>({ userChecked: false, user: null })
 export const variables = signal<VariableComponent[]>([])
@@ -32,4 +33,8 @@ export const needsLogin = computed(() => {
     // if the user does not have a "terra-token" in their local storage, require login
     // if they do, but don't have a user, meaning the token is invalid, require login
     return !localStorage.getItem('terra-token') || !userState.value.user
+})
+
+export const validDateTimeRange = computed(() => {
+    return getValidDateRangeFromVariables(variables.value.map(v => v.variable))
 })

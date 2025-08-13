@@ -64,7 +64,7 @@ export class SelectVariablesComponent {
             animation: 150,
             handle: '.drag-handle',
             ghostClass: 'sortable-ghost',
-            onEnd: (evt) => {
+            onEnd: () => {
                 // Update the variables array to match the new order
                 const newOrder = Array.from(this.#selectedVariablesList.children).map(
                     (el) => variables.value.find(v => v.element === el)

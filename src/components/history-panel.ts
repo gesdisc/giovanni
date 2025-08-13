@@ -90,7 +90,7 @@ export class HistoryPanelComponent {
                         area.value &&
                         typeof area.value.lat === 'number' &&
                         typeof area.value.lng === 'number'
-                            ? `Lat: ${area.value.lat.toFixed(4)}, Lng: ${area.value.lng.toFixed(4)}`
+                            ? `Lat: ${area.value.lat}, Lng: ${area.value.lng}`
                             : 'Coordinates: (invalid or missing)'
                 } else if (area.type === 'bounding_box') {
                     areaStr = Array.isArray(area.value)

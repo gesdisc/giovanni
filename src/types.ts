@@ -1,5 +1,4 @@
 import type { Variable as TerraVariable } from "@nasa-terra/components/dist/components/browse-variables/browse-variables.types.js"
-import { LatLng, LatLngBounds } from "leaflet";
 
 export type Variable = TerraVariable
 
@@ -11,8 +10,8 @@ export enum SpatialAreaType {
 
 export type SpatialArea =
     | { type: SpatialAreaType.GLOBAL }
-    | { type: SpatialAreaType.COORDINATES; value:  LatLng }
-    | { type: SpatialAreaType.BOUNDING_BOX; value: LatLngBounds }
+    | { type: SpatialAreaType.COORDINATES; value:  { lat: string, lng: string } }
+    | { type: SpatialAreaType.BOUNDING_BOX; value: { west: string, south: string, east: string, north: string } }
 
 export type DateTimeRange = {
     startDate: string | null

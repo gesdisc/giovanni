@@ -33,10 +33,10 @@ export class TimeSeriesPlotComponent {
     async updateSpatialArea(newSpatialArea: SpatialArea) {
         if (newSpatialArea.type == SpatialAreaType.BOUNDING_BOX) {
             const coordinates = [
-                newSpatialArea.value.getWest(),
-                newSpatialArea.value.getSouth(),
-                newSpatialArea.value.getEast(),
-                newSpatialArea.value.getNorth(),
+                newSpatialArea.value.west,
+                newSpatialArea.value.south,
+                newSpatialArea.value.east,
+                newSpatialArea.value.north,
             ]
 
             this.#plotEl.location = coordinates.join(',')
