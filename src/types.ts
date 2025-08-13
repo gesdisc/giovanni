@@ -8,15 +8,10 @@ export enum SpatialAreaType {
     BOUNDING_BOX = 'bounding_box',
 }
 
-export type LatLng = {
-    lat: number
-    lng: number
-}
-
 export type SpatialArea =
     | { type: SpatialAreaType.GLOBAL }
-    | { type: SpatialAreaType.COORDINATES; value: LatLng }
-    | { type: SpatialAreaType.BOUNDING_BOX; value: [number, number, number, number] }
+    | { type: SpatialAreaType.COORDINATES; value:  { lat: string, lng: string } }
+    | { type: SpatialAreaType.BOUNDING_BOX; value: { west: string, south: string, east: string, north: string } }
 
 export type DateTimeRange = {
     startDate: string | null
@@ -33,6 +28,11 @@ export type TimeSeriesRequest = {
     variable: Variable
     spatialArea: SpatialArea
     dateTimeRange: DateTimeRange
+}
+
+export type UserState = {
+    userChecked: boolean
+    user: User | null | undefined
 }
 
 // there are more properties not typed here, see https://urs.earthdata.nasa.gov/documentation/for_integrators/api_documentation#/api/users/%7Buserid%7D
