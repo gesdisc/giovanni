@@ -1,7 +1,7 @@
 import { dateTimeRange, validDateTimeRange } from '../state'
 import { effect, untracked } from '@preact/signals-core'
 import { TerraDatePicker } from '@nasa-terra/components'
-import { getValidDateInBoundary } from '../utilities/date'
+import { getValidDatesInBoundary } from '../utilities/date'
 
 export class SelectDateTimeRangeComponent {
     #el: TerraDatePicker
@@ -29,6 +29,8 @@ export class SelectDateTimeRangeComponent {
         
         effect(() => {
             if (validDateTimeRange.value.minDate && validDateTimeRange.value.maxDate) {
+                this.#el.minDate = validDateTimeRange.value.minDate
+                this.#el.maxDate = validDateTimeRange.value.maxDate
 
                 /**
                  * Cloud Giovanni let's a user choose one or more variables, each with a different temporal range
@@ -39,17 +41,19 @@ export class SelectDateTimeRangeComponent {
                  * It's important to note that this effect is not triggered by the user changing the date picker, but rather by the variables changing
                  */
                 untracked(() => { // use untracked, as we don't want to trigger a re-render of the date picker here
-                    let newDateTimeRange = {
-                        startDate: getValidDateInBoundary(dateTimeRange.value?.startDate, validDateTimeRange.value.minDate, 'start'),
-                        endDate: getValidDateInBoundary(dateTimeRange.value?.endDate, validDateTimeRange.value.maxDate, 'end'),
-                    }
+                    const newDateTimeRange = getValidDatesInBoundary(
+                        dateTimeRange.value?.startDate, 
+                        dateTimeRange.value?.endDate,
+                        validDateTimeRange.value.minDate,
+                        validDateTimeRange.value.maxDate,
+                    )
 
                     if (newDateTimeRange.startDate && newDateTimeRange.endDate) {
                         console.log('new date time range: ', newDateTimeRange)
 
                         dateTimeRange.value = {
-                            startDate: newDateTimeRange.startDate,
-                            endDate: newDateTimeRange.endDate,
+                            startDate: newDateTimeRange.startDate.toISOString().split('T')[0],
+                            endDate: newDateTimeRange.endDate.toISOString().split('T')[0],
                         }
                     }
                 })
