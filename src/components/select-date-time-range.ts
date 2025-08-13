@@ -41,9 +41,14 @@ export class SelectDateTimeRangeComponent {
                  * It's important to note that this effect is not triggered by the user changing the date picker, but rather by the variables changing
                  */
                 untracked(() => { // use untracked, as we don't want to trigger a re-render of the date picker here
+                    if (!dateTimeRange.value?.startDate || !dateTimeRange.value?.endDate) {
+                        // user hasn't made a selection yet, so we don't need to do anything
+                        return
+                    }
+                    
                     const newDateTimeRange = getValidDatesInBoundary(
-                        dateTimeRange.value?.startDate, 
-                        dateTimeRange.value?.endDate,
+                        dateTimeRange.value.startDate, 
+                        dateTimeRange.value.endDate,
                         validDateTimeRange.value.minDate,
                         validDateTimeRange.value.maxDate,
                     )
