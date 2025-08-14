@@ -1,6 +1,6 @@
 import { getAllData, IndexedDbStores } from '../utilities/indexeddb'
 import type { TimeSeriesRequestHistoryItem } from '../types'
-import { userHistory } from '../state'
+import { userHistory, userState } from '../state'
 import { effect } from '@preact/signals-core'
 
 export class HistoryPanelComponent {
@@ -29,7 +29,7 @@ export class HistoryPanelComponent {
 
     #setupEffects() {
         effect(() => {
-            if (userHistory.value.length > 0) {
+            if (userHistory.value.length > 0 && userState.value.user?.uid) {
                 this.#containerEl.classList.add('visible')
                 this.#renderThumbnails()
             } else {
