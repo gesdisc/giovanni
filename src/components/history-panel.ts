@@ -29,8 +29,6 @@ export class HistoryPanelComponent {
 
     #setupEffects() {
         effect(() => {
-            console.log('userHistory', userHistory.value)
-
             if (userHistory.value.length > 0) {
                 this.#containerEl.classList.add('visible')
                 this.#renderThumbnails()
@@ -101,9 +99,6 @@ export class HistoryPanelComponent {
                             ? `${area.value.lat}, ${area.value.lng}`
                             : 'Coordinates'
                 } else if (area.type === 'bounding_box') {
-                    console.log(item.request, area.value)
-
-                    console.log(area.value.west, area.value.south, area.value.east, area.value.north)
                     areaStr = `${area.value.west}, ${area.value.south}, ${area.value.east}, ${area.value.north}`
                 }
 
@@ -125,8 +120,12 @@ export class HistoryPanelComponent {
                     <div class="thumbnail-item flex-shrink-0 relative group" data-id="${item.id}" data-tooltip-content="${v.dataFieldLongName || v.dataFieldId}|${timeStr}|${dateStr}|${areaStr}">
                         <!-- Thumbnail -->
                         <div class="w-24 h-16 bg-gray-100 border border-gray-200 rounded cursor-pointer hover:border-blue-300 hover:shadow-md transition-all duration-200 flex items-center justify-center overflow-hidden">
-                            <!-- Placeholder for plot thumbnail - in real implementation, this would be an img tag -->
-                            <div class="w-full h-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
+                            ${item.request.thumbnail 
+                                ? `<img src="${URL.createObjectURL(item.request.thumbnail)}" alt="Plot thumbnail" class="w-full h-full rounded" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />`
+                                : ''
+                            }
+                            <!-- Placeholder for plot thumbnail - shown when no thumbnail URL or image fails to load -->
+                            <div class="w-full h-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center" ${item.request.thumbnail ? 'style="display: none;"' : ''}>
                                 <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                                 </svg>

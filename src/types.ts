@@ -28,6 +28,7 @@ export type TimeSeriesRequest = {
     variable: Variable
     spatialArea: SpatialArea
     dateTimeRange: DateTimeRange
+    thumbnail?: Blob
 }
 
 export type UserState = {

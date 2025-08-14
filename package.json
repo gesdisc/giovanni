@@ -13,6 +13,7 @@
         "@preact/signals-core": "^1.8.0",
         "@types/sortablejs": "^1.15.8",
         "idb": "^8.0.3",
+        "plotly.js-dist-min": "^3.1.0",
         "sortablejs": "^1.15.6"
     },
     "devDependencies": {
