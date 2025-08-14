@@ -6,7 +6,7 @@ export async function storeTimeSeriesRequestInHistory(request: TimeSeriesRequest
    
     console.log('storeTimeSeriesRequestInHistory', id, request)
 
-    return storeDataByKey<TimeSeriesRequestHistoryItem>(
+    const result = await storeDataByKey<TimeSeriesRequestHistoryItem>(
         IndexedDbStores.HISTORY,
         id,
         {
@@ -15,6 +15,11 @@ export async function storeTimeSeriesRequestInHistory(request: TimeSeriesRequest
             createdAt: new Date().toISOString(),
         }
     )
+
+    // Dispatch event to notify components that history has been updated
+    document.dispatchEvent(new CustomEvent('historyUpdated'))
+
+    return result
 }
 
 export function getUniqueIdForTimeSeriesRequest(request: TimeSeriesRequest) {

@@ -102,3 +102,63 @@
 .modal {
     background-color: rgba(0, 0, 0, 0.5);
 }
+
+/* Thumbnail scroller styles */
+.thumbnail-item {
+    position: relative;
+}
+
+.thumbnail-item:hover .thumbnail-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Ensure tooltips appear above other elements */
+.thumbnail-item .absolute {
+    z-index: 1000;
+}
+
+/* Smooth transitions for thumbnail interactions */
+.thumbnail-item {
+    transition: all 0.2s ease-in-out;
+}
+
+.thumbnail-item:hover {
+    transform: translateY(-2px);
+}
+
+/* Scroll indicator styles */
+#scroll-indicator {
+    transition: width 0.3s ease-in-out;
+}
+
+/* Disabled arrow states */
+.opacity-50 {
+    opacity: 0.5;
+}
+
+.cursor-not-allowed {
+    cursor: not-allowed;
+}
+
+#history-panel {
+    bottom: -100px;
+}
+
+#history-panel.visible {
+    animation: slideBounce .5s ease-in-out;
+    animation-delay: .5s;
+    animation-fill-mode: forwards;
+}
+
+@keyframes slideBounce {
+    0% {
+      bottom: -100px; /* fully hidden */
+    }
+    70% {
+      bottom: -10px; /* overshoot */
+    }
+    100% {
+      bottom: -20px; /* settle position */
+    }
+  }

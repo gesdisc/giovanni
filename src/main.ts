@@ -7,6 +7,7 @@ import { setBasePath } from '@nasa-terra/components'
 import { VariableCountComponent } from './components/variable-count'
 import { LoginComponent } from './components/login'
 import { LoginModalComponent } from './components/login-modal'
+import { HistoryPanelComponent } from './components/history-panel'
 
 setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.29/cdn/')
 
@@ -22,4 +23,5 @@ document.addEventListener('DOMContentLoaded', () => {
     new SelectDateTimeRangeComponent()
     new PlotsListComponent()
     new VariableCountComponent()
+    new HistoryPanelComponent()
 })

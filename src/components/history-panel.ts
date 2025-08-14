@@ -1,20 +1,43 @@
-import { getAllData, IndexedDbStores, getDb } from '../utilities/indexeddb'
+import { getAllData, IndexedDbStores } from '../utilities/indexeddb'
 import type { TimeSeriesRequestHistoryItem } from '../types'
-import { variables, spatialArea, dateTimeRange } from '../state'
-import { VariableComponent } from './variable'
+import { userHistory } from '../state'
+import { effect } from '@preact/signals-core'
 
 export class HistoryPanelComponent {
-    #panelEl: HTMLElement
-    #headerEl: HTMLElement | undefined
-    #contentEl: HTMLElement | undefined
-    #expanded = false
+    #containerEl: HTMLElement
+    #thumbnailsContainerEl: HTMLElement | null = null
+    #leftArrowEl: HTMLElement | null = null
+    #rightArrowEl: HTMLElement | null = null
+    #gridButtonEl: HTMLElement | null = null
     #history: TimeSeriesRequestHistoryItem[] = []
+    #currentScrollPosition = 0
+    #scrollStep = 200 // pixels to scroll per arrow click
 
     constructor() {
-        this.#panelEl = document.getElementById('history-panel')!
+        this.#containerEl = document.getElementById('history-panel')!
+        this.#thumbnailsContainerEl = this.#containerEl.querySelector(
+            '#thumbnails-container'
+        )
+        this.#leftArrowEl = this.#containerEl.querySelector('#left-arrow')
+        this.#rightArrowEl = this.#containerEl.querySelector('#right-arrow')
+        this.#gridButtonEl = this.#containerEl.querySelector('#grid-button')
 
-        this.#render()
+        this.#setupEffects()
         this.#loadHistory()
+        this.#setupEventListeners()
+    }
+
+    #setupEffects() {
+        effect(() => {
+            console.log('userHistory', userHistory.value)
+
+            if (userHistory.value.length > 0) {
+                this.#containerEl.classList.add('visible')
+                this.#renderThumbnails()
+            } else {
+                this.#containerEl.classList.remove('visible')
+            }
+        })
     }
 
     // Public method to refresh history data
@@ -27,56 +50,317 @@ export class HistoryPanelComponent {
             IndexedDbStores.HISTORY
         )
         this.#history.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-
-        this.#render()
+        
+        // set user history in state
+        userHistory.value = this.#history
     }
 
-    #render() {
-        // Only hide panel if no history items and not currently expanded
-        if (this.#history.length === 0 && !this.#expanded) {
-            this.#panelEl.style.display = 'none'
-            return
-        }
+    #setupEventListeners() {
+        this.#leftArrowEl!.addEventListener('click', () => this.#scrollLeft())
+        this.#rightArrowEl!.addEventListener('click', () => this.#scrollRight())
 
-        this.#panelEl.style.display = 'block'
-        this.#panelEl.innerHTML = `
-            <div class="bg-white shadow-lg rounded-t-lg border border-gray-200">
-                <button id="history-header" class="w-full flex items-center justify-between px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-t-lg focus:outline-none">
-                    <span>History</span>
-                    <svg class="w-4 h-4 transition-transform duration-200" style="transform: rotate(${this.#expanded ? 180 : 0}deg)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                </button>
+        this.#gridButtonEl!.addEventListener('click', () => this.#showAllHistory())
 
-                <div id="history-content" class="overflow-y-auto transition-all duration-300" style="max-height: ${this.#expanded ? '260px' : '0'};">
-                    <!-- history items here -->
-                </div>
-            </div>
-        `
-
-        this.#headerEl = this.#panelEl.querySelector('#history-header') as
-            | HTMLElement
-            | undefined
-        this.#contentEl = this.#panelEl.querySelector('#history-content') as
-            | HTMLElement
-            | undefined
-
-        if (this.#headerEl) {
-            this.#headerEl.addEventListener('click', () => this.#toggle())
-        }
+        this.#thumbnailsContainerEl!.addEventListener('wheel', e => {
+            e.preventDefault()
+            if (e.deltaY > 0) {
+                this.#scrollRight()
+            } else {
+                this.#scrollLeft()
+            }
+        })
     }
 
-    #renderItems() {
-        if (!this.#expanded || !this.#contentEl) {
-            if (this.#contentEl) this.#contentEl.innerHTML = ''
-            return
-        }
+    #renderThumbnails() {
+        if (!this.#thumbnailsContainerEl) return
 
         if (this.#history.length === 0) {
-            this.#contentEl.innerHTML =
-                '<div class="p-6 text-center text-gray-500 text-sm">No history yet</div>'
+            this.#thumbnailsContainerEl.innerHTML = `
+                <div class="flex items-center justify-center text-gray-400 text-sm py-4">
+                    No history yet
+                </div>
+            `
             return
         }
 
-        this.#contentEl.innerHTML = this.#history
+        this.#thumbnailsContainerEl.innerHTML = this.#history
+            .map(item => {
+                const v = item.request.variable
+                const area = item.request.spatialArea
+                const range = item.request.dateTimeRange
+
+                // Create area string for tooltip
+                let areaStr = ''
+                if (area.type === 'global') {
+                    areaStr = 'Global'
+                } else if (area.type === 'coordinates') {
+                    areaStr =
+                        area.value &&
+                        typeof area.value.lat === 'string' &&
+                        typeof area.value.lng === 'string'
+                            ? `${area.value.lat}, ${area.value.lng}`
+                            : 'Coordinates'
+                } else if (area.type === 'bounding_box') {
+                    console.log(item.request, area.value)
+
+                    console.log(area.value.west, area.value.south, area.value.east, area.value.north)
+                    areaStr = `${area.value.west}, ${area.value.south}, ${area.value.east}, ${area.value.north}`
+                }
+
+                const dateStr =
+                    range.startDate && range.endDate
+                        ? `${range.startDate} to ${range.endDate}`
+                        : 'No date range'
+
+                const createdAt = new Date(item.createdAt)
+                const timeStr =
+                    createdAt.toLocaleDateString() +
+                    ' ' +
+                    createdAt.toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                    })
+
+                return `
+                    <div class="thumbnail-item flex-shrink-0 relative group" data-id="${item.id}" data-tooltip-content="${v.dataFieldLongName || v.dataFieldId}|${timeStr}|${dateStr}|${areaStr}">
+                        <!-- Thumbnail -->
+                        <div class="w-24 h-16 bg-gray-100 border border-gray-200 rounded cursor-pointer hover:border-blue-300 hover:shadow-md transition-all duration-200 flex items-center justify-center overflow-hidden">
+                            <!-- Placeholder for plot thumbnail - in real implementation, this would be an img tag -->
+                            <div class="w-full h-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
+                                <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                `
+            })
+            .join('')
+
+        // Add click listeners to thumbnails
+        this.#thumbnailsContainerEl
+            .querySelectorAll('.thumbnail-item')
+            .forEach(thumbnail => {
+                thumbnail.addEventListener('click', e => {
+                    const id = (e.currentTarget as HTMLElement).getAttribute(
+                        'data-id'
+                    )!
+                    const item = this.#history.find(h => h.id === id)
+                    if (item) {
+                        this.#loadHistoryItem(item)
+                    }
+                })
+            })
+
+        // Add tooltip functionality
+        this.#setupTooltips()
+    }
+
+    #setupTooltips() {
+        // Add mouse event listeners to thumbnails
+        this.#thumbnailsContainerEl
+            ?.querySelectorAll('.thumbnail-item')
+            .forEach(thumbnail => {
+                thumbnail.addEventListener('mouseenter', e => {
+                    const target = e.currentTarget as HTMLElement
+                    const tooltipContent = target.getAttribute('data-tooltip-content')
+                    if (tooltipContent) {
+                        const [title, time, date, area] = tooltipContent.split('|')
+                        const tooltip = document.getElementById('thumbnail-tooltip')
+                        if (tooltip) {
+                            tooltip.innerHTML = `
+                        <div class="font-semibold mb-1">${title}</div>
+                        <div class="text-gray-300">${time}</div>
+                        <div class="text-gray-300">${date}</div>
+                        <div class="text-gray-300">${area}</div>
+                        <!-- Arrow pointing down -->
+                        <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+                    `
+
+                            // Position tooltip
+                            const rect = target.getBoundingClientRect()
+                            const tooltipRect = tooltip.getBoundingClientRect()
+
+                            // Position above the thumbnail
+                            let left =
+                                rect.left + rect.width / 2 - tooltipRect.width / 2
+                            let top = rect.top - tooltipRect.height - 8 // 8px gap
+
+                            // Ensure tooltip doesn't go off screen
+                            if (left < 10) left = 10
+                            if (left + tooltipRect.width > window.innerWidth - 10) {
+                                left = window.innerWidth - tooltipRect.width - 10
+                            }
+                            if (top < 10) {
+                                // If tooltip would go above viewport, show it below instead
+                                top = rect.bottom + 8
+                            }
+
+                            tooltip.style.left = `${left}px`
+                            tooltip.style.top = `${top}px`
+                            tooltip.style.opacity = '1'
+                        }
+                    }
+                })
+
+                thumbnail.addEventListener('mouseleave', () => {
+                    const tooltip = document.getElementById('thumbnail-tooltip')
+                    if (tooltip) {
+                        tooltip.style.opacity = '0'
+                    }
+                })
+            })
+    }
+
+    #scrollLeft() {
+        if (!this.#thumbnailsContainerEl) return
+
+        this.#currentScrollPosition = Math.max(
+            0,
+            this.#currentScrollPosition - this.#scrollStep
+        )
+        this.#thumbnailsContainerEl.style.transform = `translateX(-${this.#currentScrollPosition}px)`
+
+        this.#updateArrowStates()
+    }
+
+    #scrollRight() {
+        if (!this.#thumbnailsContainerEl) return
+
+        const containerWidth =
+            this.#thumbnailsContainerEl.parentElement?.clientWidth || 0
+        const scrollWidth = this.#thumbnailsContainerEl.scrollWidth
+        const maxScroll = Math.max(0, scrollWidth - containerWidth + 100) // +100 for padding
+
+        this.#currentScrollPosition = Math.min(
+            maxScroll,
+            this.#currentScrollPosition + this.#scrollStep
+        )
+        this.#thumbnailsContainerEl.style.transform = `translateX(-${this.#currentScrollPosition}px)`
+
+        this.#updateArrowStates()
+    }
+
+    #updateArrowStates() {
+        if (!this.#leftArrowEl || !this.#rightArrowEl || !this.#thumbnailsContainerEl)
+            return
+
+        const containerWidth =
+            this.#thumbnailsContainerEl.parentElement?.clientWidth || 0
+        const scrollWidth = this.#thumbnailsContainerEl.scrollWidth
+        const maxScroll = Math.max(0, scrollWidth - containerWidth + 100)
+
+        // Update left arrow
+        if (this.#currentScrollPosition <= 0) {
+            this.#leftArrowEl.classList.add('opacity-50', 'cursor-not-allowed')
+            this.#leftArrowEl.classList.remove(
+                'hover:text-gray-800',
+                'hover:bg-gray-100'
+            )
+        } else {
+            this.#leftArrowEl.classList.remove('opacity-50', 'cursor-not-allowed')
+            this.#leftArrowEl.classList.add(
+                'hover:text-gray-800',
+                'hover:bg-gray-100'
+            )
+        }
+
+        // Update right arrow
+        if (this.#currentScrollPosition >= maxScroll) {
+            this.#rightArrowEl.classList.add('opacity-50', 'cursor-not-allowed')
+            this.#rightArrowEl.classList.remove(
+                'hover:text-gray-800',
+                'hover:bg-gray-100'
+            )
+        } else {
+            this.#rightArrowEl.classList.remove('opacity-50', 'cursor-not-allowed')
+            this.#rightArrowEl.classList.add(
+                'hover:text-gray-800',
+                'hover:bg-gray-100'
+            )
+        }
+    }
+
+    #loadHistoryItem(item: TimeSeriesRequestHistoryItem) {
+        // Import the necessary modules to load history item
+        import('../state').then(({ variables, spatialArea, dateTimeRange }) => {
+            import('./variable').then(({ VariableComponent }) => {
+                // Reset current state
+                variables.value = []
+                spatialArea.value = null
+                dateTimeRange.value = null
+
+                // Load the history item's settings
+                spatialArea.value = item.request.spatialArea
+                dateTimeRange.value = item.request.dateTimeRange
+
+                // Add the variable to trigger plot generation
+                variables.value = [
+                    new VariableComponent(
+                        item.request.variable,
+                        item.request.variable.dataFieldLongName
+                    ),
+                ]
+            })
+        })
+    }
+
+    #showAllHistory() {
+        // Import and show the full history panel
+        import('./history-panel').then(() => {
+            // Create a temporary history panel instance to show the full view
+            const tempPanel = document.createElement('div')
+            tempPanel.id = 'temp-history-panel'
+            tempPanel.className =
+                'fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center'
+            tempPanel.innerHTML = `
+                <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[80vh] overflow-hidden">
+                    <div class="flex items-center justify-between p-4 border-b">
+                        <h2 class="text-lg font-semibold">History</h2>
+                        <button id="close-history" class="text-gray-500 hover:text-gray-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="history-content-full" class="overflow-y-auto max-h-[calc(80vh-80px)]">
+                        <!-- History content will be rendered here -->
+                    </div>
+                </div>
+            `
+
+            document.body.appendChild(tempPanel)
+
+            // Render the full history content
+            const contentEl = tempPanel.querySelector('#history-content-full')
+            if (contentEl) {
+                this.#renderFullHistoryContent(contentEl)
+            }
+
+            // Add close functionality
+            tempPanel
+                .querySelector('#close-history')
+                ?.addEventListener('click', () => {
+                    document.body.removeChild(tempPanel)
+                })
+
+            // Close on backdrop click
+            tempPanel.addEventListener('click', e => {
+                if (e.target === tempPanel) {
+                    document.body.removeChild(tempPanel)
+                }
+            })
+        })
+    }
+
+    #renderFullHistoryContent(contentEl: Element) {
+        if (this.#history.length === 0) {
+            contentEl.innerHTML =
+                '<div class="p-6 text-center text-gray-500">No history yet</div>'
+            return
+        }
+
+        contentEl.innerHTML = this.#history
             .map(item => {
                 const v = item.request.variable
                 const area = item.request.spatialArea
@@ -88,14 +372,12 @@ export class HistoryPanelComponent {
                 } else if (area.type === 'coordinates') {
                     areaStr =
                         area.value &&
-                        typeof area.value.lat === 'number' &&
-                        typeof area.value.lng === 'number'
+                        typeof area.value.lat === 'string' &&
+                        typeof area.value.lng === 'string'
                             ? `Lat: ${area.value.lat}, Lng: ${area.value.lng}`
                             : 'Coordinates: (invalid or missing)'
                 } else if (area.type === 'bounding_box') {
-                    areaStr = Array.isArray(area.value)
-                        ? `BBox: ${area.value.join(', ')}`
-                        : 'BBox: (invalid or missing)'
+                    areaStr = 'Bounding Box'
                 }
 
                 const dateStr =
@@ -151,69 +433,20 @@ export class HistoryPanelComponent {
             })
             .join('')
 
-        this.#contentEl.querySelectorAll('button[data-id]').forEach(btn => {
+        // Add click listeners
+        contentEl.querySelectorAll('button[data-id]').forEach(btn => {
             btn.addEventListener('click', e => {
                 const id = (e.currentTarget as HTMLElement).getAttribute('data-id')!
                 const item = this.#history.find(h => h.id === id)
                 if (item) {
                     this.#loadHistoryItem(item)
+                    // Close the modal after loading
+                    const modal = document.getElementById('temp-history-panel')
+                    if (modal) {
+                        document.body.removeChild(modal)
+                    }
                 }
             })
         })
-
-        this.#contentEl.querySelectorAll('button[data-delete-id]').forEach(btn => {
-            btn.addEventListener('click', async e => {
-                e.stopPropagation()
-                const id = (e.currentTarget as HTMLElement).getAttribute(
-                    'data-delete-id'
-                )!
-                await this.#deleteHistoryItem(id)
-            })
-        })
-    }
-
-    async #deleteHistoryItem(id: string) {
-        const db = await getDb()
-        await db.delete(IndexedDbStores.HISTORY, id)
-        await db.close()
-
-        // Refresh the history data
-        this.#history = await getAllData<TimeSeriesRequestHistoryItem>(
-            IndexedDbStores.HISTORY
-        )
-        this.#history.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-
-        // Re-render items if panel is expanded
-        if (this.#expanded && this.#contentEl) {
-            this.#renderItems()
-        }
-    }
-
-    #loadHistoryItem(item: TimeSeriesRequestHistoryItem) {
-        // Reset current state
-        variables.value = []
-        spatialArea.value = null
-        dateTimeRange.value = null
-
-        // Load the history item's settings
-        spatialArea.value = item.request.spatialArea
-        dateTimeRange.value = item.request.dateTimeRange
-
-        // Add the variable to trigger plot generation
-        variables.value = [
-            new VariableComponent(
-                item.request.variable,
-                item.request.variable.dataFieldLongName
-            ),
-        ]
-    }
-
-    #toggle() {
-        this.#expanded = !this.#expanded
-        this.#render()
-
-        if (this.#expanded) {
-            this.#renderItems()
-        }
     }
 }
