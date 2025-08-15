@@ -48,7 +48,7 @@ export class HistoryPanelComponent {
             IndexedDbStores.HISTORY
         )
         this.#history.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-        
+
         // set user history in state
         userHistory.value = this.#history
     }
@@ -120,9 +120,10 @@ export class HistoryPanelComponent {
                     <div class="thumbnail-item flex-shrink-0 relative group" data-id="${item.id}" data-tooltip-content="${v.dataFieldLongName || v.dataFieldId}|${timeStr}|${dateStr}|${areaStr}">
                         <!-- Thumbnail -->
                         <div class="w-24 h-16 bg-gray-100 border border-gray-200 rounded cursor-pointer hover:border-blue-300 hover:shadow-md transition-all duration-200 flex items-center justify-center overflow-hidden">
-                            ${item.request.thumbnail 
-                                ? `<img src="${URL.createObjectURL(item.request.thumbnail)}" alt="Plot thumbnail" class="w-full h-full rounded" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />`
-                                : ''
+                            ${
+                                item.request.thumbnail
+                                    ? `<img src="${URL.createObjectURL(item.request.thumbnail)}" alt="Plot thumbnail" class="w-full h-full rounded" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />`
+                                    : ''
                             }
                             <!-- Placeholder for plot thumbnail - shown when no thumbnail URL or image fails to load -->
                             <div class="w-full h-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center" ${item.request.thumbnail ? 'style="display: none;"' : ''}>
@@ -297,7 +298,8 @@ export class HistoryPanelComponent {
                 variables.value = [
                     new VariableComponent(
                         item.request.variable,
-                        item.request.variable.dataFieldLongName
+                        item.request.variable.dataFieldLongName,
+                        true
                     ),
                 ]
             })

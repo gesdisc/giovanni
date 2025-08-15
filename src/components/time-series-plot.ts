@@ -5,6 +5,7 @@ import Plotly from 'plotly.js-dist-min'
 
 interface TimeSeriesPlotRequest extends TimeSeriesRequest {
     variableLongName: string
+    fromHistory?: boolean
 }
 
 export class TimeSeriesPlotComponent {
@@ -37,6 +38,11 @@ export class TimeSeriesPlotComponent {
     }
 
     async #handlePlotComplete(e: TerraTimeSeriesDataChangeEvent) {
+        // Skip saving to history if this plot was loaded from history
+        if (this.#request.fromHistory) {
+            return
+        }
+
         let thumbnail: Blob | undefined
 
         try {

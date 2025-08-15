@@ -105,11 +105,15 @@ export class PlotsListComponent {
             dateTimeRange.value
         )
 
+        // Check if this variable component has the fromHistory flag
+        const variableComponent = variables.value.find(v => v.variable.dataFieldId === variable.dataFieldId)
+        
         const plot = new TimeSeriesPlotComponent({
             variable,
             spatialArea: spatialArea.value!,
             dateTimeRange: dateTimeRange.value!,
             variableLongName,
+            fromHistory: variableComponent?.fromHistory || false,
         })
 
         // Create a container for this plot
