@@ -1,7 +1,14 @@
 import { getAllData, IndexedDbStores } from '../utilities/indexeddb'
 import type { TimeSeriesRequestHistoryItem } from '../types'
-import { userHistory, userState } from '../state'
+import {
+    dateTimeRange,
+    spatialArea,
+    userHistory,
+    userState,
+    variables,
+} from '../state'
 import { effect } from '@preact/signals-core'
+import { VariableComponent } from './variable'
 
 export class HistoryPanelComponent {
     #containerEl: HTMLElement
@@ -282,75 +289,65 @@ export class HistoryPanelComponent {
     }
 
     #loadHistoryItem(item: TimeSeriesRequestHistoryItem) {
-        // Import the necessary modules to load history item
-        import('../state').then(({ variables, spatialArea, dateTimeRange }) => {
-            import('./variable').then(({ VariableComponent }) => {
-                // Reset current state
-                variables.value = []
-                spatialArea.value = null
-                dateTimeRange.value = null
+        // Reset current state
+        variables.value = []
+        spatialArea.value = null
+        dateTimeRange.value = null
 
-                // Load the history item's settings
-                spatialArea.value = item.request.spatialArea
-                dateTimeRange.value = item.request.dateTimeRange
+        // Load the history item's settings
+        spatialArea.value = item.request.spatialArea
+        dateTimeRange.value = item.request.dateTimeRange
 
-                // Add the variable to trigger plot generation
-                variables.value = [
-                    new VariableComponent(
-                        item.request.variable,
-                        item.request.variable.dataFieldLongName,
-                        true
-                    ),
-                ]
-            })
-        })
+        // Add the variable to trigger plot generation
+        variables.value = [
+            new VariableComponent(
+                item.request.variable,
+                item.request.variable.dataFieldLongName,
+                true
+            ),
+        ]
     }
 
     #showAllHistory() {
-        // Import and show the full history panel
-        import('./history-panel').then(() => {
-            // Create a temporary history panel instance to show the full view
-            const tempPanel = document.createElement('div')
-            tempPanel.id = 'temp-history-panel'
-            tempPanel.className =
-                'fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center'
-            tempPanel.innerHTML = `
-                <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[80vh] overflow-hidden">
-                    <div class="flex items-center justify-between p-4 border-b">
-                        <h2 class="text-lg font-semibold">History</h2>
-                        <button id="close-history" class="text-gray-500 hover:text-gray-700">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                        </button>
-                    </div>
-                    <div id="history-content-full" class="overflow-y-auto max-h-[calc(80vh-80px)]">
-                        <!-- History content will be rendered here -->
-                    </div>
+        // Create a temporary history panel instance to show the full view
+        const tempPanel = document.createElement('div')
+        tempPanel.id = 'temp-history-panel'
+        tempPanel.className =
+            'fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center'
+        tempPanel.innerHTML = `
+            <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[80vh] overflow-hidden">
+                <div class="flex items-center justify-between p-4 border-b">
+                    <h2 class="text-lg font-semibold">History</h2>
+                    <button id="close-history" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
                 </div>
-            `
+                <div id="history-content-full" class="overflow-y-auto max-h-[calc(80vh-80px)]">
+                    <!-- History content will be rendered here -->
+                </div>
+            </div>
+        `
 
-            document.body.appendChild(tempPanel)
+        document.body.appendChild(tempPanel)
 
-            // Render the full history content
-            const contentEl = tempPanel.querySelector('#history-content-full')
-            if (contentEl) {
-                this.#renderFullHistoryContent(contentEl)
+        // Render the full history content
+        const contentEl = tempPanel.querySelector('#history-content-full')
+        if (contentEl) {
+            this.#renderFullHistoryContent(contentEl)
+        }
+
+        // Add close functionality
+        tempPanel.querySelector('#close-history')?.addEventListener('click', () => {
+            document.body.removeChild(tempPanel)
+        })
+
+        // Close on backdrop click
+        tempPanel.addEventListener('click', e => {
+            if (e.target === tempPanel) {
+                document.body.removeChild(tempPanel)
             }
-
-            // Add close functionality
-            tempPanel
-                .querySelector('#close-history')
-                ?.addEventListener('click', () => {
-                    document.body.removeChild(tempPanel)
-                })
-
-            // Close on backdrop click
-            tempPanel.addEventListener('click', e => {
-                if (e.target === tempPanel) {
-                    document.body.removeChild(tempPanel)
-                }
-            })
         })
     }
 

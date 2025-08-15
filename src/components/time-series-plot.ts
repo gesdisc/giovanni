@@ -12,6 +12,7 @@ export class TimeSeriesPlotComponent {
     element: HTMLElement
     #plotEl: TerraTimeSeries
     #request: TimeSeriesPlotRequest
+    #hasCompleted: boolean = false
 
     constructor(request: TimeSeriesPlotRequest) {
         this.element = document.createElement('div')
@@ -25,16 +26,31 @@ export class TimeSeriesPlotComponent {
         this.updateDateTimeRange(request.dateTimeRange)
         this.updateSpatialArea(request.spatialArea)
 
-        document.addEventListener('terra-time-series-data-change', async (e: TerraTimeSeriesDataChangeEvent) => {
-            setTimeout(async () => {
-                // delay a second to give the plot time to render
-                await this.#handlePlotComplete(e)
-            }, 1000)
-        })
+        document.addEventListener('terra-time-series-data-change', this.#handleDataChange.bind(this))
     }
 
     destroy() {
+        document.removeEventListener('terra-time-series-data-change', this.#handleDataChange.bind(this))
+        
         this.element.parentElement?.removeChild(this.element)
+    }
+
+    #handleDataChange(e: TerraTimeSeriesDataChangeEvent) {
+        if (e.target !== this.#plotEl) {
+            return
+        }
+        
+        
+        if (this.#hasCompleted) {
+            return
+        }
+
+        this.#hasCompleted = true
+        
+        setTimeout(async () => {
+            // delay a second to give the plot time to render
+            await this.#handlePlotComplete(e)
+        }, 1000)
     }
 
     async #handlePlotComplete(e: TerraTimeSeriesDataChangeEvent) {

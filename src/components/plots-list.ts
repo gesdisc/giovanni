@@ -46,12 +46,10 @@ export class PlotsListComponent {
 
             // Add plots for new variables
             for (const v of variables.value) {
-                if (!this.#activePlots.has(v.variable.dataFieldId)) {
-                    this.#addTimeSeriesPlotForVariable(
-                        v.variable,
-                        v.variableLongName
-                    )
-                }
+                this.#addTimeSeriesPlotForVariable(
+                    v.variable,
+                    v.variableLongName
+                )
             }
 
             // Reorder plots to match variable order
