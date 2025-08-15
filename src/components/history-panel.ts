@@ -74,6 +74,10 @@ export class HistoryPanelComponent {
                 this.#scrollLeft()
             }
         })
+
+        document.addEventListener('historyUpdated', () => {
+            this.#loadHistory()
+        })
     }
 
     #renderThumbnails() {
