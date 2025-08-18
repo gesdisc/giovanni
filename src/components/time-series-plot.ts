@@ -99,7 +99,7 @@ export class TimeSeriesPlotComponent {
         thumbHeight = 200
     ) {
         // Render a png from Plotly at a large size so it looks good
-        const bigDataUrl = await toImage(plotElement, {
+        const bigDataUrl = await (window as any).Plotly?.toImage(plotElement, {
             format: 'jpeg',
             width: 500,
             height: 500,
