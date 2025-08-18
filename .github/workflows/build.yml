@@ -12,13 +12,13 @@ jobs:
             - name: Checkout latest code
               uses: actions/checkout@v3
               with:
-                fetch-depth: 0
+                  fetch-depth: 0
 
             - name: Set up NodeJS v22
               uses: actions/setup-node@v3
               with:
                   node-version: 22
-                  cache: "npm"
+                  cache: 'npm'
                   cache-dependency-path: package-lock.json
 
             - name: Install dependencies
@@ -26,7 +26,7 @@ jobs:
 
             - name: Build project
               run: npm run build
-              
+
             - name: Create tarball of dist
               run: tar -czf giovanni.tar.gz dist
 
@@ -36,3 +36,10 @@ jobs:
                   name: giovanni-tarball
                   path: giovanni.tar.gz
                   overwrite: true
+
+            - name: Release Github Pages
+              uses: peaceiris/actions-gh-pages@v3
+              with:
+                  publish_dir: dist
+                  publish_branch: gh-pages
+                  github_token: ${{ secrets.DEPLOY_TOKEN }}
