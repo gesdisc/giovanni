@@ -9,7 +9,6 @@ import {
     TimeSeriesRequest,
 } from '../types'
 import { storeTimeSeriesRequestInHistory } from '../history'
-import { toImage } from '../utilities/to-image'
 
 interface TimeSeriesPlotRequest extends TimeSeriesRequest {
     variableLongName: string
