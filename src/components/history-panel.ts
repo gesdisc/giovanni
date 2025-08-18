@@ -15,7 +15,6 @@ export class HistoryPanelComponent {
     #thumbnailsContainerEl: HTMLElement | null = null
     #leftArrowEl: HTMLElement | null = null
     #rightArrowEl: HTMLElement | null = null
-    #gridButtonEl: HTMLElement | null = null
     #history: TimeSeriesRequestHistoryItem[] = []
     #currentScrollPosition = 0
     #scrollStep = 200 // pixels to scroll per arrow click
@@ -27,7 +26,6 @@ export class HistoryPanelComponent {
         )
         this.#leftArrowEl = this.#containerEl.querySelector('#left-arrow')
         this.#rightArrowEl = this.#containerEl.querySelector('#right-arrow')
-        this.#gridButtonEl = this.#containerEl.querySelector('#grid-button')
 
         this.#setupEffects()
         this.#loadHistory()
@@ -89,8 +87,6 @@ export class HistoryPanelComponent {
     #setupEventListeners() {
         this.#leftArrowEl!.addEventListener('click', () => this.#scrollLeft())
         this.#rightArrowEl!.addEventListener('click', () => this.#scrollRight())
-
-        this.#gridButtonEl!.addEventListener('click', () => this.#showAllHistory())
 
         this.#thumbnailsContainerEl!.addEventListener('wheel', e => {
             e.preventDefault()
@@ -155,7 +151,6 @@ export class HistoryPanelComponent {
 
                 return `
                     <div class="thumbnail-item flex-shrink-0 relative group" data-id="${item.id}" data-tooltip-content="${v.dataFieldLongName || v.dataFieldId}|${timeStr}|${dateStr}|${areaStr}">
-                        <!-- Thumbnail -->
                         <div class="w-24 h-16 bg-gray-100 border border-gray-200 rounded cursor-pointer hover:border-blue-300 hover:shadow-md transition-all duration-200 flex items-center justify-center overflow-hidden">
                             ${
                                 item.request.thumbnail
@@ -336,145 +331,5 @@ export class HistoryPanelComponent {
                 true
             ),
         ]
-    }
-
-    #showAllHistory() {
-        // Create a temporary history panel instance to show the full view
-        const tempPanel = document.createElement('div')
-        tempPanel.id = 'temp-history-panel'
-        tempPanel.className =
-            'fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center'
-        tempPanel.innerHTML = `
-            <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[80vh] overflow-hidden">
-                <div class="flex items-center justify-between p-4 border-b">
-                    <h2 class="text-lg font-semibold">History</h2>
-                    <button id="close-history" class="text-gray-500 hover:text-gray-700">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
-                </div>
-                <div id="history-content-full" class="overflow-y-auto max-h-[calc(80vh-80px)]">
-                    <!-- History content will be rendered here -->
-                </div>
-            </div>
-        `
-
-        document.body.appendChild(tempPanel)
-
-        // Render the full history content
-        const contentEl = tempPanel.querySelector('#history-content-full')
-        if (contentEl) {
-            this.#renderFullHistoryContent(contentEl)
-        }
-
-        // Add close functionality
-        tempPanel.querySelector('#close-history')?.addEventListener('click', () => {
-            document.body.removeChild(tempPanel)
-        })
-
-        // Close on backdrop click
-        tempPanel.addEventListener('click', e => {
-            if (e.target === tempPanel) {
-                document.body.removeChild(tempPanel)
-            }
-        })
-    }
-
-    #renderFullHistoryContent(contentEl: Element) {
-        if (this.#history.length === 0) {
-            contentEl.innerHTML =
-                '<div class="p-6 text-center text-gray-500">No history yet</div>'
-            return
-        }
-
-        contentEl.innerHTML = this.#history
-            .map(item => {
-                const v = item.request.variable
-                const area = item.request.spatialArea
-                const range = item.request.dateTimeRange
-                let areaStr = ''
-
-                if (area.type === 'global') {
-                    areaStr = 'Global'
-                } else if (area.type === 'coordinates') {
-                    areaStr =
-                        area.value &&
-                        typeof area.value.lat === 'string' &&
-                        typeof area.value.lng === 'string'
-                            ? `Lat: ${area.value.lat}, Lng: ${area.value.lng}`
-                            : 'Coordinates: (invalid or missing)'
-                } else if (area.type === 'bounding_box') {
-                    areaStr = 'Bounding Box'
-                }
-
-                const dateStr =
-                    range.startDate && range.endDate
-                        ? `${range.startDate} → ${range.endDate}`
-                        : 'No date range'
-
-                return `
-                    <div class="border-b border-gray-100 last:border-b-0 group">
-                        <div class="flex items-center">
-                            <button class="flex-1 text-left p-4 hover:bg-gray-50 hover:shadow-sm hover:-translate-y-0.5 focus:outline-none focus:bg-gray-50 transition-all duration-200 cursor-pointer" data-id="${item.id}">
-                                <div class="flex items-start justify-between mb-2">
-                                    <div class="flex-1 min-w-0">
-                                        <div class="font-mono text-sm font-medium text-blue-600 truncate" title="${v.dataFieldId}">
-                                            ${v.dataFieldId}
-                                        </div>
-                                    </div>
-                                
-                                    <div class="flex-shrink-0 ml-2">
-                                        <div class="text-xs text-gray-400">
-                                            ${new Date(item.createdAt).toLocaleDateString()}
-                                        </div>
-
-                                        <div class="text-xs text-gray-400">
-                                            ${new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="space-y-1">
-                                    <div class="flex items-center text-xs text-gray-600">
-                                        <svg class="w-3 h-3 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                        </svg>
-                                        <span class="truncate" title="${areaStr}">${areaStr}</span>
-                                    </div>
-                                    
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center text-xs text-gray-600">
-                                            <svg class="w-3 h-3 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                            </svg>
-
-                                            <span class="truncate" title="${dateStr}">${dateStr}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </button>
-                        </div>
-                    </div>
-                `
-            })
-            .join('')
-
-        // Add click listeners
-        contentEl.querySelectorAll('button[data-id]').forEach(btn => {
-            btn.addEventListener('click', e => {
-                const id = (e.currentTarget as HTMLElement).getAttribute('data-id')!
-                const item = this.#history.find(h => h.id === id)
-                if (item) {
-                    this.#loadHistoryItem(item)
-                    // Close the modal after loading
-                    const modal = document.getElementById('temp-history-panel')
-                    if (modal) {
-                        document.body.removeChild(modal)
-                    }
-                }
-            })
-        })
     }
 }
