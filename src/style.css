@@ -165,3 +165,60 @@
         transform: translateY(0);
     }
 }
+
+/* Plot Type Selector Styles */
+.plot-type-button {
+    flex: 1;
+    height: 4rem;
+    border-radius: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease-in-out;
+}
+
+.plot-type-button--unselected {
+    background-color: #dbeafe;
+    border: 2px solid transparent;
+}
+
+.plot-type-button--unselected:hover {
+    background-color: #bfdbfe;
+}
+
+.plot-type-button--selected {
+    background-color: #2563eb;
+    border: 2px solid #2563eb;
+}
+
+.plot-type-button--selected:hover {
+    background-color: #1d4ed8;
+}
+
+.plot-type-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.plot-type-icon--unselected {
+    color: #2563eb;
+}
+
+.plot-type-icon--selected {
+    color: #ffffff;
+}
+
+.plot-type-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.plot-type-label--unselected {
+    color: #2563eb;
+}
+
+.plot-type-label--selected {
+    color: #ffffff;
+}

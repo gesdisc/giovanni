@@ -12,21 +12,16 @@ export class PlotsListComponent {
         this.#listEl = document.querySelector<HTMLElement>('#plots')!
 
         this.#setupEffects()
+        this.#bindEvents()
     }
 
     #setupEffects() {
-        // Effect for handling variables changes
+        // Effect for handling variables changes - just update the UI state
         effect(() => {
             if (!variables.value.length) {
                 this.#listEl.innerHTML = this.getNoPlotsHtml()
                 this.#hasClearedDefaultView = false
                 return
-            }
-
-            // Only clear the default view when we have valid plots to show
-            if (!this.#hasClearedDefaultView && canGeneratePlots.value) {
-                this.#listEl.innerHTML = ''
-                this.#hasClearedDefaultView = true
             }
 
             // If we don't have all required settings, show the default view
@@ -36,37 +31,11 @@ export class PlotsListComponent {
                 return
             }
 
-            // Remove plots for variables that are no longer in the list
-            for (const [variableId, plot] of this.#activePlots) {
-                if (!variables.value.some(v => v.variable.dataFieldId === variableId)) {
-                    plot.destroy()
-                    this.#activePlots.delete(variableId)
-                }
+            // Only clear the default view when we have valid settings but no plots yet
+            if (!this.#hasClearedDefaultView) {
+                this.#listEl.innerHTML = this.getReadyToGenerateHtml()
+                this.#hasClearedDefaultView = true
             }
-
-            // Add plots for new variables
-            for (const v of variables.value) {
-                this.#addTimeSeriesPlotForVariable(
-                    v.variable,
-                    v.variableLongName
-                )
-            }
-
-            // Reorder plots to match variable order
-            const plotContainers = Array.from(this.#listEl.children)
-            const orderedContainers = variables.value.map(v => {
-                const container = plotContainers.find(container => 
-                    container.getAttribute('data-variable-id') === v.variable.dataFieldId
-                )
-                if (!container) {
-                    console.warn(`Could not find container for variable ${v.variable.dataFieldId}`)
-                }
-                return container
-            }).filter((container): container is Element => container !== undefined)
-
-            // Remove all containers and append them in the new order
-            plotContainers.forEach(container => container.remove())
-            orderedContainers.forEach(container => this.#listEl.appendChild(container))
         })
 
         // Effect for handling date range changes
@@ -88,6 +57,28 @@ export class PlotsListComponent {
                 plot.updateSpatialArea(spatialArea.value)
             }
         })
+    }
+
+    #bindEvents() {
+        // Listen for generate plot events
+        document.addEventListener('generate-plot', ((e: Event) => {
+            const customEvent = e as CustomEvent
+            this.#generatePlots(customEvent.detail)
+        }) as EventListener)
+    }
+
+    async #generatePlots(_detail: any) {
+        // Clear existing plots
+        this.#listEl.innerHTML = ''
+        this.#activePlots.clear()
+
+        // Generate plots for all variables
+        for (const v of variables.value) {
+            await this.#addTimeSeriesPlotForVariable(
+                v.variable,
+                v.variableLongName
+            )
+        }
     }
 
     async #addTimeSeriesPlotForVariable(
@@ -153,7 +144,7 @@ export class PlotsListComponent {
 
                     <p class="text-gray-600 mb-4">
                         Configure your plot settings in the sidebar and
-                        click "Plot Data" to create your custom plot or
+                        click "Generate Plot" to create your custom plot or
                         map.
                     </p>
                     <div class="text-sm text-gray-500">
@@ -163,6 +154,48 @@ export class PlotsListComponent {
                         </p>
                         <p class="mb-1">
                             • Choose spatial area of interest
+                        </p>
+                    </div>
+                </div>
+            </div>
+        `
+    }
+
+    private getReadyToGenerateHtml() {
+        return `
+            <div
+                class="h-full bg-white rounded-lg border border-gray-200 shadow-sm flex items-center justify-center"
+            >
+                <div class="text-center max-w-md mx-auto">
+                    <div
+                        class="bg-green-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center"
+                    >
+                        <svg
+                            class="w-8 h-8 text-green-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M5 13l4 4L19 7"
+                            />
+                        </svg>
+                    </div>
+
+                    <p class="text-gray-600 mb-4">
+                        All settings are configured! Click "Generate Plot" 
+                        in the sidebar to create your visualization.
+                    </p>
+                    <div class="text-sm text-gray-500">
+                        <p class="mb-1">• Variables: ${variables.value.length} selected</p>
+                        <p class="mb-1">
+                            • Date range: ${dateTimeRange.value?.startDate} to ${dateTimeRange.value?.endDate}
+                        </p>
+                        <p class="mb-1">
+                            • Spatial area: Configured
                         </p>
                     </div>
                 </div>

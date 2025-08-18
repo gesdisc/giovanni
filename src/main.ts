@@ -3,6 +3,8 @@ import { PlotsListComponent } from './components/plots-list'
 import { SelectDateTimeRangeComponent } from './components/select-date-time-range'
 import { SelectSpatialAreaComponent } from './components/select-spatial-area'
 import { SelectVariablesComponent } from './components/select-variables'
+import { PlotTypeSelectorComponent } from './components/plot-type-selector'
+import { GeneratePlotButtonComponent } from './components/generate-plot-button'
 import { setBasePath } from '@nasa-terra/components'
 import { VariableCountComponent } from './components/variable-count'
 import { LoginComponent } from './components/login'
@@ -18,10 +20,12 @@ document.addEventListener('DOMContentLoaded', () => {
     new LoginComponent(),
     new LoginModalComponent()
     new AddVariableDialogComponent()
+    new PlotTypeSelectorComponent()
     new SelectVariablesComponent()
     new SelectSpatialAreaComponent()
     new SelectDateTimeRangeComponent()
     new PlotsListComponent()
+    new GeneratePlotButtonComponent()
     new VariableCountComponent()
     new HistoryPanelComponent()
 })

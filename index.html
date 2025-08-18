@@ -42,18 +42,42 @@
 
             <div class="flex flex-1">
                 <aside
-                    class="w-[500px] bg-white shadow-lg border-r border-gray-200 flex flex-col"
+                    class="w-[500px] bg-gray-50 shadow-lg border-r border-gray-200 flex flex-col"
                 >
                     <div
-                        class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-6"
+                        class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4"
                     >
-                        <section>
-                            <div class="flex items-center justify-between mb-3">
-                                <label
-                                    class="block text-sm font-semibold text-gray-700"
+                        <!-- Plot Type Selector -->
+                        <section class="bg-white rounded-lg p-4 shadow-sm">
+                            <h3 class="text-sm font-semibold text-gray-700 mb-3">Plot Type</h3>
+                            <div class="flex space-x-2">
+                                <button
+                                    id="map-button"
+                                    class="plot-type-button plot-type-button--unselected"
+                                    data-plot-type="map"
                                 >
-                                    Selected Variables
-                                </label>
+                                    <svg class="plot-type-icon plot-type-icon--unselected" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m-6 3l6-3"/>
+                                    </svg>
+                                    <span class="plot-type-label plot-type-label--unselected">Map</span>
+                                </button>
+                                <button
+                                    id="plot-button"
+                                    class="plot-type-button plot-type-button--selected"
+                                    data-plot-type="plot"
+                                >
+                                    <svg class="plot-type-icon plot-type-icon--selected" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                    </svg>
+                                    <span class="plot-type-label plot-type-label--selected">Plot</span>
+                                </button>
+                            </div>
+                        </section>
+
+                        <!-- Variables Section -->
+                        <section class="bg-white rounded-lg p-4 shadow-sm">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-sm font-semibold text-gray-700">Variables</h3>
                                 <span
                                     class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full"
                                     id="variable-count"
@@ -77,7 +101,7 @@
                                     library="heroicons"
                                     class="mr-2"
                                 ></terra-icon>
-                                Add a variable
+                                Add a Variable
                             </terra-button>
 
                             <terra-dialog
@@ -90,23 +114,37 @@
                             </terra-dialog>
                         </section>
 
-                        <section>
+                        <!-- Location/Region Section -->
+                        <section class="bg-white rounded-lg p-4 shadow-sm">
+                            <h3 class="text-sm font-semibold text-gray-700 mb-3">Location / Region</h3>
+                            <terra-spatial-picker
+                                label=""
+                                id="spatial-picker"
+                                class="w-full"
+                            ></terra-spatial-picker>
+                        </section>
+
+                        <!-- Date Range Section -->
+                        <section class="bg-white rounded-lg p-4 shadow-sm">
+                            <h3 class="text-sm font-semibold text-gray-700 mb-3">Date Range</h3>
                             <terra-date-picker
-                                label="Date Range"
+                                label=""
                                 range
                                 show-months="2"
                                 class="w-full"
                                 id="date-range"
                             ></terra-date-picker>
                         </section>
+                    </div>
 
-                        <section>
-                            <terra-spatial-picker
-                                label="Spatial Area"
-                                id="spatial-picker"
-                                class="w-full"
-                            ></terra-spatial-picker>
-                        </section>
+                    <!-- Generate Plot Button -->
+                    <div class="p-4 border-t border-gray-200">
+                        <button
+                            id="generate-plot-button"
+                            class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
+                        >
+                            Generate Plot
+                        </button>
                     </div>
                 </aside>
 
