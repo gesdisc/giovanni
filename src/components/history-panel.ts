@@ -43,6 +43,18 @@ export class HistoryPanelComponent {
                 this.#containerEl.classList.remove('visible')
             }
         })
+
+        // reload history when user changes
+        effect(() => {
+            const uid = userState.value.user?.uid
+            if (uid) {
+                this.#loadHistory()
+            } else {
+                // clear when no user
+                this.#history = []
+                userHistory.value = []
+            }
+        })
     }
 
     // Public method to refresh history data
@@ -51,9 +63,9 @@ export class HistoryPanelComponent {
     }
 
     async #loadHistory() {
-        this.#history = await getAllData<TimeSeriesRequestHistoryItem>(
-            IndexedDbStores.HISTORY
-        )
+        const all = await getAllData<TimeSeriesRequestHistoryItem>(IndexedDbStores.HISTORY)
+        const uid = userState.value.user?.uid
+        this.#history = uid ? all.filter(item => item.userId === uid) : []
         this.#history.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 
         // set user history in state

@@ -1,18 +1,26 @@
 import { TimeSeriesRequest, TimeSeriesRequestHistoryItem } from "./types"
 import { IndexedDbStores, storeDataByKey } from "./utilities/indexeddb"
+import { userState } from "./state"
 
 export async function storeTimeSeriesRequestInHistory(request: TimeSeriesRequest) {
     const id = getUniqueIdForTimeSeriesRequest(request)
    
     console.log('storeTimeSeriesRequestInHistory', id, request)
 
+    const userId = userState.value.user?.uid
+    if (!userId) {
+        // Do not store history if there is no logged-in user
+        return
+    }
+
     const result = await storeDataByKey<TimeSeriesRequestHistoryItem>(
         IndexedDbStores.HISTORY,
-        id,
+        `${userId}:${id}`,
         {
             id,
             request,
             createdAt: new Date().toISOString(),
+            userId,
         }
     )
 
