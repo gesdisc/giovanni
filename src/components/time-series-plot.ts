@@ -1,7 +1,15 @@
-import { TerraTimeSeries, TerraTimeSeriesDataChangeEvent } from '@nasa-terra/components'
-import { DateTimeRange, SpatialArea, SpatialAreaType, TimeSeriesRequest } from '../types'
+import {
+    TerraTimeSeries,
+    TerraTimeSeriesDataChangeEvent,
+} from '@nasa-terra/components'
+import {
+    DateTimeRange,
+    SpatialArea,
+    SpatialAreaType,
+    TimeSeriesRequest,
+} from '../types'
 import { storeTimeSeriesRequestInHistory } from '../history'
-import Plotly from 'plotly.js-dist-min'
+import { toImage } from '../utilities/to-image'
 
 interface TimeSeriesPlotRequest extends TimeSeriesRequest {
     variableLongName: string
@@ -19,19 +27,25 @@ export class TimeSeriesPlotComponent {
         this.#plotEl = document.createElement('terra-time-series')
 
         this.element.appendChild(this.#plotEl)
-        
+
         this.#request = request
-        
+
         this.#plotEl.variableEntryId = request.variable.dataFieldId
         this.updateDateTimeRange(request.dateTimeRange)
         this.updateSpatialArea(request.spatialArea)
 
-        document.addEventListener('terra-time-series-data-change', this.#handleDataChange.bind(this))
+        document.addEventListener(
+            'terra-time-series-data-change',
+            this.#handleDataChange.bind(this)
+        )
     }
 
     destroy() {
-        document.removeEventListener('terra-time-series-data-change', this.#handleDataChange.bind(this))
-        
+        document.removeEventListener(
+            'terra-time-series-data-change',
+            this.#handleDataChange.bind(this)
+        )
+
         this.element.parentElement?.removeChild(this.element)
     }
 
@@ -39,14 +53,13 @@ export class TimeSeriesPlotComponent {
         if (e.target !== this.#plotEl) {
             return
         }
-        
-        
+
         if (this.#hasCompleted) {
             return
         }
 
         this.#hasCompleted = true
-        
+
         setTimeout(async () => {
             // delay a second to give the plot time to render
             await this.#handlePlotComplete(e)
@@ -63,7 +76,9 @@ export class TimeSeriesPlotComponent {
 
         try {
             // first we'll attempt to get a screenshot of the plot
-            const plot = this.#plotEl.shadowRoot?.querySelector('terra-plot')?.shadowRoot?.querySelector('.js-plotly-plot') as HTMLElement
+            const plot = this.#plotEl.shadowRoot
+                ?.querySelector('terra-plot')
+                ?.shadowRoot?.querySelector('.js-plotly-plot') as HTMLElement
 
             thumbnail = await this.#getThumbnailBlob(plot)
         } catch (e) {
@@ -78,30 +93,34 @@ export class TimeSeriesPlotComponent {
         })
     }
 
-    async #getThumbnailBlob(plotElement: HTMLElement, thumbWidth = 200, thumbHeight = 200) {
+    async #getThumbnailBlob(
+        plotElement: HTMLElement,
+        thumbWidth = 200,
+        thumbHeight = 200
+    ) {
         // Render a png from Plotly at a large size so it looks good
-        const bigDataUrl = await Plotly.toImage(plotElement, {
-          format: 'jpeg',
-          width: 500,
-          height: 500
-        });
-      
+        const bigDataUrl = await toImage(plotElement, {
+            format: 'jpeg',
+            width: 500,
+            height: 500,
+        })
+
         // Downscale the png to the desired size
-        const img = new Image();
-        img.src = bigDataUrl;
-        await img.decode();
-      
-        const canvas = document.createElement('canvas');
-        canvas.width = thumbWidth;
-        canvas.height = thumbHeight;
-        const ctx = canvas.getContext('2d')!;
-        ctx.drawImage(img, 0, 0, thumbWidth, thumbHeight);
-      
-        return await new Promise<Blob>((resolve) =>
-          canvas.toBlob((blob) => resolve(blob!), 'image/jpeg', 0.5)
-        );
-      }
-    
+        const img = new Image()
+        img.src = bigDataUrl
+        await img.decode()
+
+        const canvas = document.createElement('canvas')
+        canvas.width = thumbWidth
+        canvas.height = thumbHeight
+        const ctx = canvas.getContext('2d')!
+        ctx.drawImage(img, 0, 0, thumbWidth, thumbHeight)
+
+        return await new Promise<Blob>(resolve =>
+            canvas.toBlob(blob => resolve(blob!), 'image/jpeg', 0.5)
+        )
+    }
+
     async updateDateTimeRange(newDateTimeRange: DateTimeRange) {
         this.#plotEl.startDate = newDateTimeRange.startDate!
         this.#plotEl.endDate = newDateTimeRange.endDate!
@@ -126,5 +145,4 @@ export class TimeSeriesPlotComponent {
             console.error('Unsupported spatial area ', newSpatialArea)
         }
     }
-
 }
