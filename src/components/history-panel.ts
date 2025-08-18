@@ -9,6 +9,7 @@ import {
 } from '../state'
 import { effect } from '@preact/signals-core'
 import { VariableComponent } from './variable'
+import { deleteTimeSeriesRequestFromHistory } from '../history'
 
 export class HistoryPanelComponent {
     #containerEl: HTMLElement
@@ -151,6 +152,7 @@ export class HistoryPanelComponent {
 
                 return `
                     <div class="thumbnail-item flex-shrink-0 relative group" data-id="${item.id}" data-tooltip-content="${v.dataFieldLongName || v.dataFieldId}|${timeStr}|${dateStr}|${areaStr}">
+                        <button class="delete-btn absolute top-[-6px] right-[-6px] m-0.5 z-10 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center shadow hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-150" title="Delete" aria-label="Delete">×</button>
                         <div class="w-24 h-16 bg-gray-100 border border-gray-200 rounded cursor-pointer hover:border-blue-300 hover:shadow-md transition-all duration-200 flex items-center justify-center overflow-hidden">
                             ${
                                 item.request.thumbnail
@@ -173,15 +175,24 @@ export class HistoryPanelComponent {
         this.#thumbnailsContainerEl
             .querySelectorAll('.thumbnail-item')
             .forEach(thumbnail => {
-                thumbnail.addEventListener('click', e => {
-                    const id = (e.currentTarget as HTMLElement).getAttribute(
-                        'data-id'
-                    )!
+                const openHandler = (e: Event) => {
+                    if ((e.target as HTMLElement).closest('.delete-btn')) return
+                    const id = (thumbnail as HTMLElement).getAttribute('data-id')!
                     const item = this.#history.find(h => h.id === id)
-                    if (item) {
-                        this.#loadHistoryItem(item)
-                    }
-                })
+                    if (item) this.#loadHistoryItem(item)
+                }
+                thumbnail.addEventListener('click', openHandler)
+
+                const deleteBtn = thumbnail.querySelector<HTMLButtonElement>('.delete-btn')
+                if (deleteBtn) {
+                    deleteBtn.addEventListener('click', async (e) => {
+                        e.stopPropagation()
+                        const id = (thumbnail as HTMLElement).getAttribute('data-id')!
+                        const confirmed = window.confirm('Delete this history item?')
+                        if (!confirmed) return
+                        await deleteTimeSeriesRequestFromHistory(id)
+                    })
+                }
             })
 
         // Add tooltip functionality

@@ -45,3 +45,23 @@ export async function storeTimeSeriesRequestInHistory(request: TimeSeriesRequest
 export function getUniqueIdForTimeSeriesRequest(request: TimeSeriesRequest) {
     return encodeURIComponent(`${request.variable.dataFieldId}-${Date.now()}`)
 }
+
+export async function deleteTimeSeriesRequestFromHistory(id: string) {
+    const userId = userState.value.user?.uid
+    if (!userId) {
+        return
+    }
+
+    const key = `history:${userId}`
+    const existing = await getDataByKey<{ items?: TimeSeriesRequestHistoryItem[] } | undefined>(
+        IndexedDbStores.HISTORY,
+        key
+    )
+
+    const items = Array.isArray(existing?.items) ? existing!.items : []
+    const nextItems = items.filter(item => item.id !== id)
+
+    await storeDataByKey(IndexedDbStores.HISTORY, key, { items: nextItems })
+
+    document.dispatchEvent(new CustomEvent('historyUpdated'))
+}
