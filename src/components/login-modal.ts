@@ -1,6 +1,3 @@
-import { needsLogin, userState } from '../state'
-import { effect } from '@preact/signals-core'
-
 export class LoginModalComponent {
     #modalEl: HTMLElement
     #loginButtonEl: HTMLButtonElement
@@ -12,7 +9,6 @@ export class LoginModalComponent {
         this.#loginButtonEl = this.#overlayEl.querySelector('#login-modal-button')!
 
         this.#bindEvents()
-        this.#setupEffects()
     }
 
     #bindEvents() {
@@ -22,15 +18,9 @@ export class LoginModalComponent {
                 loginEl.login()
             }
         })
-    }
 
-    #setupEffects() {
-        effect(() => {
-            if (needsLogin.value || !userState.value.user?.uid) {
-                this.show()
-            } else {
-                this.hide()
-            }
+        document.addEventListener('open-login-modal', () => {
+            this.show()
         })
     }
 

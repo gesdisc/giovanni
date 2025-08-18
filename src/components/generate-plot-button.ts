@@ -1,4 +1,4 @@
-import { canGeneratePlots } from '../state'
+import { canGeneratePlots, userState } from '../state'
 import { effect } from '@preact/signals-core'
 
 export class GeneratePlotButtonComponent {
@@ -26,8 +26,12 @@ export class GeneratePlotButtonComponent {
     #bindEvents() {
         this.#button.addEventListener('click', () => {
             if (!canGeneratePlots.value) return
-            
-            document.dispatchEvent(new CustomEvent('generate-plot'))
+
+            if (userState.value.user?.uid) {
+                document.dispatchEvent(new CustomEvent('generate-plot'))
+            } else {
+                document.dispatchEvent(new CustomEvent('open-login-modal'))
+            }
         })
     }
 }

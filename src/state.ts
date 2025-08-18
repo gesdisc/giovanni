@@ -18,7 +18,6 @@ export const hasValidDateTimeRange = computed(() => {
 
 export const canGeneratePlots = computed(() => {
     return (
-        userState.value.user !== null && // User must be logged in
         variables.value.length > 0 &&
         spatialArea.value !== null &&
         hasValidDateTimeRange.value
