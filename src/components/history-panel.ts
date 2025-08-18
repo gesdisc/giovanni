@@ -342,5 +342,7 @@ export class HistoryPanelComponent {
                 true
             ),
         ]
+
+        document.dispatchEvent(new CustomEvent('generate-plot'))
     }
 }

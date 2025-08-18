@@ -61,13 +61,12 @@ export class PlotsListComponent {
 
     #bindEvents() {
         // Listen for generate plot events
-        document.addEventListener('generate-plot', ((e: Event) => {
-            const customEvent = e as CustomEvent
-            this.#generatePlots(customEvent.detail)
+        document.addEventListener('generate-plot', (() => {
+            this.#generatePlots()
         }) as EventListener)
     }
 
-    async #generatePlots(_detail: any) {
+    async #generatePlots() {
         // Clear existing plots
         this.#listEl.innerHTML = ''
         this.#activePlots.clear()

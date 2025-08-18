@@ -1,4 +1,4 @@
-import { canGeneratePlots, variables, spatialArea, dateTimeRange } from '../state'
+import { canGeneratePlots } from '../state'
 import { effect } from '@preact/signals-core'
 
 export class GeneratePlotButtonComponent {
@@ -27,14 +27,7 @@ export class GeneratePlotButtonComponent {
         this.#button.addEventListener('click', () => {
             if (!canGeneratePlots.value) return
             
-            // Trigger plot generation by dispatching a custom event
-            document.dispatchEvent(new CustomEvent('generate-plot', {
-                detail: {
-                    variables: variables.value,
-                    spatialArea: spatialArea.value,
-                    dateTimeRange: dateTimeRange.value
-                }
-            }))
+            document.dispatchEvent(new CustomEvent('generate-plot'))
         })
     }
 }
