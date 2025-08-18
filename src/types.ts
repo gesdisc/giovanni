@@ -22,7 +22,6 @@ export type TimeSeriesRequestHistoryItem = {
     id: string
     request: TimeSeriesRequest
     createdAt: string
-    userId: string
 }
 
 export type TimeSeriesRequest = {

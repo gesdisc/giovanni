@@ -1,4 +1,4 @@
-import { getAllData, IndexedDbStores } from '../utilities/indexeddb'
+import { getDataByKey, IndexedDbStores } from '../utilities/indexeddb'
 import type { TimeSeriesRequestHistoryItem } from '../types'
 import {
     dateTimeRange,
@@ -63,9 +63,23 @@ export class HistoryPanelComponent {
     }
 
     async #loadHistory() {
-        const all = await getAllData<TimeSeriesRequestHistoryItem>(IndexedDbStores.HISTORY)
         const uid = userState.value.user?.uid
-        this.#history = uid ? all.filter(item => item.userId === uid) : []
+        if (!uid) {
+            this.#history = []
+            userHistory.value = []
+            return
+        }
+
+        const arrayKey = `history:${uid}`
+        const arrayRecord = await getDataByKey<{ items?: TimeSeriesRequestHistoryItem[] }>(
+            IndexedDbStores.HISTORY,
+            arrayKey
+        )
+
+        if (arrayRecord && Array.isArray(arrayRecord.items)) {
+            this.#history = arrayRecord.items
+        }
+
         this.#history.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 
         // set user history in state

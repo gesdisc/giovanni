@@ -1,5 +1,5 @@
 import { TimeSeriesRequest, TimeSeriesRequestHistoryItem } from "./types"
-import { IndexedDbStores, storeDataByKey } from "./utilities/indexeddb"
+import { IndexedDbStores, getDataByKey, storeDataByKey } from "./utilities/indexeddb"
 import { userState } from "./state"
 
 export async function storeTimeSeriesRequestInHistory(request: TimeSeriesRequest) {
@@ -13,15 +13,27 @@ export async function storeTimeSeriesRequestInHistory(request: TimeSeriesRequest
         return
     }
 
-    const result = await storeDataByKey<TimeSeriesRequestHistoryItem>(
+    const key = `history:${userId}`
+
+    // Load existing user history array (if any)
+    const existing = await getDataByKey<{ items?: TimeSeriesRequestHistoryItem[] } | undefined>(
         IndexedDbStores.HISTORY,
-        `${userId}:${id}`,
-        {
-            id,
-            request,
-            createdAt: new Date().toISOString(),
-            userId,
-        }
+        key
+    )
+
+    const newItem: TimeSeriesRequestHistoryItem = {
+        id,
+        request,
+        createdAt: new Date().toISOString(),
+    }
+
+    const items = Array.isArray(existing?.items) ? [...existing!.items, newItem] : [newItem]
+
+    // Persist back as one array for this user
+    const result = await storeDataByKey(
+        IndexedDbStores.HISTORY,
+        key,
+        { items }
     )
 
     // Dispatch event to notify components that history has been updated
