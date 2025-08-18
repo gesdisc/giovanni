@@ -53,7 +53,7 @@ export class TimeSeriesPlotComponent {
         }, 1000)
     }
 
-    async #handlePlotComplete(e: TerraTimeSeriesDataChangeEvent) {
+    async #handlePlotComplete(_e: TerraTimeSeriesDataChangeEvent) {
         // Skip saving to history if this plot was loaded from history
         if (this.#request.fromHistory) {
             return
