@@ -2,6 +2,7 @@ import { getDataByKey, IndexedDbStores } from '../utilities/indexeddb'
 import type { TimeSeriesRequestHistoryItem } from '../types'
 import {
     dateTimeRange,
+    plotType,
     spatialArea,
     userHistory,
     userState,
@@ -333,6 +334,8 @@ export class HistoryPanelComponent {
         // Load the history item's settings
         spatialArea.value = item.request.spatialArea
         dateTimeRange.value = item.request.dateTimeRange
+
+        plotType.value = item.plotType ?? 'plot'
 
         // Add the variable to trigger plot generation
         variables.value = [

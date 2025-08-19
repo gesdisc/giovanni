@@ -1,11 +1,19 @@
-import { canGeneratePlots, dateTimeRange, spatialArea, variables } from '../state'
+import { canGeneratePlots, dateTimeRange, plotType, spatialArea, variables } from '../state'
 import { effect } from '@preact/signals-core'
 import { TimeSeriesPlotComponent } from './time-series-plot'
-import { Variable } from '../types'
+import { MapPlotComponent } from './map-plot'
+import { DateTimeRange, SpatialArea, Variable } from '../types'
+
+type PlotInstance = {
+    element: HTMLElement
+    updateDateTimeRange: (range: DateTimeRange) => any
+    updateSpatialArea: (area: SpatialArea) => any
+    destroy: () => void
+}
 
 export class PlotsListComponent {
     #listEl: HTMLElement
-    #activePlots: Map<string, TimeSeriesPlotComponent> = new Map()
+    #activePlots: Map<string, PlotInstance> = new Map()
     #hasClearedDefaultView = false
 
     constructor() {
@@ -60,7 +68,6 @@ export class PlotsListComponent {
     }
 
     #bindEvents() {
-        // Listen for generate plot events
         document.addEventListener('generate-plot', (() => {
             this.#generatePlots()
         }) as EventListener)
@@ -73,10 +80,17 @@ export class PlotsListComponent {
 
         // Generate plots for all variables
         for (const v of variables.value) {
-            await this.#addTimeSeriesPlotForVariable(
-                v.variable,
-                v.variableLongName
-            )
+            if (plotType.value === 'map') {
+                await this.#addMapPlotForVariable(
+                    v.variable,
+                    v.variableLongName
+                )
+            } else {
+                await this.#addTimeSeriesPlotForVariable(
+                    v.variable,
+                    v.variableLongName
+                )
+            }
         }
     }
 
@@ -114,6 +128,32 @@ export class PlotsListComponent {
         this.#listEl.appendChild(plotContainer)
         
         // Store the plot in our active plots map
+        this.#activePlots.set(variable.dataFieldId, plot)
+    }
+
+    async #addMapPlotForVariable(
+        variable: Variable,
+        variableLongName: string
+    ) {
+        if (!canGeneratePlots.value) return
+
+        // Check if this variable component has the fromHistory flag
+        const variableComponent = variables.value.find(v => v.variable.dataFieldId === variable.dataFieldId)
+
+        const plot = new MapPlotComponent({
+            variable,
+            spatialArea: spatialArea.value!,
+            dateTimeRange: dateTimeRange.value!,
+            variableLongName,
+            fromHistory: variableComponent?.fromHistory || false,
+        })
+
+        const plotContainer = document.createElement('div')
+        plotContainer.className = 'mb-6'
+        plotContainer.setAttribute('data-variable-id', variable.dataFieldId)
+        plotContainer.appendChild(plot.element)
+
+        this.#listEl.appendChild(plotContainer)
         this.#activePlots.set(variable.dataFieldId, plot)
     }
 

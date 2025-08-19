@@ -22,6 +22,7 @@ export type TimeSeriesRequestHistoryItem = {
     id: string
     request: TimeSeriesRequest
     createdAt: string
+    plotType?: 'map' | 'plot'
 }
 
 export type TimeSeriesRequest = {

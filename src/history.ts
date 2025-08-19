@@ -2,7 +2,7 @@ import { TimeSeriesRequest, TimeSeriesRequestHistoryItem } from "./types"
 import { IndexedDbStores, getDataByKey, storeDataByKey } from "./utilities/indexeddb"
 import { userState } from "./state"
 
-export async function storeTimeSeriesRequestInHistory(request: TimeSeriesRequest) {
+export async function storeTimeSeriesRequestInHistory(request: TimeSeriesRequest, plotType: 'map' | 'plot' = 'plot') {
     const id = getUniqueIdForTimeSeriesRequest(request)
    
     console.log('storeTimeSeriesRequestInHistory', id, request)
@@ -25,6 +25,7 @@ export async function storeTimeSeriesRequestInHistory(request: TimeSeriesRequest
         id,
         request,
         createdAt: new Date().toISOString(),
+        plotType,
     }
 
     const items = Array.isArray(existing?.items) ? [...existing!.items, newItem] : [newItem]

@@ -5,6 +5,7 @@ import { getValidDateRangeFromVariables } from './utilities/date'
 
 export const userState = signal<UserState>({ userChecked: false, user: null })
 export const userHistory = signal<TimeSeriesRequestHistoryItem[]>([])
+export const plotType = signal<'map' | 'plot'>('plot')
 export const variables = signal<VariableComponent[]>([])
 export const spatialArea = signal<SpatialArea | null>(null) // TODO: can we set default spatial area that's not null?
 export const dateTimeRange = signal<DateTimeRange | null>(null) // TODO: can we set default date/time range that's not null?
