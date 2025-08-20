@@ -1,4 +1,4 @@
-import { effect } from '@preact/signals-core'
+import { effect, untracked } from '@preact/signals-core'
 import { spatialArea } from '../state'
 import { SpatialAreaType } from '../types'
 import type { TerraMapChangeEvent, TerraSpatialPicker } from '@nasa-terra/components'
@@ -9,13 +9,7 @@ export class SelectSpatialAreaComponent {
     constructor() {
         this.#element = document.querySelector<TerraSpatialPicker>('#spatial-picker')!
 
-        if (spatialArea.value && spatialArea.value.type === SpatialAreaType.BOUNDING_BOX) {
-            this.#element.initialValue = spatialArea.value.value.west + ',' + spatialArea.value.value.south + ',' + spatialArea.value.value.east + ',' + spatialArea.value.value.north
-        }
-
-        if (spatialArea.value && spatialArea.value.type === SpatialAreaType.COORDINATES) {
-            this.#element.initialValue = spatialArea.value.value.lat + ',' + spatialArea.value.value.lng
-        }
+        this.updateSpatialAreaValue()
 
         this.#bindEvents()
         this.#setupEffects()
@@ -31,7 +25,31 @@ export class SelectSpatialAreaComponent {
     #setupEffects() {
         effect(() => {
             console.log('spatial area changed: ', spatialArea.value)
+
+            untracked(() => {
+                this.updateSpatialAreaValue()
+            })
         })
+    }
+
+    updateSpatialAreaValue() {
+        if (spatialArea.value && spatialArea.value.type === SpatialAreaType.BOUNDING_BOX) {
+            const value = spatialArea.value.value.west + ',' + spatialArea.value.value.south + ',' + spatialArea.value.value.east + ',' + spatialArea.value.value.north
+
+            if (this.#element.initialValue !== value) {
+                this.#element.initialValue = value
+                this.#element.setValue(value)
+            }
+        }
+
+        if (spatialArea.value && spatialArea.value.type === SpatialAreaType.COORDINATES) {
+            const value = spatialArea.value.value.lat + ',' + spatialArea.value.value.lng
+
+            if (this.#element.initialValue !== value) {
+                this.#element.initialValue = value
+                this.#element.setValue(value)
+            }
+        }
     }
 
     #handleChange(e: TerraMapChangeEvent) {
