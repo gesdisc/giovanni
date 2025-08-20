@@ -2,7 +2,7 @@ name: Build
 
 on:
     push:
-        branches: [main, feature/GUUI-3560-design-refresh]
+        branches: [main, staging]
 
 jobs:
     build:
