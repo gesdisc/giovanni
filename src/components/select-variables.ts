@@ -6,6 +6,7 @@ import type {
     TerraVariablesChangeEvent,
 } from '@nasa-terra/components'
 import Sortable from 'sortablejs'
+import { getOptionsFromLocalStorage } from '../utilities/localstorage'
 
 export class SelectVariablesComponent {
     #element: TerraBrowseVariables
@@ -17,6 +18,12 @@ export class SelectVariablesComponent {
             document.querySelector<TerraBrowseVariables>('#variable-selector')!
         this.#selectedVariablesList =
             document.querySelector<HTMLElement>('#selected-variables')!
+
+        const options = getOptionsFromLocalStorage()
+
+        if (options?.variables) {
+            this.#element.selectedVariableEntryIds = options.variables.join(',')
+        }
 
         this.#bindEvents()
         this.#setupEffects()
@@ -76,6 +83,8 @@ export class SelectVariablesComponent {
     }
 
     #handleChange(e: TerraVariablesChangeEvent) {
+        console.log('handleChange', e)
+        
         // Get existing variables that are still selected
         const existingVariables = variables.value.filter(v => 
             e.detail.selectedVariables.some(newV => newV.dataFieldId === v.variable.dataFieldId)

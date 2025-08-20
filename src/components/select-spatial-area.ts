@@ -9,6 +9,14 @@ export class SelectSpatialAreaComponent {
     constructor() {
         this.#element = document.querySelector<TerraSpatialPicker>('#spatial-picker')!
 
+        if (spatialArea.value && spatialArea.value.type === SpatialAreaType.BOUNDING_BOX) {
+            this.#element.initialValue = spatialArea.value.value.west + ',' + spatialArea.value.value.south + ',' + spatialArea.value.value.east + ',' + spatialArea.value.value.north
+        }
+
+        if (spatialArea.value && spatialArea.value.type === SpatialAreaType.COORDINATES) {
+            this.#element.initialValue = spatialArea.value.value.lat + ',' + spatialArea.value.value.lng
+        }
+
         this.#bindEvents()
         this.#setupEffects()
     }

@@ -2,12 +2,16 @@ import { computed, signal } from '@preact/signals-core'
 import { DateTimeRange, SpatialArea, TimeSeriesRequestHistoryItem, UserState } from './types'
 import { VariableComponent } from './components/variable'
 import { getValidDateRangeFromVariables } from './utilities/date'
+import { getOptionsFromLocalStorage } from './utilities/localstorage'
+
+const existingOptions = getOptionsFromLocalStorage()
 
 export const userState = signal<UserState>({ userChecked: false, user: null })
 export const userHistory = signal<TimeSeriesRequestHistoryItem[]>([])
+export const plotType = signal<'map' | 'plot'>(existingOptions?.plotType ?? 'plot')
 export const variables = signal<VariableComponent[]>([])
-export const spatialArea = signal<SpatialArea | null>(null) // TODO: can we set default spatial area that's not null?
-export const dateTimeRange = signal<DateTimeRange | null>(null) // TODO: can we set default date/time range that's not null?
+export const spatialArea = signal<SpatialArea | null>(existingOptions?.spatialArea ?? null)
+export const dateTimeRange = signal<DateTimeRange | null>(existingOptions?.dateTimeRange ?? null)
 export const hasValidDateTimeRange = computed(() => {
     return (
         dateTimeRange.value !== null &&
