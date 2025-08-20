@@ -1,3 +1,5 @@
+import { storeOptionsInLocalStorage } from "../utilities/localstorage"
+
 export class LoginModalComponent {
     #modalEl: HTMLElement
     #loginButtonEl: HTMLButtonElement
@@ -13,6 +15,8 @@ export class LoginModalComponent {
 
     #bindEvents() {
         this.#loginButtonEl.addEventListener('click', () => {
+            storeOptionsInLocalStorage()
+            
             const loginEl = document.querySelector('#login') as any
             if (loginEl && loginEl.login) {
                 loginEl.login()

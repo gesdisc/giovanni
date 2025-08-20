@@ -2,6 +2,7 @@ import { TerraLogin, TerraLoginEvent } from '@nasa-terra/components'
 import { userState } from '../state'
 import { User } from '../types'
 import { effect } from '@preact/signals-core'
+import { clearOptionsFromLocalStorage } from '../utilities/localstorage'
 
 const EDL_DOMAIN = 'https://uat.urs.earthdata.nasa.gov'
 
@@ -29,6 +30,10 @@ export class LoginComponent {
 
     #setupEffects() {
         effect(() => {
+            if (userState.value.userChecked) {
+                clearOptionsFromLocalStorage()
+            }
+
             this.#setupLogoutButton(userState.value.user)
         })
     }

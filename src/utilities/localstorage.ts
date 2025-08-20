@@ -26,3 +26,7 @@ export function getOptionsFromLocalStorage() {
     const options = localStorage.getItem('terra-options')
     return options ? JSON.parse(options) as Options : null
 }
+
+export function clearOptionsFromLocalStorage() {
+    localStorage.removeItem('terra-options')
+}
