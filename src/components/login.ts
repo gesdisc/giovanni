@@ -1,4 +1,4 @@
-import { TerraLogin, TerraLoginEvent } from '@nasa-terra/components'
+import { TerraButton, TerraLogin, TerraLoginEvent } from '@nasa-terra/components'
 import { userState } from '../state'
 import { User } from '../types'
 import { effect } from '@preact/signals-core'
@@ -22,8 +22,8 @@ export class LoginComponent {
         this.#loginEl.addEventListener('terra-login', (e: TerraLoginEvent) => {
             userState.value = {
                 ...userState.value,
-                user: e.detail.user?.uid ? e.detail.user as User : null,
-                userChecked: true
+                user: e.detail.user?.uid ? (e.detail.user as User) : null,
+                userChecked: true,
             }
         })
     }
@@ -39,20 +39,29 @@ export class LoginComponent {
     }
 
     #setupLogoutButton(user: User | null | undefined) {
-        this.#logoutSection.innerHTML = user ? `<a href="${EDL_DOMAIN}/logout?redirect_uri=${window.location.href}" class="text-white">Log out (${user.uid})</a>` : ''
+        this.#logoutSection.innerHTML = user
+            ? `
+        <terra-button variant="text" href="${EDL_DOMAIN}/logout?redirect_uri=${window.location.href}">
+            <span class="text-gray-200 hover:text-white flex items-center">
+                Log out (${user.uid})
+            </span>
+        </terra-button>`
+            : ''
 
         if (user) {
-            this.#logoutSection.querySelector<HTMLAnchorElement>('a')!.addEventListener('click', (e: any) => {
-                e.preventDefault()
+            this.#logoutSection
+                .querySelector<TerraButton>('terra-button')!
+                .addEventListener('click', (e: any) => {
+                    e.preventDefault()
 
-                const logoutUrl = e.currentTarget.href  
+                    const logoutUrl = e.currentTarget.href
 
-                // use token based logout
-                this.#loginEl.logout()
+                    // use token based logout
+                    this.#loginEl.logout()
 
-                // also logout of URS
-                window.location.href = logoutUrl
-            })
+                    // also logout of URS
+                    window.location.href = logoutUrl
+                })
         }
     }
 }

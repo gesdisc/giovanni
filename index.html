@@ -31,8 +31,22 @@
                         </p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <terra-login id="login" button-label="Login">
+                <div class="flex items-center">
+                    <terra-button variant="text">
+                        <span class="text-gray-200 hover:text-white flex items-center">
+                            Help
+                            <terra-icon name="outline-chevron-down" library="heroicons" class="w-4 h-4 ml-1"></terra-icon>
+                        </span>
+                    </terra-button>
+
+                    <terra-button variant="text">
+                        <span class="text-gray-200 hover:text-white flex items-center">
+                            Earthdata Forum
+                            <terra-icon name="outline-arrow-top-right-on-square" library="heroicons" class="w-4 h-4 ml-1"></terra-icon>
+                        </span>
+                    </terra-button>
+                    
+                    <terra-login id="login" button-label="Login" class="ml-3">
                         <div slot="logged-in" id="logout">
                             <!-- empty container that will be populated with the logout button -->
                         </div>
