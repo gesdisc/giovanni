@@ -12,9 +12,9 @@
             href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
             rel="stylesheet"
         />
-      <script type="module" crossorigin src="./assets/index-CI5p3dPA.js"></script>
+      <script type="module" crossorigin src="./assets/index-DyWbINk6.js"></script>
       <link rel="modulepreload" crossorigin href="./assets/vendor-lC3ks3hR.js">
-      <link rel="stylesheet" crossorigin href="./assets/style-DNVhTU4f.css">
+      <link rel="stylesheet" crossorigin href="./assets/style-BpN19scu.css">
     </head>
 
     <body class="bg-gray-50 font-sans">
@@ -32,8 +32,22 @@
                         </p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <terra-login id="login" button-label="Login">
+                <div class="flex items-center">
+                    <terra-button variant="text">
+                        <span class="text-gray-200 hover:text-white flex items-center">
+                            Help
+                            <terra-icon name="outline-chevron-down" library="heroicons" class="w-4 h-4 ml-1"></terra-icon>
+                        </span>
+                    </terra-button>
+
+                    <terra-button variant="text">
+                        <span class="text-gray-200 hover:text-white flex items-center">
+                            Earthdata Forum
+                            <terra-icon name="outline-arrow-top-right-on-square" library="heroicons" class="w-4 h-4 ml-1"></terra-icon>
+                        </span>
+                    </terra-button>
+                    
+                    <terra-login id="login" button-label="Login" class="ml-3">
                         <div slot="logged-in" id="logout">
                             <!-- empty container that will be populated with the logout button -->
                         </div>
