@@ -12,9 +12,9 @@
             href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
             rel="stylesheet"
         />
-      <script type="module" crossorigin src="./assets/index-DyWbINk6.js"></script>
+      <script type="module" crossorigin src="./assets/index-CddsdL4m.js"></script>
       <link rel="modulepreload" crossorigin href="./assets/vendor-lC3ks3hR.js">
-      <link rel="stylesheet" crossorigin href="./assets/style-BpN19scu.css">
+      <link rel="stylesheet" crossorigin href="./assets/style-CSuQfkkS.css">
     </head>
 
     <body class="bg-gray-50 font-sans">
@@ -57,7 +57,9 @@
 
             <div class="flex flex-1">
                 <aside
-                    class="w-[500px] bg-gray-50 shadow-lg border-r border-gray-200 flex flex-col"
+                    id="sidebar"
+                    class="bg-gray-50 shadow-lg border-r border-gray-200 flex flex-col"
+                    style="width: 500px; min-width: 300px; max-width: 2000px;"
                 >
                     <div
                         class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4"
@@ -162,6 +164,12 @@
                     </div>
                 </aside>
 
+                <div 
+                    id="resize-handle" 
+                    class="w-1 bg-gray-300 hover:bg-gray-400 cursor-col-resize transition-colors duration-200 flex-shrink-0"
+                    style="touch-action: none;"
+                ></div>
+
                 <main class="flex-1 flex flex-col bg-white">
                     <div class="flex-1 p-6 bg-gray-50 pb-[100px]" id="plots"></div>
                 </main>
@@ -169,7 +177,8 @@
 
             <div
                 id="history-panel"
-                class="fixed left-[500px] bottom-0 z-50 right-0 bg-white h-[100px] border-t border-gray-200"
+                class="fixed bottom-0 z-50 right-0 bg-white h-[100px] border-t border-gray-200"
+                style="left: 500px;"
             >
                 <div
                     class="w-full h-[80px] bg-white flex items-center px-4 relative"
