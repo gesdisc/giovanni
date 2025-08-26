@@ -28,4 +28,62 @@ document.addEventListener('DOMContentLoaded', () => {
     new GeneratePlotButtonComponent()
     new VariableCountComponent()
     new HistoryPanelComponent()
+
+    // Initialize sidebar resize functionality
+    initializeSidebarResize()
 })
+
+function initializeSidebarResize() {
+    const sidebar = document.getElementById('sidebar') as HTMLElement
+    const resizeHandle = document.getElementById('resize-handle') as HTMLElement
+    const historyPanel = document.getElementById('history-panel') as HTMLElement
+    
+    if (!sidebar || !resizeHandle || !historyPanel) return
+
+    let isResizing = false
+    let startX = 0
+    let startWidth = 0
+
+    const startResize = (e: MouseEvent | TouchEvent) => {
+        isResizing = true
+        startX = 'touches' in e ? e.touches[0].clientX : e.clientX
+        startWidth = sidebar.offsetWidth
+        
+        document.addEventListener('mousemove', resize)
+        document.addEventListener('touchmove', resize, { passive: false })
+        document.addEventListener('mouseup', stopResize)
+        document.addEventListener('touchend', stopResize)
+        
+        // Add CSS classes for visual feedback
+        document.body.classList.add('resizing')
+        sidebar.classList.add('resizing')
+    }
+
+    const resize = (e: MouseEvent | TouchEvent) => {
+        if (!isResizing) return
+        
+        e.preventDefault()
+        const currentX = 'touches' in e ? e.touches[0].clientX : e.clientX
+        const diff = currentX - startX
+        const newWidth = Math.max(300, Math.min(2000, startWidth + diff))
+        
+        sidebar.style.width = `${newWidth}px`
+        historyPanel.style.left = `${newWidth}px`
+    }
+
+    const stopResize = () => {
+        isResizing = false
+        document.removeEventListener('mousemove', resize)
+        document.removeEventListener('touchmove', resize)
+        document.removeEventListener('mouseup', stopResize)
+        document.removeEventListener('touchend', stopResize)
+        
+        // Remove CSS classes
+        document.body.classList.remove('resizing')
+        sidebar.classList.remove('resizing')
+    }
+
+    // Add event listeners for both mouse and touch
+    resizeHandle.addEventListener('mousedown', startResize)
+    resizeHandle.addEventListener('touchstart', startResize, { passive: false })
+}
