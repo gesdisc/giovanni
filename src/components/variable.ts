@@ -21,6 +21,16 @@ export class VariableComponent {
     }
 
     render() {
+        const metadata = [
+            // @ts-ignore TODO: remove this before merging
+            this.variable.dataProductInstrumentShortName,
+            this.variable.dataProductTimeInterval,
+            this.variable.dataFieldUnits,
+            `[${this.variable.dataProductShortName}_${this.variable.dataProductVersion}]`,
+        ]
+            .filter(Boolean)
+            .join(' • ')
+
         this.element.innerHTML = `
             <div
                 class="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg group hover-lift transition-all duration-200"
@@ -41,7 +51,7 @@ export class VariableComponent {
                             >${this.variableLongName}</span
                         >
                         <p class="text-xs text-gray-600">
-                            ${this.variable.dataFieldShortName}
+                            ${metadata}
                         </p>
                     </div>
                 </div>
