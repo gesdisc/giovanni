@@ -151,8 +151,17 @@ export class HistoryPanelComponent {
                         minute: '2-digit',
                     })
 
+                const metadata = [
+                    v.dataProductInstrumentShortName,
+                    v.dataProductTimeInterval,
+                    v.dataFieldUnits,
+                    `[${v.dataProductShortName}_${v.dataProductVersion}]`,
+                ]
+                    .filter(Boolean)
+                    .join(' • ')
+
                 return `
-                    <div class="thumbnail-item flex-shrink-0 relative group" data-id="${item.id}" data-tooltip-content="${v.dataFieldLongName || v.dataFieldId}|${timeStr}|${dateStr}|${areaStr}">
+                    <div class="thumbnail-item flex-shrink-0 relative group" data-id="${item.id}" data-tooltip-content="${v.dataFieldLongName || v.dataFieldId}|${timeStr}|${dateStr}|${areaStr}|${metadata}">
                         <button class="delete-btn absolute top-[-6px] right-[-6px] m-0.5 z-10 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center shadow hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-150" title="Delete" aria-label="Delete">×</button>
                         <div class="w-24 h-16 bg-gray-100 border border-gray-200 rounded cursor-pointer hover:border-blue-300 hover:shadow-md transition-all duration-200 flex items-center justify-center overflow-hidden">
                             ${
@@ -209,11 +218,12 @@ export class HistoryPanelComponent {
                     const target = e.currentTarget as HTMLElement
                     const tooltipContent = target.getAttribute('data-tooltip-content')
                     if (tooltipContent) {
-                        const [title, time, date, area] = tooltipContent.split('|')
+                        const [title, time, date, area, metadata] = tooltipContent.split('|')
                         const tooltip = document.getElementById('thumbnail-tooltip')
                         if (tooltip) {
                             tooltip.innerHTML = `
-                        <div class="font-semibold mb-1">${title}</div>
+                        <div class="font-semibold">${title}</div>
+                        <div class="text-gray-300 mb-1">${metadata}</div>
                         <div class="text-gray-300">${time}</div>
                         <div class="text-gray-300">${date}</div>
                         <div class="text-gray-300">${area}</div>

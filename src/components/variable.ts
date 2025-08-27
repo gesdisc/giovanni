@@ -22,11 +22,9 @@ export class VariableComponent {
 
     render() {
         const metadata = [
-            // @ts-ignore TODO: remove this before merging
             this.variable.dataProductInstrumentShortName,
             this.variable.dataProductTimeInterval,
             this.variable.dataFieldUnits,
-            `[${this.variable.dataProductShortName}_${this.variable.dataProductVersion}]`,
         ]
             .filter(Boolean)
             .join(' • ')
@@ -51,7 +49,7 @@ export class VariableComponent {
                             >${this.variableLongName}</span
                         >
                         <p class="text-xs text-gray-600">
-                            ${metadata}
+                            ${metadata} • <a target="_blank" href="${this.variable.dataProductDescriptionUrl}">[${this.variable.dataProductShortName}_${this.variable.dataProductVersion}]</a>
                         </p>
                     </div>
                 </div>
