@@ -30,6 +30,8 @@ export class MapPlotComponent {
         this.updateDateTimeRange(request.dateTimeRange)
         this.updateSpatialArea(request.spatialArea)
 
+        console.log('created map plot')
+
         document.addEventListener(
             'terra-time-average-map-data-change',
             this.#handleDataChange.bind(this)
@@ -90,12 +92,16 @@ export class MapPlotComponent {
     }
 
     async #handleDataChange(e: CustomEvent) {
+        console.log('data change event', e)
+
         if (e.target !== this.#plotEl) {
+            console.log('data change event target is not this plot')
             return
         }
 
         // Skip saving to history if this plot was loaded from history
         if (this.#request.fromHistory) {
+            console.log('data change event skipping saving to history')
             return
         }
 
@@ -115,6 +121,8 @@ export class MapPlotComponent {
             } catch (error) {
                 console.error('Error capturing thumbnail:', error)
             }
+
+            console.log('storing time series request in history', thumbnail)
 
             await storeTimeSeriesRequestInHistory(
                 {
