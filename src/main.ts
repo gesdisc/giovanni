@@ -11,7 +11,7 @@ import { LoginComponent } from './components/login'
 import { LoginModalComponent } from './components/login-modal'
 import { HistoryPanelComponent } from './components/history-panel'
 
-setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.115/cdn/')
+setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.116/cdn/')
 
 localStorage.setItem('terra-environment', 'uat')
 

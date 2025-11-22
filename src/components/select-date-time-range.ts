@@ -1,6 +1,6 @@
 import { dateTimeRange, validDateTimeRange } from '../state'
 import { effect, untracked } from '@preact/signals-core'
-import { TerraDatePicker } from '@nasa-terra/components'
+import { TerraDatePicker, TerraDateRangeChangeEvent } from '@nasa-terra/components'
 import { getValidDatesInBoundary } from '../utilities/date'
 
 export class SelectDateTimeRangeComponent {
@@ -14,7 +14,7 @@ export class SelectDateTimeRangeComponent {
     }
 
     #bindEvents() {
-        this.#el.addEventListener('terra-change', this.#handleChange.bind(this))
+        this.#el.addEventListener('terra-date-range-change', this.#handleChange.bind(this))
     }
 
     #setupEffects() {
@@ -66,12 +66,10 @@ export class SelectDateTimeRangeComponent {
         })
     }
 
-    #handleChange(e: Event) {
-        const datePicker = e.currentTarget as TerraDatePicker
-
+    #handleChange(e: TerraDateRangeChangeEvent) {
         dateTimeRange.value = {
-            startDate: datePicker.selectedDates.startDate,
-            endDate: datePicker.selectedDates.endDate,
+            startDate: e.detail.startDate,
+            endDate: e.detail.endDate,
         }
     }
 }
