@@ -4,7 +4,7 @@ import { User } from '../types'
 import { effect } from '@preact/signals-core'
 import { clearOptionsFromLocalStorage } from '../utilities/localstorage'
 
-const EDL_DOMAIN = 'https://urs.earthdata.nasa.gov'
+const EDL_DOMAIN = 'https://uat.urs.earthdata.nasa.gov'
 
 export class LoginComponent {
     #loginEl: TerraLogin

@@ -13,7 +13,7 @@ import { HistoryPanelComponent } from './components/history-panel'
 
 setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.115/cdn/')
 
-localStorage.setItem('terra-environment', 'prod')
+localStorage.setItem('terra-environment', 'uat')
 
 document.addEventListener('DOMContentLoaded', () => {
     new LoginComponent(),
