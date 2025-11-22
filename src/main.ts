@@ -11,10 +11,9 @@ import { LoginComponent } from './components/login'
 import { LoginModalComponent } from './components/login-modal'
 import { HistoryPanelComponent } from './components/history-panel'
 
-setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.70/cdn/')
+setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.115/cdn/')
 
-// TODO: remove this in the future, right now we have to lock the environment to UAT while we wait for Cloud Giovanni to promote APIs to PROD
-localStorage.setItem('terra-environment', 'uat')
+localStorage.setItem('terra-environment', 'prod')
 
 document.addEventListener('DOMContentLoaded', () => {
     new LoginComponent(),
