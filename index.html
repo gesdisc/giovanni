@@ -33,20 +33,39 @@
                         </p>
                     </div>
                 </div>
-                <div class="flex items-center">
-                    <terra-button variant="text">
-                        <span class="text-gray-200 hover:text-white flex items-center">
-                            Help
+                <div class="flex items-center relative">
+                    <div class="relative">
+                        <terra-button id="helpButton" variant="text">
+                             <span class="text-gray-200 hover:text-white flex items-center cursor-pointer">
+                                 Help
                             <terra-icon name="outline-chevron-down" library="heroicons" class="w-4 h-4 ml-1"></terra-icon>
-                        </span>
-                    </terra-button>
+                            </span>
+                        </terra-button>
 
-                    <terra-button variant="text">
-                        <span class="text-gray-200 hover:text-white flex items-center">
+                <!-- Help Dropdown Menu -->
+                    <div
+                         id="helpMenu"
+                        class="hidden absolute right-0 mt-2 w-48 bg-white text-black rounded shadow-lg z-50"
+                     >
+                        <a
+                            href="#"
+                            class="block px-4 py-2 hover:bg-gray-100 cursor-not-allowed text-gray-400"
+                        >
+                            User Guide (coming soon)
+                         </a>
+
+                        <a
+                            href="https://forum.earthdata.nasa.gov/viewforum.php?f=7&tagMatch=all&DAAC=3&keywords=&"
+                            target="_blank"
+                            class="block px-4 py-2 hover:bg-gray-100"
+                        >
+                            <span class="flex items-center">
                             Earthdata Forum
                             <terra-icon name="outline-arrow-top-right-on-square" library="heroicons" class="w-4 h-4 ml-1"></terra-icon>
-                        </span>
-                    </terra-button>
+                            </span>
+                        </a>
+                    </div>
+                </div>
                     
                     <terra-login id="login" button-label="Login" class="ml-3">
                         <div slot="logged-in" id="logout">
@@ -327,5 +346,19 @@
         ></div>
 
         <script src="https://cdn.plot.ly/plotly-3.1.0.min.js" charset="utf-8"></script>
+        <script>
+            const helpBtn = document.getElementById("helpButton");
+            const helpMenu = document.getElementById("helpMenu");
+
+            helpBtn.addEventListener("click", () => {
+                helpMenu.classList.toggle("hidden");
+            });
+
+            document.addEventListener("click", (e) => {
+                if (!helpBtn.contains(e.target) && !helpMenu.contains(e.target)) {
+                helpMenu.classList.add("hidden");
+                }
+             });
+        </script>
     </body>
 </html>
