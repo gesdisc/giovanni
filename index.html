@@ -19,6 +19,59 @@
     </head>
 
     <body class="bg-gray-50 font-sans">
+
+    <div id="welcomeScreen" class="splash-overlay hidden">  
+        <div class="splash-modal">
+            <h1 class="text-5xl font-bold mb-4 text-center">
+            Welcome to Giovanni 
+            <span class="beta-tag-splash-screen">BETA</span>
+            </h1>
+
+            <p class="max-w-3xl text-lg mb-4">
+            Giovanni allows you to analyze and visualize geophysical measurements like rainfall, soil moisture, and temperature.
+            This <a href="#" class="text-blue-600 underline">beta release</a> takes advantage of cloud optimizations to improve
+            performance and the overall user experience.If you are trying out this release, please consider providing feedback by sending email to our
+            <a href="#" class="text-blue-600 underline">Help Desk</a>. We'd love to hear from you!
+            </p>
+
+            <p class="max-w-3xl text-lg mb-4">
+            <b>NOTE:</b> This release has limited cloud 'credits' so it is possible you will experience abrupt "out of credit" errors when using Giovanni. 
+            If this happens, please contact the <a href="#" class="text-blue-600 underline">Help Desk</a> and we will increase your credit limit.
+            Apologies and please bear with us as we improve the management of cloud credit quotas.
+            </p>
+
+            <h2 class="text-lg text-center font-semibold mb-4 ">Here are some ways to start</h2>
+
+            <div class="widget-container">
+                <a href="/create-map" class="widget">
+                <terra-icon name="outline-map" library="heroicons" class="w-14 h-14 text-nasa-blue mb-3"></terra-icon>
+                <span class="font-semibold text-gray-800">Create Map</span>
+                </a>
+
+                <a href="/create-timeseries" class="widget">
+                <terra-icon name="outline-chart-bar" library="heroicons" class="w-14 h-14 text-nasa-blue mb-3"></terra-icon>
+                <span class="font-semibold text-center text-gray-800">Create Time-Series</span>
+                </a>
+
+                <a href="/user-guide" class="widget">
+                <terra-icon name="outline-document-text" library="heroicons" class="w-14 h-14 text-nasa-blue mb-3"></terra-icon>
+                <span class="font-semibold text-gray-800">Read User Guide</span>
+                </a>
+            </div>
+
+            <div class="splash-actions">
+                <div class="splash-left">
+                <input type="checkbox" id="hideWelcome" class="mr-2" />
+                <label for="hideWelcome" class="text-gray-700">Do not show this again</label>
+                </div>
+
+                <button id="welcomeSkip" class="splash-skip">
+                    Skip
+                </button>
+            </div>
+        </div>
+    </div>
+
         <div class="flex flex-col h-screen">
             <header
                 class="bg-white border-b border-gray-200 p-4 flex items-center justify-between nasa-bg-blue text-white"
@@ -27,6 +80,7 @@
                     <div>
                         <h1 class="text-2xl inter inter-bold inter-italic">
                             Giovanni
+                            <span class="text-2xl beta-tag">BETA</span>
                         </h1>
                         <p class="text-xs opacity-90 inter-italic">
                             The bridge between data and science
@@ -360,5 +414,29 @@
                 }
              });
         </script>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+            const welcomeScreen = document.getElementById("welcomeScreen");
+            const skipBtn = document.getElementById("welcomeSkip");
+            const hideCheckbox = document.getElementById("hideWelcome");
+
+            // Check if user opted out previously
+            const hide = localStorage.getItem("hideWelcomeScreen");
+
+            if (hide === "true") {
+            welcomeScreen.style.display = "none";
+            }
+
+            function closeSplash() {
+                if (hideCheckbox.checked) {
+                localStorage.setItem("hideWelcomeScreen", "true");
+                }
+             welcomeScreen.style.display = "none";
+            }
+
+            skipBtn.addEventListener("click", closeSplash);
+            });
+        </script>
+
     </body>
 </html>
