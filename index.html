@@ -43,17 +43,17 @@
             <h2 class="text-lg text-center font-semibold mb-4 ">Here are some ways to start</h2>
 
             <div class="widget-container">
-                <a href="/create-map" class="widget">
+                <a href="/create-map" id="widget-create-map" class="widget">
                 <terra-icon name="outline-map" library="heroicons" class="w-14 h-14 text-nasa-blue mb-3"></terra-icon>
                 <span class="font-semibold text-gray-800">Create Map</span>
                 </a>
 
-                <a href="/create-timeseries" class="widget">
+                <a href="/create-timeseries" id="widget-create-timeseries" class="widget">
                 <terra-icon name="outline-chart-bar" library="heroicons" class="w-14 h-14 text-nasa-blue mb-3"></terra-icon>
                 <span class="font-semibold text-center text-gray-800">Create Time-Series</span>
                 </a>
 
-                <a href="/user-guide" class="widget">
+                <a href="https://localhost/documents?keywords=user%20guide?title=Giovanni%20Beta%20User%20Guide" id="widget-user-guide" class="widget" target="_blank">
                 <terra-icon name="outline-document-text" library="heroicons" class="w-14 h-14 text-nasa-blue mb-3"></terra-icon>
                 <span class="font-semibold text-gray-800">Read User Guide</span>
                 </a>
@@ -435,6 +435,53 @@
             }
 
             skipBtn.addEventListener("click", closeSplash);
+
+            //For Create Map Widget
+            const createMap = document.getElementById("widget-create-map");
+            createMap?.addEventListener("click", (e) => {
+                e.preventDefault();
+                closeSplash();
+
+            // Select the Map button
+            const mapBtn = document.getElementById("map-button");
+            const plotBtn = document.getElementById("plot-button");
+
+            if (mapBtn && plotBtn) {
+            mapBtn.classList.add("plot-type-button--selected");
+            mapBtn.classList.remove("plot-type-button--unselected");
+
+            plotBtn.classList.add("plot-type-button--unselected");
+            plotBtn.classList.remove("plot-type-button--selected");
+            }
+
+            // Optionally trigger any event listener tied to plot type change
+            mapBtn?.dispatchEvent(new Event("click"));
+            });
+            
+            //For Create Time-Series Widget
+            const createTS = document.getElementById("widget-create-timeseries");
+            createTS?.addEventListener("click", (e) => {
+            e.preventDefault();
+            closeSplash();
+
+            const mapBtn = document.getElementById("map-button");
+            const plotBtn = document.getElementById("plot-button");
+
+            if (mapBtn && plotBtn) {
+                // Map -> unselected
+                mapBtn.classList.add("plot-type-button--unselected");
+                mapBtn.classList.remove("plot-type-button--selected")
+
+                plotBtn.classList.add("plot-type-button--selected");
+                plotBtn.classList.remove("plot-type-button--unselected");}
+            });
+ 
+            //For Read User Guide Widget
+            const userGuide = document.getElementById("widget-user-guide");
+
+            userGuide?.addEventListener("click", () => {
+            closeSplash();          
+            });
             });
         </script>
 
