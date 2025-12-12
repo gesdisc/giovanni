@@ -6,13 +6,14 @@ import { SelectVariablesComponent } from './components/select-variables'
 import { PlotTypeSelectorComponent } from './components/plot-type-selector'
 import { GeneratePlotButtonComponent } from './components/generate-plot-button'
 import { setBasePath } from '@nasa-terra/components'
+import '@nasa-terra/components/dist/components/site-header/site-header.js'
 import { VariableCountComponent } from './components/variable-count'
 import { LoginComponent } from './components/login'
 import { LoginModalComponent } from './components/login-modal'
 import { HistoryPanelComponent } from './components/history-panel'
 import { WelcomeSplashComponent } from './components/welcome-splash'
 
-setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.120/cdn/')
+setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.122/cdn/')
 
 localStorage.setItem('terra-environment', 'uat')
 
