@@ -10,12 +10,14 @@ import { VariableCountComponent } from './components/variable-count'
 import { LoginComponent } from './components/login'
 import { LoginModalComponent } from './components/login-modal'
 import { HistoryPanelComponent } from './components/history-panel'
+import { WelcomeSplashComponent } from './components/welcome-splash'
 
-setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.116/cdn/')
+setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.120/cdn/')
 
 localStorage.setItem('terra-environment', 'uat')
 
 document.addEventListener('DOMContentLoaded', () => {
+    new WelcomeSplashComponent()
     new LoginComponent(),
     new LoginModalComponent()
     new AddVariableDialogComponent()
