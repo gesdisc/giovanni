@@ -13,7 +13,7 @@ import { LoginModalComponent } from './components/login-modal'
 import { HistoryPanelComponent } from './components/history-panel'
 import { WelcomeSplashComponent } from './components/welcome-splash'
 
-setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.122/cdn/')
+setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.125/cdn/')
 
 localStorage.setItem('terra-environment', 'uat')
 
