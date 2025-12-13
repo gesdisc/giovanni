@@ -2,12 +2,17 @@ import { PlotType } from "../components/plot-type-selector"
 import { DateTimeRange, Options, SpatialArea, SpatialAreaType } from "../types"
 
 export function getOptionsFromCurrentUrl(): Options {
+    const plotType = getPlotTypeFromUrl(window.location.href)
+    const spatialArea = getSpatialAreaFromUrl(window.location.href)
+    const dateTimeRange = getDateTimeRangeFromUrl(window.location.href)
+    const variables = getVariablesFromUrl(window.location.href)
+
     return {
-        plotType: getPlotTypeFromUrl(window.location.href),
-        spatialArea: getSpatialAreaFromUrl(window.location.href),
-        dateTimeRange: getDateTimeRangeFromUrl(window.location.href),
-        variables: getVariablesFromUrl(window.location.href),
-        canGeneratePlots: false,
+        plotType,
+        spatialArea,
+        dateTimeRange,
+        variables,
+        canGeneratePlots: spatialArea !== null && dateTimeRange !== null && variables.length > 0,
     }
 }
 
