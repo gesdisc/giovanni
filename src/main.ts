@@ -12,14 +12,16 @@ import { LoginComponent } from './components/login'
 import { LoginModalComponent } from './components/login-modal'
 import { HistoryPanelComponent } from './components/history-panel'
 import { WelcomeSplashComponent } from './components/welcome-splash'
+import { UrlsParamsComponent } from './components/url-params'
 
-setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.125/cdn/')
+setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.126/cdn/')
 
 localStorage.setItem('terra-environment', 'uat')
 
 document.addEventListener('DOMContentLoaded', () => {
+    new UrlsParamsComponent()
     new WelcomeSplashComponent()
-    new LoginComponent(),
+    new LoginComponent()
     new LoginModalComponent()
     new AddVariableDialogComponent()
     new PlotTypeSelectorComponent()

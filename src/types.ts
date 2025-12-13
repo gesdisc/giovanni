@@ -44,3 +44,11 @@ export type User = {
     last_name: string
     email_address: string
 }
+
+export type Options = {
+    plotType: 'map' | 'plot'
+    variables: string[]
+    spatialArea: SpatialArea | null
+    dateTimeRange: DateTimeRange | null
+    canGeneratePlots: boolean
+}
