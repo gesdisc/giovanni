@@ -16,10 +16,63 @@
         />
       <script type="module" crossorigin src="./assets/index-oVuhQ0-D.js"></script>
       <link rel="modulepreload" crossorigin href="./assets/vendor-lC3ks3hR.js">
-      <link rel="stylesheet" crossorigin href="./assets/style-CtFdLP9y.css">
+      <link rel="stylesheet" crossorigin href="./assets/style-BpfpCZZz.css">
     </head>
 
     <body class="bg-gray-50 font-sans">
+
+    <div id="welcomeScreen" class="splash-overlay hidden">  
+        <div class="splash-modal">
+            <h1 class="text-5xl font-bold mb-4 text-center">
+            Welcome to Giovanni 
+            <span class="beta-tag-splash-screen">BETA</span>
+            </h1>
+
+            <p class="max-w-2xl text-lg mb-4">
+            Giovanni allows you to analyze and visualize geophysical measurements like rainfall, soil moisture, and temperature.
+            This <a href="#" class="text-blue-600 underline">beta release</a> takes advantage of cloud optimizations to improve
+            performance and the overall user experience. If you are trying out this release, please consider providing feedback by sending email to our
+            <a href="#" class="text-blue-600 underline">Help Desk</a>. We'd love to hear from you!
+            </p>
+
+            <p class="max-w-2xl text-lg mb-4">
+            <b>NOTE:</b> This release has limited cloud 'credits' so it is possible you will experience abrupt "out of credit" errors when using Giovanni. 
+            If this happens, please contact the <a href="#" class="text-blue-600 underline">Help Desk</a> and we will increase your credit limit.
+            Apologies and please bear with us as we improve the management of cloud credit quotas.
+            </p>
+
+            <h2 class="text-lg text-center font-semibold mb-4 ">Here are some ways to start</h2>
+
+            <div class="widget-container">
+                <a href="/create-map" id="widget-create-map" class="widget">
+                <terra-icon name="outline-map" library="heroicons" class="w-14 h-14 text-nasa-blue mb-3"></terra-icon>
+                <span class="font-semibold text-gray-800">Create Map</span>
+                </a>
+
+                <a href="/create-timeseries" id="widget-create-timeseries" class="widget">
+                <terra-icon name="outline-chart-bar" library="heroicons" class="w-14 h-14 text-nasa-blue mb-3"></terra-icon>
+                <span class="font-semibold text-center text-gray-800">Create Time-Series</span>
+                </a>
+
+                <a href="https://localhost/documents?title=Giovanni%20Beta%20User%20Guide" id="widget-user-guide" class="widget" target="_blank">
+                <terra-icon name="outline-document-text" library="heroicons" class="w-14 h-14 text-nasa-blue mb-3"></terra-icon>
+                <span class="font-semibold text-gray-800">Read User Guide</span>
+                </a>
+            </div>
+
+            <div class="splash-actions">
+                <div class="splash-left">
+                <input type="checkbox" id="hideWelcome" class="mr-2" />
+                <label for="hideWelcome" class="text-gray-700">Do not show this again</label>
+                </div>
+
+                <button id="welcomeSkip" class="splash-skip">
+                    Skip
+                </button>
+            </div>
+        </div>
+    </div>
+
         <div class="flex flex-col h-screen">
             <header
                 class="bg-white border-b border-gray-200 p-4 flex items-center justify-between nasa-bg-blue text-white"
@@ -28,26 +81,46 @@
                     <div>
                         <h1 class="text-2xl inter inter-bold inter-italic">
                             Giovanni
+                            <span class="text-2xl beta-tag">BETA</span>
                         </h1>
                         <p class="text-xs opacity-90 inter-italic">
                             The bridge between data and science
                         </p>
                     </div>
                 </div>
-                <div class="flex items-center">
-                    <terra-button variant="text">
-                        <span class="text-gray-200 hover:text-white flex items-center">
-                            Help
+                <div class="flex items-center relative">
+                    <div class="relative">
+                        <terra-button id="helpButton" variant="text">
+                             <span class="text-gray-200 hover:text-white flex items-center cursor-pointer">
+                                 Help
                             <terra-icon name="outline-chevron-down" library="heroicons" class="w-4 h-4 ml-1"></terra-icon>
-                        </span>
-                    </terra-button>
+                            </span>
+                        </terra-button>
 
-                    <terra-button variant="text">
-                        <span class="text-gray-200 hover:text-white flex items-center">
+                <!-- Help Dropdown Menu -->
+                    <div
+                         id="helpMenu"
+                        class="hidden absolute right-0 mt-2 w-48 bg-white text-black rounded shadow-lg z-50"
+                     >
+                        <a
+                            href="#"
+                            class="block px-4 py-2 hover:bg-gray-100 cursor-not-allowed text-gray-400"
+                        >
+                            User Guide (coming soon)
+                         </a>
+
+                        <a
+                            href="https://forum.earthdata.nasa.gov/viewforum.php?f=7&tagMatch=all&DAAC=3&keywords=&"
+                            target="_blank"
+                            class="block px-4 py-2 hover:bg-gray-100"
+                        >
+                            <span class="flex items-center">
                             Earthdata Forum
                             <terra-icon name="outline-arrow-top-right-on-square" library="heroicons" class="w-4 h-4 ml-1"></terra-icon>
-                        </span>
-                    </terra-button>
+                            </span>
+                        </a>
+                    </div>
+                </div>
                     
                     <terra-login id="login" button-label="Login" class="ml-3">
                         <div slot="logged-in" id="logout">
@@ -328,5 +401,90 @@
         ></div>
 
         <script src="https://cdn.plot.ly/plotly-3.1.0.min.js" charset="utf-8"></script>
+        <script>
+            const helpBtn = document.getElementById("helpButton");
+            const helpMenu = document.getElementById("helpMenu");
+
+            helpBtn.addEventListener("click", () => {
+                helpMenu.classList.toggle("hidden");
+            });
+
+            document.addEventListener("click", (e) => {
+                if (!helpBtn.contains(e.target) && !helpMenu.contains(e.target)) {
+                helpMenu.classList.add("hidden");
+                }
+             });
+        </script>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+            const welcomeScreen = document.getElementById("welcomeScreen");
+            const skipBtn = document.getElementById("welcomeSkip");
+            const hideCheckbox = document.getElementById("hideWelcome");
+
+            // Check if user opted out previously
+            const hide = localStorage.getItem("hideWelcomeScreen");
+
+            if (hide === "true") {
+            welcomeScreen.style.display = "none";
+            }
+
+            function closeSplash() {
+                if (hideCheckbox.checked) {
+                localStorage.setItem("hideWelcomeScreen", "true");
+                }
+             welcomeScreen.style.display = "none";
+            }
+
+            skipBtn.addEventListener("click", closeSplash);
+
+            //For Create Map Widget
+            const createMap = document.getElementById("widget-create-map");
+            createMap?.addEventListener("click", (e) => {
+                e.preventDefault();
+                closeSplash();
+
+            // Select the Map button
+            const mapBtn = document.getElementById("map-button");
+            const plotBtn = document.getElementById("plot-button");
+
+            if (mapBtn && plotBtn) {
+            mapBtn.classList.add("plot-type-button--selected");
+            mapBtn.classList.remove("plot-type-button--unselected");
+
+            plotBtn.classList.add("plot-type-button--unselected");
+            plotBtn.classList.remove("plot-type-button--selected");
+            }
+
+            // Optionally trigger any event listener tied to plot type change
+            mapBtn?.dispatchEvent(new Event("click"));
+            });
+            
+            //For Create Time-Series Widget
+            const createTS = document.getElementById("widget-create-timeseries");
+            createTS?.addEventListener("click", (e) => {
+            e.preventDefault();
+            closeSplash();
+
+            const mapBtn = document.getElementById("map-button");
+            const plotBtn = document.getElementById("plot-button");
+
+            if (mapBtn && plotBtn) {
+                // Map -> unselected
+                mapBtn.classList.add("plot-type-button--unselected");
+                mapBtn.classList.remove("plot-type-button--selected")
+
+                plotBtn.classList.add("plot-type-button--selected");
+                plotBtn.classList.remove("plot-type-button--unselected");}
+            });
+ 
+            //For Read User Guide Widget
+            const userGuide = document.getElementById("widget-user-guide");
+
+            userGuide?.addEventListener("click", () => {
+            closeSplash();          
+            });
+            });
+        </script>
+
     </body>
 </html>
