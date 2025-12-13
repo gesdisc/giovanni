@@ -7,6 +7,7 @@ import type {
 } from '@nasa-terra/components'
 import Sortable from 'sortablejs'
 import { getOptionsFromLocalStorage } from '../utilities/localstorage'
+import { getOptionsFromCurrentUrl } from '../utilities/url'
 
 export class SelectVariablesComponent {
     #element: TerraBrowseVariables
@@ -19,7 +20,7 @@ export class SelectVariablesComponent {
         this.#selectedVariablesList =
             document.querySelector<HTMLElement>('#selected-variables')!
 
-        const options = getOptionsFromLocalStorage()
+        const options = getOptionsFromLocalStorage() || getOptionsFromCurrentUrl()
 
         if (options?.variables) {
             this.#element.selectedVariableEntryIds = options.variables.join(',')

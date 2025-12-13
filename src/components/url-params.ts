@@ -6,6 +6,8 @@ import { getOptionsFromCurrentUrl } from '../utilities/url'
  * This components responsibility is to manage the URL state, to allow for bookmarking and sharing Giovanni urls
  */
 export class UrlsParamsComponent {
+    #hasRenderedOnce = false
+
     constructor() {
         this.#bindEvents()
         this.#setupEffects()
@@ -34,9 +36,11 @@ export class UrlsParamsComponent {
         effect(() => {
             const currentUrl = window.location.href
             
-            if (currentUrl !== configuredUrl.value.href) {
+            if (currentUrl !== configuredUrl.value.href && this.#hasRenderedOnce) {
                 window.history.pushState?.({ path: configuredUrl.value.href }, '', configuredUrl.value.href)
             }
+
+            this.#hasRenderedOnce = true
         })
     }
 }

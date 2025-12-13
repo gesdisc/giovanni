@@ -6,9 +6,13 @@ export function getOptionsFromCurrentUrl(): Options {
         plotType: getPlotTypeFromUrl(window.location.href),
         spatialArea: getSpatialAreaFromUrl(window.location.href),
         dateTimeRange: getDateTimeRangeFromUrl(window.location.href),
-        variables: [],
+        variables: getVariablesFromUrl(window.location.href),
         canGeneratePlots: false,
     }
+}
+
+export function getVariablesFromUrl(urlString: string): string[] {
+    return new URL(urlString).searchParams.getAll('variable')
 }
 
 export function getPlotTypeFromUrl(urlString: string): PlotType {
