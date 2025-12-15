@@ -6,7 +6,10 @@
         <title>NASA Giovanni</title>
 
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.116/cdn/themes/horizon.css" />
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.126/cdn/themes/horizon.css"
+        />
 
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -14,70 +17,101 @@
             href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
             rel="stylesheet"
         />
-      <script type="module" crossorigin src="./assets/index-oVuhQ0-D.js"></script>
+      <script type="module" crossorigin src="./assets/index-DRYq28ac.js"></script>
       <link rel="modulepreload" crossorigin href="./assets/vendor-lC3ks3hR.js">
-      <link rel="stylesheet" crossorigin href="./assets/style-BpfpCZZz.css">
+      <link rel="stylesheet" crossorigin href="./assets/style-CmMWul8C.css">
     </head>
 
     <body class="bg-gray-50 font-sans">
+        <div id="welcomeScreen" class="splash-overlay" style="display: none">
+            <div class="splash-modal">
+                <h1 class="text-5xl font-bold mb-4 text-center">
+                    Welcome to Giovanni
+                    <span class="beta-tag-splash-screen">BETA</span>
+                </h1>
 
-    <div id="welcomeScreen" class="splash-overlay hidden">  
-        <div class="splash-modal">
-            <h1 class="text-5xl font-bold mb-4 text-center">
-            Welcome to Giovanni 
-            <span class="beta-tag-splash-screen">BETA</span>
-            </h1>
+                <p class="max-w-2xl text-lg mb-4">
+                    Giovanni allows you to analyze and visualize geophysical
+                    measurements like rainfall, soil moisture, and temperature. This
+                    <a href="#" class="text-blue-600 underline">beta release</a> takes
+                    advantage of cloud optimizations to improve performance and the
+                    overall user experience. If you are trying out this release,
+                    please consider providing feedback by sending email to our
+                    <a href="#" class="text-blue-600 underline">Help Desk</a>. We'd
+                    love to hear from you!
+                </p>
 
-            <p class="max-w-2xl text-lg mb-4">
-            Giovanni allows you to analyze and visualize geophysical measurements like rainfall, soil moisture, and temperature.
-            This <a href="#" class="text-blue-600 underline">beta release</a> takes advantage of cloud optimizations to improve
-            performance and the overall user experience. If you are trying out this release, please consider providing feedback by sending email to our
-            <a href="#" class="text-blue-600 underline">Help Desk</a>. We'd love to hear from you!
-            </p>
+                <p class="max-w-2xl text-lg mb-4">
+                    <b>NOTE:</b> This release has limited cloud 'credits' so it is
+                    possible you will experience abrupt "out of credit" errors when
+                    using Giovanni. If this happens, please contact the
+                    <a href="#" class="text-blue-600 underline">Help Desk</a> and we
+                    will increase your credit limit. Apologies and please bear with us
+                    as we improve the management of cloud credit quotas.
+                </p>
 
-            <p class="max-w-2xl text-lg mb-4">
-            <b>NOTE:</b> This release has limited cloud 'credits' so it is possible you will experience abrupt "out of credit" errors when using Giovanni. 
-            If this happens, please contact the <a href="#" class="text-blue-600 underline">Help Desk</a> and we will increase your credit limit.
-            Apologies and please bear with us as we improve the management of cloud credit quotas.
-            </p>
+                <h2 class="text-lg text-center font-semibold mb-4">
+                    Here are some ways to start
+                </h2>
 
-            <h2 class="text-lg text-center font-semibold mb-4 ">Here are some ways to start</h2>
+                <div class="widget-container">
+                    <a href="/create-map" id="widget-create-map" class="widget">
+                        <terra-icon
+                            name="outline-map"
+                            library="heroicons"
+                            class="w-14 h-14 text-nasa-blue mb-3"
+                        ></terra-icon>
+                        <span class="font-semibold text-gray-800">Create Map</span>
+                    </a>
 
-            <div class="widget-container">
-                <a href="/create-map" id="widget-create-map" class="widget">
-                <terra-icon name="outline-map" library="heroicons" class="w-14 h-14 text-nasa-blue mb-3"></terra-icon>
-                <span class="font-semibold text-gray-800">Create Map</span>
-                </a>
+                    <a
+                        href="/create-timeseries"
+                        id="widget-create-timeseries"
+                        class="widget"
+                    >
+                        <terra-icon
+                            name="outline-chart-bar"
+                            library="heroicons"
+                            class="w-14 h-14 text-nasa-blue mb-3"
+                        ></terra-icon>
+                        <span class="font-semibold text-center text-gray-800"
+                            >Create Time-Series</span
+                        >
+                    </a>
 
-                <a href="/create-timeseries" id="widget-create-timeseries" class="widget">
-                <terra-icon name="outline-chart-bar" library="heroicons" class="w-14 h-14 text-nasa-blue mb-3"></terra-icon>
-                <span class="font-semibold text-center text-gray-800">Create Time-Series</span>
-                </a>
-
-                <a href="https://localhost/documents?title=Giovanni%20Beta%20User%20Guide" id="widget-user-guide" class="widget" target="_blank">
-                <terra-icon name="outline-document-text" library="heroicons" class="w-14 h-14 text-nasa-blue mb-3"></terra-icon>
-                <span class="font-semibold text-gray-800">Read User Guide</span>
-                </a>
-            </div>
-
-            <div class="splash-actions">
-                <div class="splash-left">
-                <input type="checkbox" id="hideWelcome" class="mr-2" />
-                <label for="hideWelcome" class="text-gray-700">Do not show this again</label>
+                    <a
+                        href="https://localhost/documents?title=Giovanni%20Beta%20User%20Guide"
+                        id="widget-user-guide"
+                        class="widget"
+                        target="_blank"
+                    >
+                        <terra-icon
+                            name="outline-document-text"
+                            library="heroicons"
+                            class="w-14 h-14 text-nasa-blue mb-3"
+                        ></terra-icon>
+                        <span class="font-semibold text-gray-800"
+                            >Read User Guide</span
+                        >
+                    </a>
                 </div>
 
-                <button id="welcomeSkip" class="splash-skip">
-                    Skip
-                </button>
+                <div class="splash-actions">
+                    <div class="splash-left">
+                        <input type="checkbox" id="hideWelcome" class="mr-2" />
+                        <label for="hideWelcome" class="text-gray-700"
+                            >Do not show this again</label
+                        >
+                    </div>
+
+                    <button id="welcomeSkip" class="splash-skip">Skip</button>
+                </div>
             </div>
         </div>
-    </div>
 
         <div class="flex flex-col h-screen">
-            <header
-                class="bg-white border-b border-gray-200 p-4 flex items-center justify-between nasa-bg-blue text-white"
-            >
-                <div class="flex items-center space-x-3">
+            <terra-site-header>
+                <div slot="title" class="flex items-center space-x-3" slot="title">
                     <div>
                         <h1 class="text-2xl inter inter-bold inter-italic">
                             Giovanni
@@ -88,26 +122,34 @@
                         </p>
                     </div>
                 </div>
-                <div class="flex items-center relative">
+
+                <div class="flex items-center relative" slot="right">
                     <div class="relative">
                         <terra-button id="helpButton" variant="text">
-                             <span class="text-gray-200 hover:text-white flex items-center cursor-pointer">
-                                 Help
-                            <terra-icon name="outline-chevron-down" library="heroicons" class="w-4 h-4 ml-1"></terra-icon>
+                            <span
+                                class="text-gray-200 hover:text-white flex items-center cursor-pointer"
+                            >
+                                Help
+                                <terra-icon
+                                    name="outline-chevron-down"
+                                    library="heroicons"
+                                    class="w-4 h-4 ml-1"
+                                ></terra-icon>
                             </span>
                         </terra-button>
+                    </div>
 
-                <!-- Help Dropdown Menu -->
+                    <!-- Help Dropdown Menu -->
                     <div
-                         id="helpMenu"
-                        class="hidden absolute right-0 mt-2 w-48 bg-white text-black rounded shadow-lg z-50"
-                     >
+                        id="helpMenu"
+                        class="hidden absolute right-0 top-8 w-48 bg-white text-black rounded shadow-lg z-50"
+                    >
                         <a
                             href="#"
                             class="block px-4 py-2 hover:bg-gray-100 cursor-not-allowed text-gray-400"
                         >
                             User Guide (coming soon)
-                         </a>
+                        </a>
 
                         <a
                             href="https://forum.earthdata.nasa.gov/viewforum.php?f=7&tagMatch=all&DAAC=3&keywords=&"
@@ -115,60 +157,92 @@
                             class="block px-4 py-2 hover:bg-gray-100"
                         >
                             <span class="flex items-center">
-                            Earthdata Forum
-                            <terra-icon name="outline-arrow-top-right-on-square" library="heroicons" class="w-4 h-4 ml-1"></terra-icon>
+                                Earthdata Forum
+                                <terra-icon
+                                    name="outline-arrow-top-right-on-square"
+                                    library="heroicons"
+                                    class="w-4 h-4 ml-1"
+                                ></terra-icon>
                             </span>
                         </a>
                     </div>
-                </div>
-                    
+
                     <terra-login id="login" button-label="Login" class="ml-3">
                         <div slot="logged-in" id="logout">
                             <!-- empty container that will be populated with the logout button -->
                         </div>
                     </terra-login>
                 </div>
-            </header>
+            </terra-site-header>
 
             <div class="flex flex-1">
                 <aside
                     id="sidebar"
                     class="bg-gray-50 shadow-lg border-r border-gray-200 flex flex-col"
-                    style="width: 500px; min-width: 300px; max-width: 2000px;"
+                    style="width: 500px; min-width: 300px; max-width: 2000px"
                 >
                     <div
                         class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4"
                     >
                         <!-- Plot Type Selector -->
                         <section class="bg-white rounded-lg p-4 shadow-sm">
-                            <h3 class="text-sm font-semibold text-gray-700 mb-3">Plot Type</h3>
+                            <h3 class="text-sm font-semibold text-gray-700 mb-3">
+                                Plot Type
+                            </h3>
                             <div class="flex space-x-2">
                                 <button
                                     id="map-button"
                                     class="plot-type-button plot-type-button--unselected"
                                     data-plot-type="map"
                                 >
-                                    <svg class="plot-type-icon plot-type-icon--unselected" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m-6 3l6-3"/>
+                                    <svg
+                                        class="plot-type-icon plot-type-icon--unselected"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m-6 3l6-3"
+                                        />
                                     </svg>
-                                    <span class="plot-type-label plot-type-label--unselected">Map</span>
+                                    <span
+                                        class="plot-type-label plot-type-label--unselected"
+                                        >Map</span
+                                    >
                                 </button>
                                 <button
                                     id="plot-button"
                                     class="plot-type-button plot-type-button--selected"
                                     data-plot-type="plot"
                                 >
-                                    <svg class="plot-type-icon plot-type-icon--selected" fill="currentColor" stroke="currentColor" viewBox="0 0 57 49">
+                                    <svg
+                                        class="plot-type-icon plot-type-icon--selected"
+                                        fill="currentColor"
+                                        stroke="currentColor"
+                                        viewBox="0 0 57 49"
+                                    >
                                         <g clip-path="url(#clip0_62845_16438)">
-                                            <path d="M7.5 3.6748C7.5 1.98086 5.93594 0.612305 4 0.612305C2.06406 0.612305 0.5 1.98086 0.5 3.6748V40.7311C0.5 44.9611 4.41562 48.3873 9.25 48.3873H53C54.9359 48.3873 56.5 47.0187 56.5 45.3248C56.5 43.6309 54.9359 42.2623 53 42.2623H9.25C8.2875 42.2623 7.5 41.5732 7.5 40.7311V3.6748ZM54.7719 14.4127C56.1391 13.2164 56.1391 11.2736 54.7719 10.0773C53.4047 8.88105 51.1844 8.88105 49.8172 10.0773L38.3 20.1645L32.0219 14.6711C30.6547 13.4748 28.4344 13.4748 27.0672 14.6711L12.0172 27.8398C10.65 29.0361 10.65 30.9789 12.0172 32.1752C13.3844 33.3715 15.6047 33.3715 16.9719 32.1752L29.55 21.1789L35.8281 26.6723C37.1953 27.8686 39.4156 27.8686 40.7828 26.6723L54.7828 14.4223L54.7719 14.4127Z"/>
+                                            <path
+                                                d="M7.5 3.6748C7.5 1.98086 5.93594 0.612305 4 0.612305C2.06406 0.612305 0.5 1.98086 0.5 3.6748V40.7311C0.5 44.9611 4.41562 48.3873 9.25 48.3873H53C54.9359 48.3873 56.5 47.0187 56.5 45.3248C56.5 43.6309 54.9359 42.2623 53 42.2623H9.25C8.2875 42.2623 7.5 41.5732 7.5 40.7311V3.6748ZM54.7719 14.4127C56.1391 13.2164 56.1391 11.2736 54.7719 10.0773C53.4047 8.88105 51.1844 8.88105 49.8172 10.0773L38.3 20.1645L32.0219 14.6711C30.6547 13.4748 28.4344 13.4748 27.0672 14.6711L12.0172 27.8398C10.65 29.0361 10.65 30.9789 12.0172 32.1752C13.3844 33.3715 15.6047 33.3715 16.9719 32.1752L29.55 21.1789L35.8281 26.6723C37.1953 27.8686 39.4156 27.8686 40.7828 26.6723L54.7828 14.4223L54.7719 14.4127Z"
+                                            />
                                         </g>
                                         <defs>
                                             <clipPath id="clip0_62845_16438">
-                                                <rect width="56" height="49" transform="translate(0.5)"/>
+                                                <rect
+                                                    width="56"
+                                                    height="49"
+                                                    transform="translate(0.5)"
+                                                />
                                             </clipPath>
                                         </defs>
-                                    </svg> 
-                                    <span class="plot-type-label plot-type-label--selected">Time Series</span>
+                                    </svg>
+                                    <span
+                                        class="plot-type-label plot-type-label--selected"
+                                        >Time Series</span
+                                    >
                                 </button>
                             </div>
                         </section>
@@ -176,7 +250,9 @@
                         <!-- Variables Section -->
                         <section class="bg-white rounded-lg p-4 shadow-sm">
                             <div class="flex items-center justify-between mb-3">
-                                <h3 class="text-sm font-semibold text-gray-700">Variables</h3>
+                                <h3 class="text-sm font-semibold text-gray-700">
+                                    Variables
+                                </h3>
                                 <span
                                     class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full"
                                     id="variable-count"
@@ -204,8 +280,9 @@
                             </terra-button>
 
                             <terra-dialog
+                                no-header
                                 id="add-variable-dialog"
-                                width="clamp(350px, 77%, 1280px)"
+                                style="--width: clamp(350px, 77%, 1280px); --body-spacing: 0"
                             >
                                 <terra-browse-variables
                                     id="variable-selector"
@@ -215,7 +292,9 @@
 
                         <!-- Location/Region Section -->
                         <section class="bg-white rounded-lg p-4 shadow-sm">
-                            <h3 class="text-sm font-semibold text-gray-700 mb-3">Location / Region</h3>
+                            <h3 class="text-sm font-semibold text-gray-700 mb-3">
+                                Location / Region
+                            </h3>
                             <terra-spatial-picker
                                 label=""
                                 id="spatial-picker"
@@ -225,7 +304,9 @@
 
                         <!-- Date Range Section -->
                         <section class="bg-white rounded-lg p-4 shadow-sm">
-                            <h3 class="text-sm font-semibold text-gray-700 mb-3">Date Range</h3>
+                            <h3 class="text-sm font-semibold text-gray-700 mb-3">
+                                Date Range
+                            </h3>
                             <terra-date-picker
                                 label=""
                                 range
@@ -236,7 +317,9 @@
                         </section>
                     </div>
 
-                    <div class="p-4 border-t border-gray-200 sticky bottom-0 bg-gray-50 z-10">
+                    <div
+                        class="p-4 border-t border-gray-200 sticky bottom-0 bg-gray-50 z-10"
+                    >
                         <button
                             id="generate-plot-button"
                             class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
@@ -246,10 +329,10 @@
                     </div>
                 </aside>
 
-                <div 
-                    id="resize-handle" 
+                <div
+                    id="resize-handle"
                     class="w-1 bg-gray-300 hover:bg-gray-400 cursor-col-resize transition-colors duration-200 flex-shrink-0"
-                    style="touch-action: none;"
+                    style="touch-action: none"
                 ></div>
 
                 <main class="flex-1 flex flex-col bg-white">
@@ -260,21 +343,15 @@
             <div
                 id="history-panel"
                 class="fixed bottom-0 z-50 right-0 bg-white h-[100px] border-t border-gray-200"
-                style="left: 500px;"
+                style="left: 500px"
             >
-                <div
-                    class="w-full h-[80px] bg-white flex items-center px-4 relative"
-                >
+                <div class="w-full h-[80px] bg-white flex items-center px-4 relative">
                     <!-- Grid button -->
                     <button
                         id="grid-button"
                         class="flex-shrink-0 w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors duration-200 mr-2 hidden"
                     >
-                        <svg
-                            class="w-5 h-5"
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
-                        >
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                             <path
                                 d="M3 3h7v7H3V3zm0 11h7v7H3v-7zm11-11h7v7h-7V3zm0 11h7v7h-7v-7z"
                             />
@@ -331,7 +408,6 @@
                         </svg>
                     </button>
                 </div>
-            </div>
             </div>
         </div>
 
@@ -400,91 +476,24 @@
             id="thumbnail-tooltip"
         ></div>
 
-        <script src="https://cdn.plot.ly/plotly-3.1.0.min.js" charset="utf-8"></script>
+        <!-- used in time-series-plot to generate history thumbnails -->
+        <script
+            src="https://cdn.plot.ly/plotly-3.1.0.min.js"
+            charset="utf-8"
+        ></script>
         <script>
-            const helpBtn = document.getElementById("helpButton");
-            const helpMenu = document.getElementById("helpMenu");
+            const helpBtn = document.getElementById('helpButton')
+            const helpMenu = document.getElementById('helpMenu')
 
-            helpBtn.addEventListener("click", () => {
-                helpMenu.classList.toggle("hidden");
-            });
+            helpBtn.addEventListener('click', () => {
+                helpMenu.classList.toggle('hidden')
+            })
 
-            document.addEventListener("click", (e) => {
+            document.addEventListener('click', e => {
                 if (!helpBtn.contains(e.target) && !helpMenu.contains(e.target)) {
-                helpMenu.classList.add("hidden");
+                    helpMenu.classList.add('hidden')
                 }
-             });
+            })
         </script>
-        <script>
-            document.addEventListener("DOMContentLoaded", () => {
-            const welcomeScreen = document.getElementById("welcomeScreen");
-            const skipBtn = document.getElementById("welcomeSkip");
-            const hideCheckbox = document.getElementById("hideWelcome");
-
-            // Check if user opted out previously
-            const hide = localStorage.getItem("hideWelcomeScreen");
-
-            if (hide === "true") {
-            welcomeScreen.style.display = "none";
-            }
-
-            function closeSplash() {
-                if (hideCheckbox.checked) {
-                localStorage.setItem("hideWelcomeScreen", "true");
-                }
-             welcomeScreen.style.display = "none";
-            }
-
-            skipBtn.addEventListener("click", closeSplash);
-
-            //For Create Map Widget
-            const createMap = document.getElementById("widget-create-map");
-            createMap?.addEventListener("click", (e) => {
-                e.preventDefault();
-                closeSplash();
-
-            // Select the Map button
-            const mapBtn = document.getElementById("map-button");
-            const plotBtn = document.getElementById("plot-button");
-
-            if (mapBtn && plotBtn) {
-            mapBtn.classList.add("plot-type-button--selected");
-            mapBtn.classList.remove("plot-type-button--unselected");
-
-            plotBtn.classList.add("plot-type-button--unselected");
-            plotBtn.classList.remove("plot-type-button--selected");
-            }
-
-            // Optionally trigger any event listener tied to plot type change
-            mapBtn?.dispatchEvent(new Event("click"));
-            });
-            
-            //For Create Time-Series Widget
-            const createTS = document.getElementById("widget-create-timeseries");
-            createTS?.addEventListener("click", (e) => {
-            e.preventDefault();
-            closeSplash();
-
-            const mapBtn = document.getElementById("map-button");
-            const plotBtn = document.getElementById("plot-button");
-
-            if (mapBtn && plotBtn) {
-                // Map -> unselected
-                mapBtn.classList.add("plot-type-button--unselected");
-                mapBtn.classList.remove("plot-type-button--selected")
-
-                plotBtn.classList.add("plot-type-button--selected");
-                plotBtn.classList.remove("plot-type-button--unselected");}
-            });
- 
-            //For Read User Guide Widget
-            const userGuide = document.getElementById("widget-user-guide");
-
-            userGuide?.addEventListener("click", () => {
-            closeSplash();          
-            });
-            });
-        </script>
-
     </body>
 </html>
