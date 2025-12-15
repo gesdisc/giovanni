@@ -1,21 +1,13 @@
 import { canGeneratePlots, userState } from '../state'
 import { effect } from '@preact/signals-core'
-import { getOptionsFromCurrentUrl } from '../utilities/url'
 
 export class GeneratePlotButtonComponent {
     #button: HTMLButtonElement
-    #generatePlotWhenReady: boolean = false
 
     constructor() {
         this.#button = document.querySelector<HTMLButtonElement>('#generate-plot-button')!
         this.#setupEffects()
         this.#bindEvents()
-
-        const options = getOptionsFromCurrentUrl()
-
-        if (options.canGeneratePlots) {
-            this.#generatePlotWhenReady = true
-        }
     }
 
     #setupEffects() {
