@@ -28,16 +28,6 @@ export class GeneratePlotButtonComponent {
             } else {
                 this.#button.className = 'w-full bg-gray-300 text-gray-500 font-semibold py-3 px-4 rounded-lg cursor-not-allowed'
             }
-
-            // if we should generate a plot on load, go and and click the button on behalf of the user so the plot
-            // automatically loads
-            if (this.#generatePlotWhenReady && canGeneratePlots.value) {
-                this.#generatePlotWhenReady = false
-                
-                setTimeout(() => {
-                    this.#handleButtonClick(true)
-                }, 500)
-            }
         })
     }
 
