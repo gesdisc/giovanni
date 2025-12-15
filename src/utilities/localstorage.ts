@@ -1,14 +1,6 @@
 import { variables, spatialArea, dateTimeRange, plotType, canGeneratePlots } from '../state'
-import { DateTimeRange, SpatialArea } from '../types'
+import { Options } from '../types'
 
-
-export type Options = {
-    plotType: 'map' | 'plot'
-    variables: string[]
-    spatialArea: SpatialArea | null
-    dateTimeRange: DateTimeRange | null
-    canGeneratePlots: boolean
-}
 
 export function storeOptionsInLocalStorage() {
     const options: Options = {

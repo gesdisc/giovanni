@@ -1,13 +1,21 @@
 import { canGeneratePlots, userState } from '../state'
 import { effect } from '@preact/signals-core'
+import { getOptionsFromCurrentUrl } from '../utilities/url'
 
 export class GeneratePlotButtonComponent {
     #button: HTMLButtonElement
+    #generatePlotWhenReady: boolean = false
 
     constructor() {
         this.#button = document.querySelector<HTMLButtonElement>('#generate-plot-button')!
         this.#setupEffects()
         this.#bindEvents()
+
+        const options = getOptionsFromCurrentUrl()
+
+        if (options.canGeneratePlots) {
+            this.#generatePlotWhenReady = true
+        }
     }
 
     #setupEffects() {
@@ -25,13 +33,21 @@ export class GeneratePlotButtonComponent {
 
     #bindEvents() {
         this.#button.addEventListener('click', () => {
-            if (!canGeneratePlots.value) return
-
-            if (userState.value.user?.uid) {
-                document.dispatchEvent(new CustomEvent('generate-plot'))
-            } else {
-                document.dispatchEvent(new CustomEvent('open-login-modal'))
-            }
+            this.#handleButtonClick()
         })
+    }
+
+    #handleButtonClick(force?: boolean) {
+        if (!canGeneratePlots.value && !force) return
+
+        if (force) {
+            console.log('Came from a URL with sufficient options to generate the plot automatically')
+        }
+
+        if (userState.value.user?.uid) {
+            document.dispatchEvent(new CustomEvent('generate-plot'))
+        } else {
+            document.dispatchEvent(new CustomEvent('open-login-modal'))
+        }
     }
 }
