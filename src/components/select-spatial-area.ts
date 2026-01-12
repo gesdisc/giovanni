@@ -1,22 +1,42 @@
 import { effect, untracked } from '@preact/signals-core'
-import { spatialArea } from '../state'
+import { spatialArea, plotType } from '../state'
 import { SpatialAreaType } from '../types'
 import type { TerraMapChangeEvent, TerraSpatialPicker } from '@nasa-terra/components'
 
 export class SelectSpatialAreaComponent {
     #element: TerraSpatialPicker
+    #heading: HTMLHeadingElement
+    #previousPlotType: 'map' | 'plot' | null = null
 
     constructor() {
         this.#element = document.querySelector<TerraSpatialPicker>('#spatial-picker')!
+        this.#heading = document.querySelector<HTMLHeadingElement>('#spatial-picker-heading')!
 
-        this.updateSpatialAreaValue()
+        this.#previousPlotType = plotType.value
 
-        this.#bindEvents()
+        // Set initial heading text
+        this.#updateHeading()
+
+        // Rebuild the component on initial load if plot type is 'map' to ensure hidePointSelection is set before firstUpdated
+        if (plotType.value === 'map') {
+            this.#rebuildSpatialPicker()
+        } else {
+            this.updateSpatialAreaValue()
+            this.#bindEvents()
+        }
+
         this.#setupEffects()
     }
 
     #bindEvents() {
         this.#element.addEventListener(
+            'terra-map-change',
+            this.#handleChange.bind(this)
+        )
+    }
+
+    #unbindEvents() {
+        this.#element.removeEventListener(
             'terra-map-change',
             this.#handleChange.bind(this)
         )
@@ -30,6 +50,53 @@ export class SelectSpatialAreaComponent {
                 this.updateSpatialAreaValue()
             })
         })
+
+        effect(() => {
+            // Update heading text based on plot type
+            this.#updateHeading()
+
+            // Rebuild the spatial picker when plot type changes to ensure hidePointSelection takes effect
+            if (this.#previousPlotType !== null && this.#previousPlotType !== plotType.value) {
+                this.#rebuildSpatialPicker()
+            }
+            this.#previousPlotType = plotType.value
+        })
+    }
+
+    #updateHeading() {
+        this.#heading.textContent = plotType.value === 'map' ? 'Region' : 'Location / Region'
+    }
+
+    #rebuildSpatialPicker() {
+        // Store the current spatial area value before rebuilding
+        const currentSpatialArea = spatialArea.value
+
+        const parent = this.#element.parentElement
+        if (!parent) return
+
+        const label = this.#element.getAttribute('label') || ''
+        const className = this.#element.className
+
+        this.#unbindEvents()
+        this.#element.remove()
+
+        // Create a new element with the correct hidePointSelection property
+        const newElement = document.createElement('terra-spatial-picker') as TerraSpatialPicker
+        newElement.setAttribute('label', label)
+        newElement.setAttribute('id', 'spatial-picker')
+        newElement.className = className
+        newElement.hidePointSelection = plotType.value === 'map'
+        parent.appendChild(newElement)
+
+        this.#element = newElement
+
+        this.#bindEvents()
+
+        if (currentSpatialArea) {
+            untracked(() => {
+                this.updateSpatialAreaValue()
+            })
+        }
     }
 
     updateSpatialAreaValue() {

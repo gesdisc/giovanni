@@ -275,7 +275,7 @@
                                     library="heroicons"
                                     class="mr-2"
                                 ></terra-icon>
-                                Add a Variable
+                                Select a Variable
                             </terra-button>
 
                             <terra-dialog
@@ -291,7 +291,7 @@
 
                         <!-- Location/Region Section -->
                         <section class="bg-white rounded-lg p-4 shadow-sm">
-                            <h3 class="text-sm font-semibold text-gray-700 mb-3">
+                            <h3 id="spatial-picker-heading" class="text-sm font-semibold text-gray-700 mb-3">
                                 Location / Region
                             </h3>
                             <terra-spatial-picker
@@ -312,6 +312,8 @@
                                 show-months="2"
                                 class="w-full"
                                 id="date-range"
+                                show-presets
+                                placeholder="Select a date range (e.g. 2025-01-01 to 2025-01-31)"
                             ></terra-date-picker>
                         </section>
                     </div>
