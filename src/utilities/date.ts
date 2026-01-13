@@ -85,3 +85,43 @@ export function getValidDatesInBoundary(
         endDate: validateSingleDate(endDate ? new Date(endDate) : undefined, 'end'),
     }
 }
+
+/**
+ * Get the last N available days from the valid date range.
+ * Uses the maxDate as the end date and calculates N days back, ensuring it doesn't go before minDate.
+ * If less than N days are available, returns all available days.
+ */
+export function getLastNAvailableDays(
+    minDate: string | undefined,
+    maxDate: string | undefined,
+    days: number = 7
+): { startDate: string; endDate: string } | null {
+    if (!maxDate) {
+        return null
+    }
+
+    const endDate = new Date(maxDate)
+    const startDate = new Date(endDate)
+    startDate.setDate(startDate.getDate() - (days - 1)) // Subtract (days - 1) to include the end date
+
+    // If minDate is provided and startDate is before it, adjust to minDate
+    if (minDate) {
+        const min = new Date(minDate)
+        if (startDate < min) {
+            // If the range is less than N days, use what's available
+            if (endDate < min) {
+                // No valid range available
+                return null
+            }
+            return {
+                startDate: min.toISOString().split('T')[0],
+                endDate: endDate.toISOString().split('T')[0],
+            }
+        }
+    }
+
+    return {
+        startDate: startDate.toISOString().split('T')[0],
+        endDate: endDate.toISOString().split('T')[0],
+    }
+}

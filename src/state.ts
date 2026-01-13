@@ -1,7 +1,7 @@
 import { computed, effect, signal } from '@preact/signals-core'
 import { DateTimeRange, SpatialArea, SpatialAreaType, TimeSeriesRequestHistoryItem, UserState } from './types'
 import { VariableComponent } from './components/variable'
-import { getValidDateRangeFromVariables } from './utilities/date'
+import { getValidDateRangeFromVariables, getLastNAvailableDays } from './utilities/date'
 import { getDefaultSpatialAreaFromVariables, isGlobalSpatialArea } from './utilities/spatial'
 import { getOptionsFromLocalStorage } from './utilities/localstorage'
 import { getOptionsFromCurrentUrl } from './utilities/url'
@@ -75,6 +75,27 @@ effect(() => {
         // Only auto-set if it's not global - leave it null if global
         if (!isGlobalSpatialArea(defaultArea)) {
             spatialArea.value = defaultArea
+        }
+    }
+})
+
+// Auto-set default date range to last 7 available days when variables are selected and no date range is set
+effect(() => {
+    // Only set default if date range is null or incomplete
+    const hasNoDateRange = dateTimeRange.value === null || 
+        !dateTimeRange.value.startDate || 
+        !dateTimeRange.value.endDate
+    
+    if (hasNoDateRange && variables.value.length > 0) {
+        const validRange = validDateTimeRange.value
+        if (validRange.maxDate) {
+            const last7Days = getLastNAvailableDays(validRange.minDate, validRange.maxDate, 7)
+            if (last7Days) {
+                dateTimeRange.value = {
+                    startDate: last7Days.startDate,
+                    endDate: last7Days.endDate,
+                }
+            }
         }
     }
 })
