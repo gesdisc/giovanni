@@ -1,4 +1,4 @@
-import { canGeneratePlots, dateTimeRange, plotType, spatialArea, variables } from '../state'
+import { canGeneratePlots, dateTimeRange, effectiveSpatialArea, plotType, variables } from '../state'
 import { effect } from '@preact/signals-core'
 import { TimeSeriesPlotComponent } from './time-series-plot'
 import { MapPlotComponent } from './map-plot'
@@ -58,11 +58,11 @@ export class PlotsListComponent {
 
         // Effect for handling spatial area changes
         effect(() => {
-            if (!canGeneratePlots.value || !spatialArea.value) return
+            if (!canGeneratePlots.value) return
             
-            // Update all active plots with new spatial area
+            // Update all active plots with new spatial area (using effective spatial area which includes defaults)
             for (const plot of this.#activePlots.values()) {
-                plot.updateSpatialArea(spatialArea.value)
+                plot.updateSpatialArea(effectiveSpatialArea.value as SpatialArea)
             }
         })
     }
@@ -103,7 +103,7 @@ export class PlotsListComponent {
         console.log(
             'add time series plot for variable ',
             variable,
-            spatialArea.value,
+            effectiveSpatialArea.value,
             dateTimeRange.value
         )
 
@@ -112,7 +112,7 @@ export class PlotsListComponent {
         
         const plot = new TimeSeriesPlotComponent({
             variable,
-            spatialArea: spatialArea.value!,
+            spatialArea: effectiveSpatialArea.value as SpatialArea,
             dateTimeRange: dateTimeRange.value!,
             variableLongName,
             fromHistory: variableComponent?.fromHistory || false,
@@ -142,7 +142,7 @@ export class PlotsListComponent {
 
         const plot = new MapPlotComponent({
             variable,
-            spatialArea: spatialArea.value!,
+            spatialArea: effectiveSpatialArea.value as SpatialArea,
             dateTimeRange: dateTimeRange.value!,
             variableLongName,
             fromHistory: variableComponent?.fromHistory || false,

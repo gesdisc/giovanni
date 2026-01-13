@@ -1,4 +1,4 @@
-import { dateTimeRange, validDateTimeRange } from '../state'
+import { dateTimeRange, validDateTimeRange, variables } from '../state'
 import { effect, untracked } from '@preact/signals-core'
 import { TerraDatePicker, TerraDateRangeChangeEvent } from '@nasa-terra/components'
 import { getValidDatesInBoundary } from '../utilities/date'
@@ -8,6 +8,11 @@ export class SelectDateTimeRangeComponent {
 
     constructor() {
         this.#el = document.querySelector<TerraDatePicker>('#date-range')!
+
+        // Set initial enableTime value if variables are already selected
+        this.#el.enableTime = variables.value.some(v => 
+            v.variable.dataProductTimeInterval?.toLowerCase().includes('hour')
+        )
 
         this.#bindEvents()
         this.#setupEffects()
@@ -25,6 +30,13 @@ export class SelectDateTimeRangeComponent {
                 this.#el.startDate = dateTimeRange.value.startDate
                 this.#el.endDate = dateTimeRange.value.endDate
             }
+        })
+
+        effect(() => {
+            // Enable time selection if there is any variable with hourly data
+            this.#el.enableTime = variables.value.some(v => 
+                v.variable.dataProductTimeInterval?.toLowerCase().includes('hour')
+            )
         })
         
         effect(() => {

@@ -1,7 +1,8 @@
-import { computed, signal } from '@preact/signals-core'
+import { computed, effect, signal } from '@preact/signals-core'
 import { DateTimeRange, SpatialArea, SpatialAreaType, TimeSeriesRequestHistoryItem, UserState } from './types'
 import { VariableComponent } from './components/variable'
 import { getValidDateRangeFromVariables } from './utilities/date'
+import { getDefaultSpatialAreaFromVariables, isGlobalSpatialArea } from './utilities/spatial'
 import { getOptionsFromLocalStorage } from './utilities/localstorage'
 import { getOptionsFromCurrentUrl } from './utilities/url'
 
@@ -21,10 +22,32 @@ export const hasValidDateTimeRange = computed(() => {
     )
 })
 
+// Computed signal for effective spatial area (user-selected or default from variables)
+export const effectiveSpatialArea = computed(() => {
+    if (spatialArea.value !== null) {
+        return spatialArea.value
+    }
+    
+    // If no spatial area is selected, use default from variables
+    if (variables.value.length > 0) {
+        return getDefaultSpatialAreaFromVariables(variables.value.map(v => v.variable))
+    }
+    
+    // Fallback to global if no variables
+    return {
+        type: SpatialAreaType.BOUNDING_BOX,
+        value: {
+            west: '-180',
+            south: '-90',
+            east: '180',
+            north: '90',
+        },
+    }
+})
+
 export const canGeneratePlots = computed(() => {
     return (
         variables.value.length > 0 &&
-        spatialArea.value !== null &&
         hasValidDateTimeRange.value
     )
 })
@@ -44,8 +67,21 @@ export const validDateTimeRange = computed(() => {
     return getValidDateRangeFromVariables(variables.value.map(v => v.variable))
 })
 
+// Auto-set default spatial area when variables change and no spatial area is set
+// Only auto-set if the default is NOT global (leave it null if global)
+effect(() => {
+    if (spatialArea.value === null && variables.value.length > 0) {
+        const defaultArea = getDefaultSpatialAreaFromVariables(variables.value.map(v => v.variable))
+        // Only auto-set if it's not global - leave it null if global
+        if (!isGlobalSpatialArea(defaultArea)) {
+            spatialArea.value = defaultArea
+        }
+    }
+})
+
 export const configuredUrl = computed(() => {
     const url = new URL(window.location.href)
+    const effectiveArea = effectiveSpatialArea.value
 
     // clear out existing values
     url.searchParams.delete('lat')
@@ -60,13 +96,12 @@ export const configuredUrl = computed(() => {
         url.searchParams.set('type', plotType.value ?? 'plot')
     }
 
-    if (spatialArea.value?.type === SpatialAreaType.COORDINATES) {
-        url.searchParams.set('lat', spatialArea.value.value.lat)
-        url.searchParams.set('lng', spatialArea.value.value.lng)
-    }
-
-    if (spatialArea.value?.type === SpatialAreaType.BOUNDING_BOX) {
-        url.searchParams.set('bounds', `${spatialArea.value.value.west},${spatialArea.value.value.south},${spatialArea.value.value.east},${spatialArea.value.value.north}`)
+    if (effectiveArea.type === SpatialAreaType.COORDINATES) {
+        url.searchParams.set('lat', (effectiveArea.value as { lat: string; lng: string }).lat)
+        url.searchParams.set('lng', (effectiveArea.value as { lat: string; lng: string }).lng)
+    } else if (effectiveArea.type === SpatialAreaType.BOUNDING_BOX) {
+        const bbox = effectiveArea.value as { west: string; south: string; east: string; north: string }
+        url.searchParams.set('bounds', `${bbox.west},${bbox.south},${bbox.east},${bbox.north}`)
     }
 
     if (dateTimeRange.value?.startDate && dateTimeRange.value?.endDate) {
