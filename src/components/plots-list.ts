@@ -45,26 +45,6 @@ export class PlotsListComponent {
                 this.#hasClearedDefaultView = true
             }
         })
-
-        // Effect for handling date range changes
-        effect(() => {
-            if (!canGeneratePlots.value || !dateTimeRange.value) return
-            
-            // Update all active plots with new date range
-            for (const plot of this.#activePlots.values()) {
-                plot.updateDateTimeRange(dateTimeRange.value)
-            }
-        })
-
-        // Effect for handling spatial area changes
-        effect(() => {
-            if (!canGeneratePlots.value) return
-            
-            // Update all active plots with new spatial area (using effective spatial area which includes defaults)
-            for (const plot of this.#activePlots.values()) {
-                plot.updateSpatialArea(effectiveSpatialArea.value as SpatialArea)
-            }
-        })
     }
 
     #bindEvents() {

@@ -170,9 +170,12 @@ export class HistoryPanelComponent {
                     .filter(Boolean)
                     .join(' • ')
 
+                const isLoading = loadingHistoryIds.value.has(item.id)
+                const iconName = item.plotType === 'map' ? 'outline-map' : 'outline-chart-bar'
+                
                 return `
                     <div class="thumbnail-item flex-shrink-0 relative group" data-id="${item.id}" data-tooltip-content="${v.dataFieldLongName || v.dataFieldId}|${timeStr}|${dateStr}|${areaStr}|${metadata}">
-                        <button class="delete-btn absolute top-[-6px] right-[-6px] m-0.5 z-10 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center shadow hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-150" title="Delete" aria-label="Delete">×</button>
+                        <button class="delete-btn absolute top-[-6px] right-[-6px] m-0.5 z-10 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center shadow hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-150 ${isLoading ? 'cursor-not-allowed opacity-50' : ''}" title="${isLoading ? 'Cannot delete while loading' : 'Delete'}" aria-label="Delete" ${isLoading ? 'disabled' : ''}>×</button>
                         <div class="w-24 h-16 bg-gray-100 border border-gray-200 rounded cursor-pointer hover:border-blue-300 hover:shadow-md transition-all duration-200 flex items-center justify-center overflow-hidden relative">
                             ${
                                 item.request.thumbnail
@@ -181,10 +184,10 @@ export class HistoryPanelComponent {
                             }
                             <!-- Placeholder for plot thumbnail - shown when no thumbnail URL or image fails to load -->
                             <div class="w-full h-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center" ${item.request.thumbnail ? 'style="display: none;"' : ''}>
-                                <terra-icon library="heroicons" name="outline-chart-bar" font-size="1.5rem" class="text-blue-400"></terra-icon>
+                                <terra-icon library="heroicons" name="${iconName}" font-size="1.5rem" class="text-blue-400"></terra-icon>
                             </div>
                             ${
-                                loadingHistoryIds.value.has(item.id)
+                                isLoading
                                     ? '<div class="absolute inset-0 flex items-center justify-center rounded z-20"><terra-loader indeterminate></terra-loader></div>'
                                     : ''
                             }
@@ -211,6 +214,12 @@ export class HistoryPanelComponent {
                     deleteBtn.addEventListener('click', async (e) => {
                         e.stopPropagation()
                         const id = (thumbnail as HTMLElement).getAttribute('data-id')!
+                        
+                        // Don't allow deletion if item is loading
+                        if (loadingHistoryIds.value.has(id)) {
+                            return
+                        }
+                        
                         const confirmed = window.confirm('Delete this history item?')
                         if (!confirmed) return
                         await deleteTimeSeriesRequestFromHistory(id)

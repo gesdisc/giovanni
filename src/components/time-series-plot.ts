@@ -38,7 +38,10 @@ export class TimeSeriesPlotComponent {
         this.updateSpatialArea(request.spatialArea)
 
         if (!request.fromHistory) {
-            this.#addToHistoryImmediately()
+            // Call async function but don't block - errors will be logged
+            this.#addToHistoryImmediately().catch(error => {
+                console.error('Error adding time series plot to history:', error)
+            })
         }
 
         document.addEventListener(

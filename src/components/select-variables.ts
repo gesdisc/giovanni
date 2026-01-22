@@ -91,17 +91,24 @@ export class SelectVariablesComponent {
             e.detail.selectedVariables.some(newV => newV.dataFieldId === v.variable.dataFieldId)
         )
 
+        console.log('existing variables: ', existingVariables)
+
         // Get new variables that weren't previously selected
         const newVariables = e.detail.selectedVariables
             .filter(v => !variables.value.some(existing => existing.variable.dataFieldId === v.dataFieldId))
             .map(v => new VariableComponent(v, v.dataFieldLongName))
 
+        console.log('new variables: ', newVariables)
+
         // Destroy variables that are no longer selected
         variables.value.forEach(v => {
             if (!e.detail.selectedVariables.some(newV => newV.dataFieldId === v.variable.dataFieldId)) {
+                console.log('destroying variable: ', v.variable.dataFieldId)
                 v.destroy()
             }
         })
+
+        console.log('variables after: ', variables.value)
 
         // Update variables array, preserving order of existing variables and appending new ones
         variables.value = [...existingVariables, ...newVariables]

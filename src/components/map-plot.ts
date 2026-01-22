@@ -33,7 +33,10 @@ export class MapPlotComponent {
         this.updateSpatialArea(request.spatialArea)
 
         if (!request.fromHistory) {
-            this.#addToHistoryImmediately()
+            // Call async function but don't block - errors will be logged
+            this.#addToHistoryImmediately().catch(error => {
+                console.error('Error adding map plot to history:', error)
+            })
         }
 
         document.addEventListener(
@@ -96,27 +99,36 @@ export class MapPlotComponent {
     }
 
     async #addToHistoryImmediately() {
-        // Generate a unique ID for this history item
-        this.#historyId = getUniqueIdForTimeSeriesRequest({
-            variable: this.#request.variable,
-            spatialArea: this.#request.spatialArea,
-            dateTimeRange: this.#request.dateTimeRange,
-        })
-
-        // Track this item as loading
-        loadingHistoryIds.value = new Set([...loadingHistoryIds.value, this.#historyId])
-
-        // Add to history without thumbnail (will show placeholder)
-        await storeTimeSeriesRequestInHistory(
-            {
+        try {
+            // Generate a unique ID for this history item
+            this.#historyId = getUniqueIdForTimeSeriesRequest({
                 variable: this.#request.variable,
                 spatialArea: this.#request.spatialArea,
                 dateTimeRange: this.#request.dateTimeRange,
-                thumbnail: undefined,
-            },
-            'map',
-            this.#historyId
-        )
+            })
+
+            console.log('Map plot adding to history with ID:', this.#historyId)
+
+            // Track this item as loading
+            loadingHistoryIds.value = new Set([...loadingHistoryIds.value, this.#historyId])
+
+            // Add to history without thumbnail (will show placeholder)
+            const result = await storeTimeSeriesRequestInHistory(
+                {
+                    variable: this.#request.variable,
+                    spatialArea: this.#request.spatialArea,
+                    dateTimeRange: this.#request.dateTimeRange,
+                    thumbnail: undefined,
+                },
+                'map',
+                this.#historyId
+            )
+
+            console.log('Map plot added to history:', result)
+        } catch (error) {
+            console.error('Error in #addToHistoryImmediately for map plot:', error)
+            throw error
+        }
     }
 
     async #handleDataChange(e: CustomEvent) {
@@ -139,19 +151,40 @@ export class MapPlotComponent {
             return
         }
 
-        // Wait a bit for the map to render, then capture the canvas
+        // Wait for the map to render and the GeoTIFF layer to load, then capture the canvas
+        // We wait longer than for time-series plots because the GeoTIFF layer takes time to render
         setTimeout(async () => {
             let thumbnail: Blob | undefined
 
             try {
-                // Look for canvas elements in the shadow DOM
-                const canvas = this.#plotEl.shadowRoot?.querySelector('canvas') as HTMLCanvasElement
-                if (canvas && canvas.width > 0 && canvas.height > 0) {
-                    console.log('Found canvas, capturing thumbnail')
-                    thumbnail = await this.#getCanvasThumbnail(canvas)
-                } else {
-                    console.log('No canvas found in shadow DOM or canvas not yet rendered')
+                // Wait for GeoTIFF layer to render
+                await new Promise(resolve => setTimeout(resolve, 500))
+                
+                // Find all canvas elements in the shadow DOM - the map may have multiple layers
+                const shadowRoot = this.#plotEl.shadowRoot
+                if (!shadowRoot) {
+                    console.log('No shadow root found')
+                    return
                 }
+
+                // Find the map container - it might be the terra-time-average-map element itself
+                // or a container within the shadow root
+                const mapContainer = shadowRoot.querySelector('.map-container') || 
+                                   shadowRoot.querySelector('div[class*="map"]') ||
+                                   this.#plotEl
+
+                // Get all canvas elements
+                const canvases = Array.from(shadowRoot.querySelectorAll('canvas')) as HTMLCanvasElement[]
+                
+                if (canvases.length === 0) {
+                    console.log('No canvas elements found in shadow DOM')
+                    return
+                }
+
+                console.log(`Found ${canvases.length} canvas element(s), compositing them...`)
+                
+                // Composite all canvases to capture all layers including GeoTIFF
+                thumbnail = await this.#getCompositeCanvasThumbnail(canvases, mapContainer as HTMLElement)
             } catch (error) {
                 console.error('Error capturing thumbnail:', error)
             }
@@ -174,19 +207,40 @@ export class MapPlotComponent {
         }, 1000)
     }
 
-    async #getCanvasThumbnail(
-        canvas: HTMLCanvasElement,
+    async #getCompositeCanvasThumbnail(
+        canvases: HTMLCanvasElement[],
+        container: HTMLElement,
         thumbWidth = 200,
         thumbHeight = 200
     ): Promise<Blob> {
-        // Create a new canvas for the thumbnail
+        // Get the dimensions from the first canvas or container
+        const firstCanvas = canvases[0]
+        const sourceWidth = firstCanvas.width || container.clientWidth || 800
+        const sourceHeight = firstCanvas.height || container.clientHeight || 600
+
+        // Create a composite canvas that will hold all layers
+        const compositeCanvas = document.createElement('canvas')
+        compositeCanvas.width = sourceWidth
+        compositeCanvas.height = sourceHeight
+        const compositeCtx = compositeCanvas.getContext('2d')!
+
+        // Draw all canvases in order (base map first, then overlays like GeoTIFF on top)
+        // Each canvas is drawn at its actual size to preserve all layers
+        for (const canvas of canvases) {
+            if (canvas.width > 0 && canvas.height > 0) {
+                // Draw the canvas at its actual dimensions to preserve all pixel data
+                compositeCtx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, sourceWidth, sourceHeight)
+            }
+        }
+
+        // Create thumbnail canvas and scale down
         const thumbCanvas = document.createElement('canvas')
         thumbCanvas.width = thumbWidth
         thumbCanvas.height = thumbHeight
-        const ctx = thumbCanvas.getContext('2d')!
+        const thumbCtx = thumbCanvas.getContext('2d')!
 
-        // Draw the original canvas content scaled down
-        ctx.drawImage(canvas, 0, 0, thumbWidth, thumbHeight)
+        // Draw the composite canvas scaled down to thumbnail size
+        thumbCtx.drawImage(compositeCanvas, 0, 0, thumbWidth, thumbHeight)
 
         // Convert to JPEG blob
         return new Promise<Blob>((resolve) => {
