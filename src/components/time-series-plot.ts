@@ -14,6 +14,7 @@ import { loadingHistoryIds } from '../state'
 interface TimeSeriesPlotRequest extends TimeSeriesRequest {
     variableLongName: string
     fromHistory?: boolean
+    historyId?: string | null
 }
 
 export class TimeSeriesPlotComponent {
@@ -24,6 +25,8 @@ export class TimeSeriesPlotComponent {
     #historyId: string | null = null
 
     constructor(request: TimeSeriesPlotRequest) {
+        // If loading from history, use the provided history ID; otherwise generate a new one
+        this.#historyId = request.historyId || null
         this.element = document.createElement('div')
         this.#plotEl = document.createElement('terra-time-series')
 
@@ -101,16 +104,17 @@ export class TimeSeriesPlotComponent {
     }
 
     async #handlePlotComplete(_e: TerraTimeSeriesDataChangeEvent) {
-        // Skip updating thumbnail if this plot was loaded from history
-        if (this.#request.fromHistory) {
+        // If we don't have a history ID, we can't update the thumbnail
+        // This can happen if loading from history but no history ID was provided
+        if (!this.#historyId) {
+            // If not from history, this is an error
+            if (!this.#request.fromHistory) {
+                console.warn('No history ID found when trying to update thumbnail')
+            }
             return
         }
 
-        // If we don't have a history ID, something went wrong
-        if (!this.#historyId) {
-            console.warn('No history ID found when trying to update thumbnail')
-            return
-        }
+        // Update thumbnail even if loaded from history (in case cache was empty and new request was made)
 
         let thumbnail: Blob | undefined
 

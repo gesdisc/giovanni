@@ -6,12 +6,14 @@ export class VariableComponent {
     variableLongName: string
     element: HTMLElement
     fromHistory: boolean = false
+    historyId: string | null = null
 
-    constructor(variable: Variable, variableLongName: string, fromHistory: boolean = false) {
+    constructor(variable: Variable, variableLongName: string, fromHistory: boolean = false, historyId: string | null = null) {
         this.variable = variable
         this.variableLongName = variableLongName
         this.element = document.createElement('div')
         this.fromHistory = fromHistory
+        this.historyId = historyId
 
         this.render()
     }

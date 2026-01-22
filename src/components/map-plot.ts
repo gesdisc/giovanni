@@ -5,6 +5,7 @@ import { loadingHistoryIds } from '../state'
 interface MapPlotRequest extends TimeSeriesRequest {
     variableLongName: string
     fromHistory?: boolean
+    historyId?: string | null
 }
 
 export class MapPlotComponent {
@@ -21,6 +22,8 @@ export class MapPlotComponent {
         this.element.appendChild(this.#plotEl)
 
         this.#request = request
+        
+        this.#historyId = request.historyId || null
 
         const { collectionId, variableShortName } = this.#getCollectionAndVariable(
             request.variable.dataFieldId,
@@ -139,17 +142,17 @@ export class MapPlotComponent {
             return
         }
 
-        // Skip updating thumbnail if this plot was loaded from history
-        if (this.#request.fromHistory) {
-            console.log('data change event skipping saving to history')
+        // If we don't have a history ID, we can't update the thumbnail
+        // This can happen if loading from history but no history ID was provided
+        if (!this.#historyId) {
+            // If not from history, this is an error
+            if (!this.#request.fromHistory) {
+                console.warn('No history ID found when trying to update thumbnail')
+            }
             return
         }
 
-        // If we don't have a history ID, something went wrong
-        if (!this.#historyId) {
-            console.warn('No history ID found when trying to update thumbnail')
-            return
-        }
+        // Update thumbnail even if loaded from history (in case cache was empty and new request was made)
 
         // Wait for the map to render and the GeoTIFF layer to load, then capture the canvas
         // We wait longer than for time-series plots because the GeoTIFF layer takes time to render

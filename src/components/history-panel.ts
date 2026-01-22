@@ -374,7 +374,8 @@ export class HistoryPanelComponent {
             new VariableComponent(
                 item.request.variable,
                 item.request.variable.dataFieldLongName,
-                true
+                true,
+                item.id
             ),
         ]
 

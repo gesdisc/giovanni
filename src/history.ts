@@ -92,7 +92,7 @@ export async function updateHistoryItemThumbnail(id: string, thumbnail: Blob | u
         ...items[itemIndex],
         request: {
             ...items[itemIndex].request,
-            thumbnail,
+            ...(thumbnail ? { thumbnail } : {}),
         },
     }
 

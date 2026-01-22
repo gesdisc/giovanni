@@ -96,6 +96,7 @@ export class PlotsListComponent {
             dateTimeRange: dateTimeRange.value!,
             variableLongName,
             fromHistory: variableComponent?.fromHistory || false,
+            historyId: variableComponent?.historyId || null,
         })
 
         // Create a container for this plot
@@ -126,6 +127,7 @@ export class PlotsListComponent {
             dateTimeRange: dateTimeRange.value!,
             variableLongName,
             fromHistory: variableComponent?.fromHistory || false,
+            historyId: variableComponent?.historyId || null,
         })
 
         const plotContainer = document.createElement('div')
