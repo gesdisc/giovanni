@@ -1,7 +1,8 @@
 import { effect, untracked } from '@preact/signals-core'
-import { spatialArea, plotType } from '../state'
+import { spatialArea, plotType, variables } from '../state'
 import { SpatialAreaType } from '../types'
 import type { TerraMapChangeEvent, TerraSpatialPicker } from '@nasa-terra/components'
+import { getDefaultSpatialAreaFromVariables } from '../utilities/spatial'
 
 export class SelectSpatialAreaComponent {
     #element: TerraSpatialPicker
@@ -61,10 +62,38 @@ export class SelectSpatialAreaComponent {
             }
             this.#previousPlotType = plotType.value
         })
+
+        effect(() => {
+            // Update help text based on available spatial area from variables
+            this.#updateHelpText()
+        })
     }
 
     #updateHeading() {
         this.#heading.textContent = plotType.value === 'map' ? 'Region' : 'Location / Region'
+    }
+
+    #updateHelpText() {
+        if (variables.value.length === 0) {
+            this.#element.helpText = ''
+            return
+        }
+
+        const availableArea = getDefaultSpatialAreaFromVariables(variables.value.map(v => v.variable))
+        
+        if (availableArea.type === SpatialAreaType.BOUNDING_BOX) {
+            const formatCoordinate = (coord: string) => {
+                const num = parseFloat(coord)
+                const formatted = num.toFixed(2)
+                // Remove trailing zeros and decimal point only if .00
+                return formatted.replace(/\.00$/, '')
+            }
+            
+            const { west, south, east, north } = availableArea.value
+            this.#element.helpText = `Available area: ${formatCoordinate(west)}, ${formatCoordinate(south)}, ${formatCoordinate(east)}, ${formatCoordinate(north)}`
+        } else {
+            this.#element.helpText = ''
+        }
     }
 
     #rebuildSpatialPicker() {

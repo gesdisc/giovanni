@@ -68,13 +68,24 @@ export class SelectDateTimeRangeComponent {
                     if (newDateTimeRange.startDate && newDateTimeRange.endDate) {
                         console.log('new date time range: ', newDateTimeRange)
 
+                        // Preserve time if time selection is enabled
+                        const preserveTime = this.#el.enableTime
                         dateTimeRange.value = {
-                            startDate: newDateTimeRange.startDate.toISOString().split('T')[0],
-                            endDate: newDateTimeRange.endDate.toISOString().split('T')[0],
+                            startDate: preserveTime 
+                                ? newDateTimeRange.startDate.toISOString()
+                                : newDateTimeRange.startDate.toISOString().split('T')[0],
+                            endDate: preserveTime
+                                ? newDateTimeRange.endDate.toISOString()
+                                : newDateTimeRange.endDate.toISOString().split('T')[0],
                         }
                     }
                 })
             }
+        })
+
+        effect(() => {
+            // Update help text based on available date range from variables
+            this.#updateHelpText()
         })
     }
 
@@ -82,6 +93,27 @@ export class SelectDateTimeRangeComponent {
         dateTimeRange.value = {
             startDate: e.detail.startDate,
             endDate: e.detail.endDate,
+        }
+    }
+
+    #updateHelpText() {
+        if (variables.value.length === 0) {
+            this.#el.helpText = ''
+            return
+        }
+
+        const { minDate, maxDate } = validDateTimeRange.value
+        
+        if (minDate && maxDate) {
+            // Format dates for display (YYYY-MM-DD format)
+            const formatDate = (date: string | Date) => {
+                const d = new Date(date)
+                return d.toISOString().split('T')[0]
+            }
+            
+            this.#el.helpText = `Available range: ${formatDate(minDate)} to ${formatDate(maxDate)}`
+        } else {
+            this.#el.helpText = ''
         }
     }
 }
