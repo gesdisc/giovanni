@@ -10,7 +10,7 @@
 
         <link
             rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.126/cdn/themes/horizon.css"
+            href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.134/cdn/themes/horizon.css"
         />
 
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -22,92 +22,6 @@
     </head>
 
     <body class="bg-gray-50 font-sans">
-        <div id="welcomeScreen" class="splash-overlay" style="display: none">
-            <div class="splash-modal">
-                <h1 class="text-5xl font-bold mb-4 text-center">
-                    Welcome to Giovanni
-                    <span class="beta-tag-splash-screen">BETA</span>
-                </h1>
-
-                <p class="max-w-2xl text-lg mb-4">
-                    Giovanni allows you to analyze and visualize geophysical
-                    measurements like rainfall, soil moisture, and temperature. This
-                    <a href="#" class="text-blue-600 underline">beta release</a> takes
-                    advantage of cloud optimizations to improve performance and the
-                    overall user experience. If you are trying out this release,
-                    please consider providing feedback by sending email to our
-                    <a href="#" class="text-blue-600 underline">Help Desk</a>. We'd
-                    love to hear from you!
-                </p>
-
-                <p class="max-w-2xl text-lg mb-4">
-                    <b>NOTE:</b> This release has limited cloud 'credits' so it is
-                    possible you will experience abrupt "out of credit" errors when
-                    using Giovanni. If this happens, please contact the
-                    <a href="#" class="text-blue-600 underline">Help Desk</a> and we
-                    will increase your credit limit. Apologies and please bear with us
-                    as we improve the management of cloud credit quotas.
-                </p>
-
-                <h2 class="text-lg text-center font-semibold mb-4">
-                    Here are some ways to start
-                </h2>
-
-                <div class="widget-container">
-                    <a href="/create-map" id="widget-create-map" class="widget">
-                        <terra-icon
-                            name="outline-map"
-                            library="heroicons"
-                            class="w-14 h-14 text-nasa-blue mb-3"
-                        ></terra-icon>
-                        <span class="font-semibold text-gray-800">Create Map</span>
-                    </a>
-
-                    <a
-                        href="/create-timeseries"
-                        id="widget-create-timeseries"
-                        class="widget"
-                    >
-                        <terra-icon
-                            name="outline-chart-bar"
-                            library="heroicons"
-                            class="w-14 h-14 text-nasa-blue mb-3"
-                        ></terra-icon>
-                        <span class="font-semibold text-center text-gray-800"
-                            >Create Time-Series</span
-                        >
-                    </a>
-
-                    <a
-                        href="https://localhost/documents?title=Giovanni%20Beta%20User%20Guide"
-                        id="widget-user-guide"
-                        class="widget"
-                        target="_blank"
-                    >
-                        <terra-icon
-                            name="outline-document-text"
-                            library="heroicons"
-                            class="w-14 h-14 text-nasa-blue mb-3"
-                        ></terra-icon>
-                        <span class="font-semibold text-gray-800"
-                            >Read User Guide</span
-                        >
-                    </a>
-                </div>
-
-                <div class="splash-actions">
-                    <div class="splash-left">
-                        <input type="checkbox" id="hideWelcome" class="mr-2" />
-                        <label for="hideWelcome" class="text-gray-700"
-                            >Do not show this again</label
-                        >
-                    </div>
-
-                    <button id="welcomeSkip" class="splash-skip">Skip</button>
-                </div>
-            </div>
-        </div>
-
         <div class="flex flex-col h-screen">
             <terra-site-header>
                 <div slot="title" class="flex items-center space-x-3" slot="title">
@@ -193,6 +107,7 @@
                                     id="map-button"
                                     class="plot-type-button plot-type-button--unselected"
                                     data-plot-type="map"
+                                    data-testid="plot-type-selector--map-button"
                                 >
                                     <svg
                                         class="plot-type-icon plot-type-icon--unselected"
@@ -216,6 +131,7 @@
                                     id="plot-button"
                                     class="plot-type-button plot-type-button--selected"
                                     data-plot-type="plot"
+                                    data-testid="plot-type-selector--plot-button"
                                 >
                                     <svg
                                         class="plot-type-icon plot-type-icon--selected"
@@ -476,6 +392,92 @@
             class="fixed px-3 py-2 bg-gray-800 text-white text-xs rounded-lg shadow-lg opacity-0 pointer-events-none whitespace-nowrap z-50 transition-opacity duration-200 z-200"
             id="thumbnail-tooltip"
         ></div>
+
+        <div id="welcomeScreen" class="splash-overlay" style="display: none">
+            <div class="splash-modal">
+                <h1 class="text-5xl font-bold mb-4 text-center">
+                    Welcome to Giovanni
+                    <span class="beta-tag-splash-screen">BETA</span>
+                </h1>
+
+                <p class="max-w-2xl text-lg mb-4">
+                    Giovanni allows you to analyze and visualize geophysical
+                    measurements like rainfall, soil moisture, and temperature. This
+                    <a href="#" class="text-blue-600 underline">beta release</a> takes
+                    advantage of cloud optimizations to improve performance and the
+                    overall user experience. If you are trying out this release,
+                    please consider providing feedback by sending email to our
+                    <a href="#" class="text-blue-600 underline">Help Desk</a>. We'd
+                    love to hear from you!
+                </p>
+
+                <p class="max-w-2xl text-lg mb-4">
+                    <b>NOTE:</b> This release has limited cloud 'credits' so it is
+                    possible you will experience abrupt "out of credit" errors when
+                    using Giovanni. If this happens, please contact the
+                    <a href="#" class="text-blue-600 underline">Help Desk</a> and we
+                    will increase your credit limit. Apologies and please bear with us
+                    as we improve the management of cloud credit quotas.
+                </p>
+
+                <h2 class="text-lg text-center font-semibold mb-4">
+                    Here are some ways to start
+                </h2>
+
+                <div class="widget-container">
+                    <a href="/create-map" id="widget-create-map" class="widget">
+                        <terra-icon
+                            name="outline-map"
+                            library="heroicons"
+                            class="w-14 h-14 text-nasa-blue mb-3"
+                        ></terra-icon>
+                        <span class="font-semibold text-gray-800">Create Map</span>
+                    </a>
+
+                    <a
+                        href="/create-timeseries"
+                        id="widget-create-timeseries"
+                        class="widget"
+                    >
+                        <terra-icon
+                            name="outline-chart-bar"
+                            library="heroicons"
+                            class="w-14 h-14 text-nasa-blue mb-3"
+                        ></terra-icon>
+                        <span class="font-semibold text-center text-gray-800"
+                            >Create Time-Series</span
+                        >
+                    </a>
+
+                    <a
+                        href="https://localhost/documents?title=Giovanni%20Beta%20User%20Guide"
+                        id="widget-user-guide"
+                        class="widget"
+                        target="_blank"
+                    >
+                        <terra-icon
+                            name="outline-document-text"
+                            library="heroicons"
+                            class="w-14 h-14 text-nasa-blue mb-3"
+                        ></terra-icon>
+                        <span class="font-semibold text-gray-800"
+                            >Read User Guide</span
+                        >
+                    </a>
+                </div>
+
+                <div class="splash-actions">
+                    <div class="splash-left">
+                        <input type="checkbox" id="hideWelcome" class="mr-2" />
+                        <label for="hideWelcome" class="text-gray-700"
+                            >Do not show this again</label
+                        >
+                    </div>
+
+                    <button id="welcomeSkip" class="splash-skip" data-testid="welcome-splash--skip-button">Skip</button>
+                </div>
+            </div>
+        </div>
 
         <!-- used in time-series-plot to generate history thumbnails -->
         <script

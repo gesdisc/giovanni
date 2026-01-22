@@ -14,9 +14,9 @@ import { HistoryPanelComponent } from './components/history-panel'
 import { WelcomeSplashComponent } from './components/welcome-splash'
 import { UrlsParamsComponent } from './components/url-params'
 
-setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.126/cdn/')
+setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.134/cdn/')
 
-localStorage.setItem('terra-environment', 'uat')
+localStorage.setItem('terra-environment', 'prod')
 
 document.addEventListener('DOMContentLoaded', () => {
     new UrlsParamsComponent()

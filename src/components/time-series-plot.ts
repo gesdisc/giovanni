@@ -8,7 +8,8 @@ import {
     SpatialAreaType,
     TimeSeriesRequest,
 } from '../types'
-import { storeTimeSeriesRequestInHistory } from '../history'
+import { storeTimeSeriesRequestInHistory, updateHistoryItemThumbnail, getUniqueIdForTimeSeriesRequest } from '../history'
+import { loadingHistoryIds } from '../state'
 
 interface TimeSeriesPlotRequest extends TimeSeriesRequest {
     variableLongName: string
@@ -20,10 +21,13 @@ export class TimeSeriesPlotComponent {
     #plotEl: TerraTimeSeries
     #request: TimeSeriesPlotRequest
     #hasCompleted: boolean = false
+    #historyId: string | null = null
 
     constructor(request: TimeSeriesPlotRequest) {
         this.element = document.createElement('div')
         this.#plotEl = document.createElement('terra-time-series')
+
+        this.#plotEl.setAttribute('disable-auto-fetch', 'true')
 
         this.element.appendChild(this.#plotEl)
 
@@ -32,6 +36,10 @@ export class TimeSeriesPlotComponent {
         this.#plotEl.variableEntryId = request.variable.dataFieldId
         this.updateDateTimeRange(request.dateTimeRange)
         this.updateSpatialArea(request.spatialArea)
+
+        if (!request.fromHistory) {
+            this.#addToHistoryImmediately()
+        }
 
         document.addEventListener(
             'terra-time-series-data-change',
@@ -65,9 +73,39 @@ export class TimeSeriesPlotComponent {
         }, 1000)
     }
 
+    async #addToHistoryImmediately() {
+        // Generate a unique ID for this history item
+        this.#historyId = getUniqueIdForTimeSeriesRequest({
+            variable: this.#request.variable,
+            spatialArea: this.#request.spatialArea,
+            dateTimeRange: this.#request.dateTimeRange,
+        })
+
+        // Track this item as loading
+        loadingHistoryIds.value = new Set([...loadingHistoryIds.value, this.#historyId])
+
+        // Add to history without thumbnail (will show placeholder)
+        await storeTimeSeriesRequestInHistory(
+            {
+                variable: this.#request.variable,
+                spatialArea: this.#request.spatialArea,
+                dateTimeRange: this.#request.dateTimeRange,
+                thumbnail: undefined,
+            },
+            'plot',
+            this.#historyId
+        )
+    }
+
     async #handlePlotComplete(_e: TerraTimeSeriesDataChangeEvent) {
-        // Skip saving to history if this plot was loaded from history
+        // Skip updating thumbnail if this plot was loaded from history
         if (this.#request.fromHistory) {
+            return
+        }
+
+        // If we don't have a history ID, something went wrong
+        if (!this.#historyId) {
+            console.warn('No history ID found when trying to update thumbnail')
             return
         }
 
@@ -79,17 +117,29 @@ export class TimeSeriesPlotComponent {
                 ?.querySelector('terra-plot')
                 ?.shadowRoot?.querySelector('.js-plotly-plot') as HTMLElement
 
-            thumbnail = await this.#getThumbnailBlob(plot)
+            // Only capture thumbnail if plot element exists and has content
+            if (plot && plot.offsetWidth > 0 && plot.offsetHeight > 0) {
+                thumbnail = await this.#getThumbnailBlob(plot)
+            } else {
+                console.log('Plot not yet rendered, skipping thumbnail capture')
+            }
         } catch (e) {
             console.error('Error getting thumbnail', e)
         }
 
-        await storeTimeSeriesRequestInHistory({
-            variable: this.#request.variable,
-            spatialArea: this.#request.spatialArea,
-            dateTimeRange: this.#request.dateTimeRange,
-            thumbnail,
-        })
+        // Remove from loading set (no longer loading)
+        const newLoadingIds = new Set(loadingHistoryIds.value)
+        newLoadingIds.delete(this.#historyId)
+        loadingHistoryIds.value = newLoadingIds
+
+        // Only update thumbnail if we have a valid thumbnail blob (not undefined)
+        // This ensures we don't store placeholder or loading thumbnails
+        if (thumbnail instanceof Blob && thumbnail.size > 0) {
+            await updateHistoryItemThumbnail(this.#historyId, thumbnail)
+        } else {
+            // If no valid thumbnail, keep thumbnail as undefined
+            await updateHistoryItemThumbnail(this.#historyId, undefined)
+        }
     }
 
     async #getThumbnailBlob(

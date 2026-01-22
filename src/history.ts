@@ -2,10 +2,10 @@ import { TimeSeriesRequest, TimeSeriesRequestHistoryItem } from "./types"
 import { IndexedDbStores, getDataByKey, storeDataByKey } from "./utilities/indexeddb"
 import { userState } from "./state"
 
-export async function storeTimeSeriesRequestInHistory(request: TimeSeriesRequest, plotType: 'map' | 'plot' = 'plot') {
-    const id = getUniqueIdForTimeSeriesRequest(request)
+export async function storeTimeSeriesRequestInHistory(request: TimeSeriesRequest, plotType: 'map' | 'plot' = 'plot', id?: string) {
+    const historyId = id || getUniqueIdForTimeSeriesRequest(request)
    
-    console.log('storeTimeSeriesRequestInHistory', id, request)
+    console.log('storeTimeSeriesRequestInHistory', historyId, request)
 
     const userId = userState.value.user?.uid
     if (!userId) {
@@ -22,7 +22,7 @@ export async function storeTimeSeriesRequestInHistory(request: TimeSeriesRequest
     )
 
     const newItem: TimeSeriesRequestHistoryItem = {
-        id,
+        id: historyId,
         request,
         createdAt: new Date().toISOString(),
         plotType,
@@ -64,5 +64,40 @@ export async function deleteTimeSeriesRequestFromHistory(id: string) {
 
     await storeDataByKey(IndexedDbStores.HISTORY, key, { items: nextItems })
 
+    document.dispatchEvent(new CustomEvent('historyUpdated'))
+}
+
+export async function updateHistoryItemThumbnail(id: string, thumbnail: Blob | undefined) {
+    const userId = userState.value.user?.uid
+    if (!userId) {
+        return
+    }
+
+    const key = `history:${userId}`
+    const existing = await getDataByKey<{ items?: TimeSeriesRequestHistoryItem[] } | undefined>(
+        IndexedDbStores.HISTORY,
+        key
+    )
+
+    const items = Array.isArray(existing?.items) ? existing!.items : []
+    const itemIndex = items.findIndex(item => item.id === id)
+    
+    if (itemIndex === -1) {
+        console.warn(`History item with id ${id} not found`)
+        return
+    }
+
+    // Update the thumbnail for the existing item
+    items[itemIndex] = {
+        ...items[itemIndex],
+        request: {
+            ...items[itemIndex].request,
+            thumbnail,
+        },
+    }
+
+    await storeDataByKey(IndexedDbStores.HISTORY, key, { items })
+
+    // Dispatch event to notify components that history has been updated
     document.dispatchEvent(new CustomEvent('historyUpdated'))
 }

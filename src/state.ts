@@ -10,6 +10,7 @@ const existingOptions = getOptionsFromLocalStorage() || getOptionsFromCurrentUrl
 
 export const userState = signal<UserState>({ userChecked: false, user: null })
 export const userHistory = signal<TimeSeriesRequestHistoryItem[]>([])
+export const loadingHistoryIds = signal<Set<string>>(new Set())
 export const plotType = signal<'map' | 'plot'>(existingOptions?.plotType ?? 'plot')
 export const variables = signal<VariableComponent[]>([])
 export const spatialArea = signal<SpatialArea | null>(existingOptions?.spatialArea ?? null)

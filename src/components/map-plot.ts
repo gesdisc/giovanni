@@ -1,5 +1,6 @@
 import { DateTimeRange, SpatialArea, SpatialAreaType, TimeSeriesRequest } from '../types'
-import { storeTimeSeriesRequestInHistory } from '../history'
+import { storeTimeSeriesRequestInHistory, updateHistoryItemThumbnail, getUniqueIdForTimeSeriesRequest } from '../history'
+import { loadingHistoryIds } from '../state'
 
 interface MapPlotRequest extends TimeSeriesRequest {
     variableLongName: string
@@ -10,6 +11,7 @@ export class MapPlotComponent {
     element: HTMLElement
     #plotEl: any
     #request: MapPlotRequest
+    #historyId: string | null = null
 
 
     constructor(request: MapPlotRequest) {
@@ -30,7 +32,9 @@ export class MapPlotComponent {
         this.updateDateTimeRange(request.dateTimeRange)
         this.updateSpatialArea(request.spatialArea)
 
-        console.log('created map plot')
+        if (!request.fromHistory) {
+            this.#addToHistoryImmediately()
+        }
 
         document.addEventListener(
             'terra-time-average-map-data-change',
@@ -91,6 +95,30 @@ export class MapPlotComponent {
         return { collectionId: dataFieldId, variableShortName: dataFieldShortName || '' }
     }
 
+    async #addToHistoryImmediately() {
+        // Generate a unique ID for this history item
+        this.#historyId = getUniqueIdForTimeSeriesRequest({
+            variable: this.#request.variable,
+            spatialArea: this.#request.spatialArea,
+            dateTimeRange: this.#request.dateTimeRange,
+        })
+
+        // Track this item as loading
+        loadingHistoryIds.value = new Set([...loadingHistoryIds.value, this.#historyId])
+
+        // Add to history without thumbnail (will show placeholder)
+        await storeTimeSeriesRequestInHistory(
+            {
+                variable: this.#request.variable,
+                spatialArea: this.#request.spatialArea,
+                dateTimeRange: this.#request.dateTimeRange,
+                thumbnail: undefined,
+            },
+            'map',
+            this.#historyId
+        )
+    }
+
     async #handleDataChange(e: CustomEvent) {
         console.log('data change event', e)
 
@@ -99,9 +127,15 @@ export class MapPlotComponent {
             return
         }
 
-        // Skip saving to history if this plot was loaded from history
+        // Skip updating thumbnail if this plot was loaded from history
         if (this.#request.fromHistory) {
             console.log('data change event skipping saving to history')
+            return
+        }
+
+        // If we don't have a history ID, something went wrong
+        if (!this.#historyId) {
+            console.warn('No history ID found when trying to update thumbnail')
             return
         }
 
@@ -112,27 +146,31 @@ export class MapPlotComponent {
             try {
                 // Look for canvas elements in the shadow DOM
                 const canvas = this.#plotEl.shadowRoot?.querySelector('canvas') as HTMLCanvasElement
-                if (canvas) {
+                if (canvas && canvas.width > 0 && canvas.height > 0) {
                     console.log('Found canvas, capturing thumbnail')
                     thumbnail = await this.#getCanvasThumbnail(canvas)
                 } else {
-                    console.log('No canvas found in shadow DOM')
+                    console.log('No canvas found in shadow DOM or canvas not yet rendered')
                 }
             } catch (error) {
                 console.error('Error capturing thumbnail:', error)
             }
 
-            console.log('storing time series request in history', thumbnail)
+            // Remove from loading set (no longer loading)
+            const newLoadingIds = new Set(loadingHistoryIds.value)
+            newLoadingIds.delete(this.#historyId!)
+            loadingHistoryIds.value = newLoadingIds
 
-            await storeTimeSeriesRequestInHistory(
-                {
-                    variable: this.#request.variable,
-                    spatialArea: this.#request.spatialArea,
-                    dateTimeRange: this.#request.dateTimeRange,
-                    thumbnail,
-                },
-                'map'
-            )
+            // Only update thumbnail if we have a valid thumbnail blob (not undefined)
+            // This ensures we don't store placeholder or loading thumbnails
+            if (thumbnail instanceof Blob && thumbnail.size > 0) {
+                console.log('updating history item thumbnail', thumbnail)
+                await updateHistoryItemThumbnail(this.#historyId!, thumbnail)
+            } else {
+                // If no valid thumbnail, keep thumbnail as undefined
+                console.log('No valid thumbnail captured, keeping thumbnail as undefined')
+                await updateHistoryItemThumbnail(this.#historyId!, undefined)
+            }
         }, 1000)
     }
 
