@@ -14,7 +14,7 @@ import { HistoryPanelComponent } from './components/history-panel'
 import { WelcomeSplashComponent } from './components/welcome-splash'
 import { UrlsParamsComponent } from './components/url-params'
 
-setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.134/cdn/')
+setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.135/cdn/')
 
 localStorage.setItem('terra-environment', 'prod')
 

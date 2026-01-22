@@ -30,6 +30,8 @@ export type TimeSeriesRequest = {
     spatialArea: SpatialArea
     dateTimeRange: DateTimeRange
     thumbnail?: Blob
+    colorMapName?: string
+    opacity?: number
 }
 
 export type UserState = {

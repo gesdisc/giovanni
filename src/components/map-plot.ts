@@ -1,5 +1,5 @@
 import { DateTimeRange, SpatialArea, SpatialAreaType, TimeSeriesRequest } from '../types'
-import { storeTimeSeriesRequestInHistory, updateHistoryItemThumbnail, getUniqueIdForTimeSeriesRequest } from '../history'
+import { storeTimeSeriesRequestInHistory, updateHistoryItemThumbnail, updateHistoryItemPlotOptions, getUniqueIdForTimeSeriesRequest } from '../history'
 import { loadingHistoryIds } from '../state'
 
 interface MapPlotRequest extends TimeSeriesRequest {
@@ -13,6 +13,7 @@ export class MapPlotComponent {
     #plotEl: any
     #request: MapPlotRequest
     #historyId: string | null = null
+    #isRestoringOptions: boolean = false
 
 
     constructor(request: MapPlotRequest) {
@@ -35,6 +36,44 @@ export class MapPlotComponent {
         this.updateDateTimeRange(request.dateTimeRange)
         this.updateSpatialArea(request.spatialArea)
 
+        // Restore colormap and opacity if loading from history
+        // Wait a bit for the component to be fully initialized before setting properties
+        if (request.fromHistory) {
+            this.#isRestoringOptions = true
+            // Wait for the component to be connected and ready
+            const restoreOptions = () => {
+                if (request.colorMapName) {
+                    // Try both property and attribute
+                    if ('colorMapName' in this.#plotEl) {
+                        this.#plotEl.colorMapName = request.colorMapName
+                    } else if ('colormap' in this.#plotEl) {
+                        this.#plotEl.colormap = request.colorMapName
+                    } else {
+                        this.#plotEl.setAttribute('color-map-name', request.colorMapName)
+                    }
+                    console.log('Restoring colorMapName:', request.colorMapName, 'on element:', this.#plotEl)
+                }
+                if (request.opacity !== undefined) {
+                    if ('opacity' in this.#plotEl) {
+                        this.#plotEl.opacity = request.opacity
+                    } else {
+                        this.#plotEl.setAttribute('opacity', String(request.opacity))
+                    }
+                    console.log('Restoring opacity:', request.opacity, 'on element:', this.#plotEl)
+                }
+                // Reset flag after a delay to allow the component to process the changes
+                setTimeout(() => {
+                    this.#isRestoringOptions = false
+                }, 1000)
+            }
+            
+            // Try immediately, then after a short delay, and also when component is ready
+            restoreOptions()
+            
+            // Also try when the component fires a ready event if it exists
+            this.#plotEl.addEventListener('connected', restoreOptions, { once: true })
+        }
+
         if (!request.fromHistory) {
             // Call async function but don't block - errors will be logged
             this.#addToHistoryImmediately().catch(error => {
@@ -46,12 +85,23 @@ export class MapPlotComponent {
             'terra-time-average-map-data-change',
             this.#handleDataChange.bind(this)
         )
+
+        // Listen for plot options changes (colormap and opacity)
+        this.#plotEl.addEventListener(
+            'terra-plot-options-change',
+            this.#handlePlotOptionsChange.bind(this)
+        )
     }
 
     destroy() {
         document.removeEventListener(
             'terra-time-average-map-data-change',
             this.#handleDataChange.bind(this)
+        )
+
+        this.#plotEl.removeEventListener(
+            'terra-plot-options-change',
+            this.#handlePlotOptionsChange.bind(this)
         )
 
         this.element.parentElement?.removeChild(this.element)
@@ -134,6 +184,35 @@ export class MapPlotComponent {
         }
     }
 
+    async #handlePlotOptionsChange(e: CustomEvent) {
+        if (e.target !== this.#plotEl) {
+            return
+        }
+
+        // Skip if we're currently restoring options from history (to avoid circular updates)
+        if (this.#isRestoringOptions) {
+            return
+        }
+
+        // Skip updating history if we don't have a history ID
+        if (!this.#historyId) {
+            return
+        }
+
+        const colorMapName = e.detail?.colorMapName
+        const opacity = e.detail?.opacity
+
+        // Update history with new colormap and opacity
+        if (colorMapName !== undefined || opacity !== undefined) {
+            console.log('plot options change event updating history with new colormap and opacity', colorMapName, opacity)
+            await updateHistoryItemPlotOptions(this.#historyId, colorMapName, opacity)
+            
+            // Also update the thumbnail since the visual appearance has changed
+            // Wait a bit for the map to re-render with the new colormap/opacity
+            this.#updateThumbnail()
+        }
+    }
+
     async #handleDataChange(e: CustomEvent) {
         console.log('data change event', e)
 
@@ -153,6 +232,13 @@ export class MapPlotComponent {
         }
 
         // Update thumbnail even if loaded from history (in case cache was empty and new request was made)
+        await this.#updateThumbnail()
+    }
+
+    async #updateThumbnail() {
+        if (!this.#historyId) {
+            return
+        }
 
         // Wait for the map to render and the GeoTIFF layer to load, then capture the canvas
         // We wait longer than for time-series plots because the GeoTIFF layer takes time to render
@@ -160,9 +246,6 @@ export class MapPlotComponent {
             let thumbnail: Blob | undefined
 
             try {
-                // Wait for GeoTIFF layer to render
-                await new Promise(resolve => setTimeout(resolve, 500))
-                
                 // Find all canvas elements in the shadow DOM - the map may have multiple layers
                 const shadowRoot = this.#plotEl.shadowRoot
                 if (!shadowRoot) {

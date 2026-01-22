@@ -101,3 +101,50 @@ export async function updateHistoryItemThumbnail(id: string, thumbnail: Blob | u
     // Dispatch event to notify components that history has been updated
     document.dispatchEvent(new CustomEvent('historyUpdated'))
 }
+
+export async function updateHistoryItemPlotOptions(id: string, colorMapName?: string, opacity?: number) {
+    const userId = userState.value.user?.uid
+    if (!userId) {
+        return
+    }
+
+    const key = `history:${userId}`
+    const existing = await getDataByKey<{ items?: TimeSeriesRequestHistoryItem[] } | undefined>(
+        IndexedDbStores.HISTORY,
+        key
+    )
+
+    const items = Array.isArray(existing?.items) ? existing!.items : []
+    const itemIndex = items.findIndex(item => item.id === id)
+    
+    if (itemIndex === -1) {
+        console.warn(`History item with id ${id} not found`)
+        return
+    }
+
+    // Update the plot options (colormap and opacity) for the existing item
+    const updates: Partial<TimeSeriesRequest> = {}
+    if (colorMapName !== undefined) {
+        updates.colorMapName = colorMapName
+    }
+    if (opacity !== undefined) {
+        updates.opacity = opacity
+    }
+
+    const newItem = {
+        ...items[itemIndex],
+        request: {
+            ...items[itemIndex].request,
+            ...updates,
+        },
+    }
+
+    console.log('updateHistoryItemPlotOptions updating history item', id, newItem)
+
+    items[itemIndex] = newItem
+
+    await storeDataByKey(IndexedDbStores.HISTORY, key, { items })
+
+    // Dispatch event to notify components that history has been updated
+    document.dispatchEvent(new CustomEvent('historyUpdated'))
+}
