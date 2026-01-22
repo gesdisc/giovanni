@@ -39,8 +39,6 @@ export class SelectVariablesComponent {
 
     #setupEffects() {
         effect(() => {
-            console.log('selected variables changed: ', variables.value)
-
             this.#selectedVariablesList.innerHTML = variables.value.length === 0 ? `
                 <div class="w-full mt-3 p-2 border border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-700 transition-colors focus-ring">
                     <div class="flex items-center justify-center space-x-2">
@@ -60,7 +58,27 @@ export class SelectVariablesComponent {
                 this.#sortable?.destroy()
                 this.#sortable = null
             }
+
+            // Update browse component's selectedVariables to match our variables signal
+            this.#syncBrowseComponent()
         })
+    }
+
+    #syncBrowseComponent() {
+        // Get current selectedVariables from the browse component
+        const currentSelected = (this.#element.selectedVariables as any[]) || []
+        
+        // Get the IDs of variables we want to keep
+        const variableIds = new Set(variables.value.map(v => v.variable.dataFieldId))
+        
+        // Filter selectedVariables to only include variables that are still in our list
+        const filteredSelected = currentSelected.filter((selectedVar: any) => 
+            variableIds.has(selectedVar.variableEntryId || selectedVar.dataFieldId)
+        )
+       
+        if (filteredSelected.length !== currentSelected.length) {
+            this.#element.selectedVariables = filteredSelected
+        }
     }
 
     #initializeSortable() {
@@ -84,31 +102,22 @@ export class SelectVariablesComponent {
     }
 
     #handleChange(e: TerraVariablesChangeEvent) {
-        console.log('handleChange', e)
-        
         // Get existing variables that are still selected
         const existingVariables = variables.value.filter(v => 
             e.detail.selectedVariables.some(newV => newV.dataFieldId === v.variable.dataFieldId)
         )
-
-        console.log('existing variables: ', existingVariables)
 
         // Get new variables that weren't previously selected
         const newVariables = e.detail.selectedVariables
             .filter(v => !variables.value.some(existing => existing.variable.dataFieldId === v.dataFieldId))
             .map(v => new VariableComponent(v, v.dataFieldLongName))
 
-        console.log('new variables: ', newVariables)
-
         // Destroy variables that are no longer selected
         variables.value.forEach(v => {
             if (!e.detail.selectedVariables.some(newV => newV.dataFieldId === v.variable.dataFieldId)) {
-                console.log('destroying variable: ', v.variable.dataFieldId)
                 v.destroy()
             }
         })
-
-        console.log('variables after: ', variables.value)
 
         // Update variables array, preserving order of existing variables and appending new ones
         variables.value = [...existingVariables, ...newVariables]
