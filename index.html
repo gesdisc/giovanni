@@ -59,9 +59,11 @@
                     >
                         <a
                             href="#"
-                            class="block px-4 py-2 hover:bg-gray-100 cursor-not-allowed text-gray-400"
+                            id="widget-user-guide"
+                            target="_blank"
+                            class="block px-4 py-2 hover:bg-gray-100"
                         >
-                            User Guide (coming soon)
+                            User Guide
                         </a>
 
                         <a
@@ -450,7 +452,7 @@
                     </a>
 
                     <a
-                        href="https://localhost/documents?title=Giovanni%20Beta%20User%20Guide"
+                        href="#"
                         id="widget-user-guide"
                         class="widget"
                         target="_blank"
@@ -497,6 +499,27 @@
                     helpMenu.classList.add('hidden')
                 }
             })
+        </script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+            const userGuideLink = document.getElementById("widget-user-guide");
+            const hostname = window.location.hostname;
+
+            const uatUrl =
+                "https://uui-test.gesdisc.eosdis.nasa.gov/information/documents?title=Giovanni%20Beta%20User%20Guide";
+
+            const prodUrl =
+                "https://disc.gsfc.nasa.gov/information/documents?title=Giovanni%20Beta%20User%20Guide";
+
+            if (hostname.includes("uui-test.gesdisc.eosdis.nasa.gov")) {
+                userGuideLink.href = uatUrl;
+            } else if (hostname.includes("disc.gsfc.nasa.gov")) {
+                userGuideLink.href = prodUrl;
+            } else {
+            // default for local development 
+            userGuideLink.href = uatUrl;
+            }
+            });
         </script>
     </body>
 </html>
