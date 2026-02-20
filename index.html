@@ -59,11 +59,16 @@
                     >
                         <a
                             href="#"
-                            id="widget-user-guide"
                             target="_blank"
-                            class="block px-4 py-2 hover:bg-gray-100"
+                            class="block px-4 py-2 hover:bg-gray-100 widget-user-guide"
                         >
                             User Guide
+                            <terra-icon
+                                    name="outline-arrow-top-right-on-square"
+                                    library="heroicons"
+                                    class="w-4 h-4 ml-1"
+                                ></terra-icon>
+                            </span>
                         </a>
 
                         <a
@@ -453,8 +458,7 @@
 
                     <a
                         href="#"
-                        id="widget-user-guide"
-                        class="widget"
+                        class="widget widget-user-guide"
                         target="_blank"
                     >
                         <terra-icon
@@ -502,23 +506,29 @@
         </script>
         <script>
             document.addEventListener("DOMContentLoaded", function () {
-            const userGuideLink = document.getElementById("widget-user-guide");
+            const userGuideLinks = document.querySelectorAll(".widget-user-guide");
             const hostname = window.location.hostname;
 
             const uatUrl =
-                "https://uui-test.gesdisc.eosdis.nasa.gov/information/documents?title=Giovanni%20Beta%20User%20Guide";
+                 "https://uui-test.gesdisc.eosdis.nasa.gov/information/documents?title=Giovanni%20Beta%20User%20Guide";
 
             const prodUrl =
                 "https://disc.gsfc.nasa.gov/information/documents?title=Giovanni%20Beta%20User%20Guide";
 
+            let finalUrl;
+
             if (hostname.includes("uui-test.gesdisc.eosdis.nasa.gov")) {
-                userGuideLink.href = uatUrl;
+                finalUrl = uatUrl;
             } else if (hostname.includes("disc.gsfc.nasa.gov")) {
-                userGuideLink.href = prodUrl;
+                finalUrl = prodUrl;
             } else {
-            // default for local development 
-            userGuideLink.href = uatUrl;
+            // default for local development
+                finalUrl = uatUrl; 
             }
+
+            userGuideLinks.forEach(link => {
+                link.href = finalUrl;
+            });
             });
         </script>
     </body>
