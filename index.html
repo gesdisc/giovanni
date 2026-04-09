@@ -38,6 +38,18 @@
 
                 <div class="flex items-center relative" slot="right">
                     <div class="relative">
+                        <terra-button id="alertButton" variant="text">
+                            <span class="text-gray-200 hover:text-white flex items-center cursor-pointer">
+                                <terra-icon
+                                    name="solid-exclamation-triangle"
+                                    library="heroicons"
+                                    class="w-5 h-5 alert-icon"
+                                ></terra-icon>
+                            </span>
+                        </terra-button>
+                    </div>
+
+                    <div class="relative">
                         <terra-button id="helpButton" variant="text">
                             <span
                                 class="text-gray-200 hover:text-white flex items-center cursor-pointer"
@@ -485,6 +497,15 @@
             </div>
         </div>
 
+        <terra-dialog label="Alerts" id="alert-dialog" style="--width: 80vw;">
+            <div id="alertsContainer" class="space-y-3">
+                Loading alerts...
+             </div>
+            <terra-button slot="footer" variant="primary">
+                Close
+            </terra-button>
+        </terra-dialog>
+
         <!-- used in time-series-plot to generate history thumbnails -->
         <script
             src="https://cdn.plot.ly/plotly-3.1.0.min.js"
@@ -530,6 +551,84 @@
                 link.href = finalUrl;
             });
             });
+        </script>
+
+         <script>
+        const alertBtn = document.getElementById('alertButton')
+        const alertDialog = document.getElementById('alert-dialog')
+        const closeButton = alertDialog.querySelector('terra-button[slot="footer"]');
+        const alertsContainer = document.getElementById('alertsContainer');
+        
+        function stripHtml(html) {
+        const temp = document.createElement("div");
+        temp.innerHTML = html;
+        return temp.textContent || temp.innerText || "";}
+
+        function formatDate(timestamp) {
+            if (!timestamp) return "";
+
+            return new Date(timestamp).toLocaleString("en-US", {
+                dateStyle: "medium",
+                timeStyle: "medium"
+            });
+        }
+
+        async function loadAlerts() {
+        try {
+            alertsContainer.innerHTML = "Loading alerts...";
+
+            const response = await fetch("https://disc.gsfc.nasa.gov/api/alerts");
+            const data = await response.json();
+
+            const alertsArray = data.data || [];
+            const now = Date.now();
+            //Filter alerts with "giovanni" tag
+            const filteredAlerts = alertsArray.filter(alert => 
+                alert.severity === "normal" &&
+                alert.tags && alert.tags.includes("giovanni") &&
+                (!alert.expiration || alert.expiration > now)
+            );
+            
+            if (filteredAlerts.length === 0) {
+                alertsContainer.innerHTML = "<p>No Giovanni alerts found.</p>";
+                return;
+            }
+            
+            //Sort alerts by newest first
+            filteredAlerts.sort((a, b) => b.created - a.created);
+
+            // Render alerts
+             alertsContainer.innerHTML = filteredAlerts.map(alert => `
+            <div class="alert-item">
+                <div class="flex-1">
+                    <div class="alert-title">
+                    ${alert.title || "Alert"}
+                    </div>
+                    <div class="alert-body">
+                     ${stripHtml(alert.body || "")}
+                    </div>
+                    <div class="alert-meta">
+                        <div><strong>Updated:</strong> ${formatDate(alert.updated)}</div>
+                        <div>
+                            <strong>Alert Date:</strong> ${formatDate(alert.start)} 
+                            <strong>Expires:</strong> ${formatDate(alert.expiration)}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `).join("");
+
+            } catch (error) {
+            console.error("Error loading alerts:", error);
+            alertsContainer.innerHTML = "<p class='text-red-500'>Failed to load alerts.</p>";
+            }
+        }
+
+        alertBtn.addEventListener('click', () => {
+            alertDialog.show();
+            loadAlerts();
+        });
+        closeButton.addEventListener('click', () => alertDialog.hide());
         </script>
     </body>
 </html>
