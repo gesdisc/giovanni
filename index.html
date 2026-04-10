@@ -584,7 +584,6 @@
             const now = Date.now();
             //Filter alerts with "giovanni" tag
             const filteredAlerts = alertsArray.filter(alert => 
-                alert.severity === "normal" &&
                 alert.tags && alert.tags.includes("giovanni") &&
                 (!alert.expiration || alert.expiration > now)
             );
