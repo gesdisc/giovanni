@@ -33,6 +33,7 @@ export class MapPlotComponent {
 
         this.#plotEl.collection = collectionId
         this.#plotEl.variable = variableShortName
+        this.#plotEl.showHelp = false
         this.updateDateTimeRange(request.dateTimeRange)
         this.updateSpatialArea(request.spatialArea)
 
