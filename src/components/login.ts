@@ -11,6 +11,7 @@ export class LoginComponent {
     #logoutSection: HTMLDivElement
 
     constructor() {
+        console.log('DEBUG: ********* LoginComponent ************ #constructor called')
         this.#loginEl = document.querySelector<TerraLogin>('#login')!
         this.#logoutSection = this.#loginEl.querySelector<HTMLDivElement>('#logout')!
 
@@ -20,11 +21,14 @@ export class LoginComponent {
 
     #bindEvents() {
         this.#loginEl.addEventListener('terra-login', (e: TerraLoginEvent) => {
+            console.log('DEBUG: ********* LoginComponent ************ terra-login event called')
             userState.value = {
                 ...userState.value,
                 user: e.detail.user?.uid ? (e.detail.user as User) : null,
                 userChecked: true,
             }
+            
+            console.log('DEBUG: user state updated:', userState.value)
         })
     }
 
@@ -58,6 +62,8 @@ export class LoginComponent {
 
                     // use token based logout
                     this.#loginEl.logout()
+
+                    sessionStorage.removeItem('earthdataAuthRedirect')
 
                     // also logout of URS
                     window.location.href = logoutUrl

@@ -1,3 +1,5 @@
+import { userState } from '../state'
+import { TerraLoginEvent } from '@nasa-terra/components'
 export class WelcomeSplashComponent {
     #welcomeScreen: HTMLElement
     #skipBtn: HTMLElement
@@ -18,15 +20,45 @@ export class WelcomeSplashComponent {
     }
 
     #initialize() {
-        // Check if user opted out previously
-        const hide = localStorage.getItem('hideWelcomeScreen')
+        this.#welcomeScreen.style.display = 'none'  // Default to hidden
+        
+        console.log('DEBUG: ********* WelcomeSplashComponent ************ #initialize called')
+        
+        // Check if user opted out of welcome screenpreviously
+        const hide = localStorage.getItem('hideWelcomeScreen') === 'true'
 
-        this.#welcomeScreen.style.display = hide === 'true' ? 'none' : 'flex'
+        if (hide) {
+            return
+        }
+
+        console.log('DEBUG: welcomeScreen.style.disply:', this.#welcomeScreen.style.display)
+        console.log('DEBUG: hideWelcomeScreen:', hide)
+        console.log('DEBUG: userState in WelcomeSplashComponent #initialize:', userState.value)
 
         this.#setupEventListeners()
+
+        // 🚨 IMPORTANT: defer decision until auth state settles
+        // Determine whether to show welcome screen based on user login status
+        queueMicrotask(() => {
+            this.#evaluateVisibility()
+        })
     }
 
     #setupEventListeners() {
+
+        // Setup listener for login event
+        window.addEventListener('terra-login', (e: TerraLoginEvent) => {
+            const isLoggedIn = !!e.detail?.user?.uid
+
+            console.log('DEBUG: terra-login event → isLoggedIn:', isLoggedIn)
+
+            if (isLoggedIn) {
+                this.#closeSplash()
+            } else {
+                this.#welcomeScreen.style.display = 'flex'
+            }
+        })
+
         this.#skipBtn.addEventListener('click', () => this.#closeSplash())
 
         // Create Map Widget
@@ -49,9 +81,22 @@ export class WelcomeSplashComponent {
         })
     }
 
+    #evaluateVisibility() {
+        const isLoggedIn = !!userState.value.user
+
+        console.log('DEBUG: evaluateVisibility → isLoggedIn:', isLoggedIn)
+
+        if (isLoggedIn) {
+            this.#closeSplash()
+        } else {
+            this.#welcomeScreen.style.display = 'flex'
+        }
+    }
+
     #closeSplash() {
+        console.log('DEBUG: ********* WelcomeSplashComponent ************ #closeSplash called')
         if (this.#hideCheckbox.checked) {
-            localStorage.setItem('hideWelcomeScreen', 'true')
+            localStorage.setItem('hideWelcomeScreen', 'true')   // Save user preference to hide welcome screen
         }
         this.#welcomeScreen.style.display = 'none'
     }
