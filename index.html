@@ -642,7 +642,15 @@
 
             if (dismissedId === latestId) {
                 bannerContainer.classList.add("hidden");
-                return;
+            } else {    
+                const message = [
+                    latest.title,
+                    stripHtml(latest.body)
+                ].filter(Boolean).join(" — ");
+
+                bannerText.textContent = message;
+                banner.dataset.alertId = latestId;
+                bannerContainer.classList.remove("hidden");
             }
 
             const message = [
