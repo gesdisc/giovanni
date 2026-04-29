@@ -202,7 +202,6 @@
                             </terra-button>
 
                             <terra-dialog
-                                no-header
                                 id="add-variable-dialog"
                                 style="--width: clamp(350px, 77%, 1280px); --body-spacing: 0"
                             >
@@ -221,6 +220,7 @@
                                 label=""
                                 id="spatial-picker"
                                 class="w-full"
+                                closable
                             ></terra-spatial-picker>
                         </section>
 
@@ -237,6 +237,7 @@
                                 id="date-range"
                                 show-presets
                                 placeholder="Select a date range (e.g. 2025-01-01 to 2025-01-31)"
+                                closable
                             ></terra-date-picker>
                         </section>
                     </div>
