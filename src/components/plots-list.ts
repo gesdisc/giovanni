@@ -54,9 +54,12 @@ export class PlotsListComponent {
     }
 
     async #generatePlots() {
-        // Clear existing plots
-        this.#listEl.innerHTML = ''
+        // Destroy existing plots so their event listeners are cleaned up
+        for (const plot of this.#activePlots.values()) {
+            plot.destroy()
+        }
         this.#activePlots.clear()
+        this.#listEl.innerHTML = ''
 
         // Generate plots for all variables
         for (const v of variables.value) {

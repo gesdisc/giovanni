@@ -21,6 +21,7 @@ export class HistoryPanelComponent {
     #history: TimeSeriesRequestHistoryItem[] = []
     #currentScrollPosition = 0
     #scrollStep = 200 // pixels to scroll per arrow click
+    #loadHistoryVersion = 0
 
     constructor() {
         this.#containerEl = document.getElementById('history-panel')!
@@ -73,6 +74,8 @@ export class HistoryPanelComponent {
     }
 
     async #loadHistory() {
+        const version = ++this.#loadHistoryVersion
+
         const uid = userState.value.user?.uid
         if (!uid) {
             this.#history = []
@@ -85,6 +88,9 @@ export class HistoryPanelComponent {
             IndexedDbStores.HISTORY,
             arrayKey
         )
+
+        // Discard result if a newer load was started while this one was in flight
+        if (version !== this.#loadHistoryVersion) return
 
         if (arrayRecord && Array.isArray(arrayRecord.items)) {
             this.#history = arrayRecord.items

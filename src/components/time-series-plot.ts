@@ -124,11 +124,13 @@ export class TimeSeriesPlotComponent {
                 ?.querySelector('terra-plot')
                 ?.shadowRoot?.querySelector('.js-plotly-plot') as HTMLElement
 
-            // Only capture thumbnail if plot element exists and has content
-            if (plot && plot.offsetWidth > 0 && plot.offsetHeight > 0) {
+            // Capture thumbnail if the plot element exists; Plotly.toImage reads
+            // internal chart state so it works even if the element has been removed
+            // from the DOM (e.g. when a new plot was generated before the timeout fired)
+            if (plot) {
                 thumbnail = await this.#getThumbnailBlob(plot)
             } else {
-                console.log('Plot not yet rendered, skipping thumbnail capture')
+                console.log('Plot element not found, skipping thumbnail capture')
             }
         } catch (e) {
             console.error('Error getting thumbnail', e)
