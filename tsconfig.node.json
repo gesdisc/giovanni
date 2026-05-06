@@ -1,10 +1,12 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "composite": true,
+    "noEmit": false,
+    "emitDeclarationOnly": true,
     "types": ["node"],
     "module": "ESNext",
-    "moduleResolution": "bundler",
-    "noEmit": true
+    "moduleResolution": "bundler"
   },
   "include": ["playwright.config.ts", "global-setup.ts", "tests/**/*.ts"],
   "exclude": ["src"]

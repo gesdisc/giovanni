@@ -567,7 +567,6 @@ test.describe('Giovanni regression', () => {
     // Spatial picker element is present
     const spatialPicker = page.locator('#spatial-picker')
     await expect(spatialPicker).toBeVisible()
-    const locationSection = page.locator('section').filter({ has: page.locator('text=Location / Region') }).first()
 
     // Verify the spatial picker has an input
     const spatialInput = spatialPicker.locator('input[type="text"]')
@@ -1045,7 +1044,6 @@ test.describe('Giovanni regression', () => {
       // Re-query thumbnails since clicking triggers generate-plot which rebuilds the plots area
       const currentThumbnails = thumbnailsContainer.locator('.thumbnail-item')
       const thumb = currentThumbnails.nth(i)
-      const thumbId = await thumb.getAttribute('data-id')
 
       await thumb.click()
 
