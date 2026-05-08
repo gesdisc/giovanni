@@ -1,6 +1,6 @@
-import { userState } from '../state'
-import { TerraLoginEvent } from '@nasa-terra/components'
 export class WelcomeSplashComponent {
+    #proxyLogin: HTMLElement
+    #login: HTMLElement
     #welcomeScreen: HTMLElement
     #skipBtn: HTMLElement
     #hideCheckbox: HTMLInputElement
@@ -10,53 +10,44 @@ export class WelcomeSplashComponent {
 
     constructor() {
         this.#welcomeScreen = document.getElementById('welcomeScreen')!
+        this.#proxyLogin = document.getElementById('login-proxy')!
+        this.#login = document.getElementById('login')!
         this.#skipBtn = document.getElementById('welcomeSkip')!
         this.#hideCheckbox = document.getElementById('hideWelcome') as HTMLInputElement
         this.#createMapWidget = document.getElementById('widget-create-map')
         this.#createTimeseriesWidget = document.getElementById('widget-create-timeseries')
         this.#userGuideWidget = document.getElementById('widget-user-guide')
 
+        this.#setupEventListeners()  
         this.#initialize()
     }
 
     #initialize() {
         this.#welcomeScreen.style.display = 'none'  // Default to hidden
         
-        console.log('DEBUG: ********* WelcomeSplashComponent ************ #initialize called')
-        
-        // Check if user opted out of welcome screenpreviously
         const hide = localStorage.getItem('hideWelcomeScreen') === 'true'
+        const redirectFromLogin = localStorage.getItem('loginInitiated') === 'true'
 
-        if (hide) {
+        // If authentication is in progress, don't show welcome screen.
+        if (redirectFromLogin) {
+            this.#login.style.display = 'inline-flex'  // unhide actual login component
+            this.#proxyLogin.style.display = 'none'  // hide the proxy login button
+            localStorage.removeItem('loginInitiated')
             return
         }
 
-        console.log('DEBUG: welcomeScreen.style.disply:', this.#welcomeScreen.style.display)
-        console.log('DEBUG: hideWelcomeScreen:', hide)
-        console.log('DEBUG: userState in WelcomeSplashComponent #initialize:', userState.value)
-
-        this.#setupEventListeners()
-
-        // 🚨 IMPORTANT: defer decision until auth state settles
-        // Determine whether to show welcome screen based on user login status
-        queueMicrotask(() => {
-            this.#evaluateVisibility()
-        })
+        this.#welcomeScreen.style.display = hide ? 'none' : 'flex'
     }
 
     #setupEventListeners() {
 
-        // Setup listener for login event
-        window.addEventListener('terra-login', (e: TerraLoginEvent) => {
-            const isLoggedIn = !!e.detail?.user?.uid
+        this.#proxyLogin.addEventListener('click', () => {
+            localStorage.setItem('loginInitiated', 'true')  // Set flag to indicate login initiated
 
-            console.log('DEBUG: terra-login event → isLoggedIn:', isLoggedIn)
-
-            if (isLoggedIn) {
-                this.#closeSplash()
-            } else {
-                this.#welcomeScreen.style.display = 'flex'
-            }
+            const internalLoginBtn = this.#login.shadowRoot?.querySelector('terra-button')
+            internalLoginBtn?.click()
+            this.#login.style.display = 'inline-flex'   // unhide actual login component
+            this.#proxyLogin.style.display = 'none'     // hide the proxy login button 
         })
 
         this.#skipBtn.addEventListener('click', () => this.#closeSplash())
@@ -81,20 +72,7 @@ export class WelcomeSplashComponent {
         })
     }
 
-    #evaluateVisibility() {
-        const isLoggedIn = !!userState.value.user
-
-        console.log('DEBUG: evaluateVisibility → isLoggedIn:', isLoggedIn)
-
-        if (isLoggedIn) {
-            this.#closeSplash()
-        } else {
-            this.#welcomeScreen.style.display = 'flex'
-        }
-    }
-
     #closeSplash() {
-        console.log('DEBUG: ********* WelcomeSplashComponent ************ #closeSplash called')
         if (this.#hideCheckbox.checked) {
             localStorage.setItem('hideWelcomeScreen', 'true')   // Save user preference to hide welcome screen
         }
