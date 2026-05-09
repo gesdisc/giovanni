@@ -5,15 +5,11 @@ export class VariableComponent {
     variable: Variable
     variableLongName: string
     element: HTMLElement
-    fromHistory: boolean = false
-    historyId: string | null = null
 
-    constructor(variable: Variable, variableLongName: string, fromHistory: boolean = false, historyId: string | null = null) {
+    constructor(variable: Variable, variableLongName: string) {
         this.variable = variable
         this.variableLongName = variableLongName
         this.element = document.createElement('div')
-        this.fromHistory = fromHistory
-        this.historyId = historyId
 
         this.render()
     }

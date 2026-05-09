@@ -1,4 +1,4 @@
-import { canGeneratePlots, dateTimeRange, effectiveSpatialArea, plotType, variables, userHistory } from '../state'
+import { canGeneratePlots, dateTimeRange, effectiveSpatialArea, plotType, variables } from '../state'
 import { effect } from '@preact/signals-core'
 import { TimeSeriesPlotComponent } from './time-series-plot'
 import { MapPlotComponent } from './map-plot'
@@ -90,16 +90,11 @@ export class PlotsListComponent {
             dateTimeRange.value
         )
 
-        // Check if this variable component has the fromHistory flag
-        const variableComponent = variables.value.find(v => v.variable.dataFieldId === variable.dataFieldId)
-        
         const plot = new TimeSeriesPlotComponent({
             variable,
             spatialArea: effectiveSpatialArea.value as SpatialArea,
             dateTimeRange: dateTimeRange.value!,
             variableLongName,
-            fromHistory: variableComponent?.fromHistory || false,
-            historyId: variableComponent?.historyId || null,
         })
 
         // Create a container for this plot
@@ -121,29 +116,11 @@ export class PlotsListComponent {
     ) {
         if (!canGeneratePlots.value) return
 
-        // Check if this variable component has the fromHistory flag
-        const variableComponent = variables.value.find(v => v.variable.dataFieldId === variable.dataFieldId)
-
-        // If loading from history, get the full request including colormap and opacity
-        let colorMapName: string | undefined
-        let opacity: number | undefined
-        if (variableComponent?.fromHistory && variableComponent?.historyId) {
-            const historyItem = userHistory.value.find(item => item.id === variableComponent.historyId)
-            if (historyItem) {
-                colorMapName = historyItem.request.colorMapName
-                opacity = historyItem.request.opacity
-            }
-        }
-
         const plot = new MapPlotComponent({
             variable,
             spatialArea: effectiveSpatialArea.value as SpatialArea,
             dateTimeRange: dateTimeRange.value!,
             variableLongName,
-            fromHistory: variableComponent?.fromHistory || false,
-            historyId: variableComponent?.historyId || null,
-            colorMapName,
-            opacity,
         })
 
         const plotContainer = document.createElement('div')
