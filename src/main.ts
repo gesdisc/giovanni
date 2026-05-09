@@ -161,6 +161,7 @@ function loadPlotFromHarmonyJob(job: SubsetJobStatus) {
     ) as any
 
     plotEl.applicationId = 'giovanni-ui'
+    plotEl.jobId = job.jobID
     plotEl.startDate = startDate
     plotEl.endDate = endDate
     plotEl.location = location
