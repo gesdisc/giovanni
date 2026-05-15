@@ -13,9 +13,12 @@ import { LoginComponent } from './components/login'
 import { LoginModalComponent } from './components/login-modal'
 import { WelcomeSplashComponent } from './components/welcome-splash'
 import { UrlsParamsComponent } from './components/url-params'
-import type { SubsetJobStatus } from '@nasa-terra/components/dist/data-services/types.js'
 import { effect } from '@preact/signals-core'
-import { userState } from './state'
+import { dateTimeRange, plotType, spatialArea, userState, variables } from './state'
+import { SpatialAreaType, type Variable } from './types'
+import { VariableComponent } from './components/variable'
+
+type HarmonyJob = { jobID: string; request: string; labels?: string[] }
 
 setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.137/cdn/')
 
@@ -100,12 +103,12 @@ function initializeHarmonyHistory() {
     })
 
     harmonyHistory.addEventListener('terra-harmony-job-select', (e: Event) => {
-        const job = (e as CustomEvent<{ job: SubsetJobStatus }>).detail.job
+        const job = (e as CustomEvent<{ job: HarmonyJob }>).detail.job
         loadPlotFromHarmonyJob(job)
     })
 }
 
-function loadPlotFromHarmonyJob(job: SubsetJobStatus) {
+async function loadPlotFromHarmonyJob(job: HarmonyJob) {
     const url = new URL(job.request)
     const searchParams = url.searchParams
     const labels = searchParams.getAll('label')
@@ -148,6 +151,64 @@ function loadPlotFromHarmonyJob(job: SubsetJobStatus) {
         return
     }
 
+    // --- Update sidebar state ---
+
+    dateTimeRange.value = { startDate, endDate }
+
+    // Spatial area
+    if (west !== undefined && south !== undefined && east !== undefined && north !== undefined) {
+        if (west === south && east === north && west === east) {
+            // point: lat and lon are equal
+            spatialArea.value = { type: SpatialAreaType.COORDINATES, value: { lat: String(south), lng: String(west) } }
+        } else if (west === -180 && south === -90 && east === 180 && north === 90) {
+            spatialArea.value = { type: SpatialAreaType.GLOBAL }
+        } else {
+            spatialArea.value = {
+                type: SpatialAreaType.BOUNDING_BOX,
+                value: { west: String(west), south: String(south), east: String(east), north: String(north) },
+            }
+        }
+    }
+
+    // Plot type
+    plotType.value = isMapPlot ? 'map' : 'plot'
+
+    // Set a stub variable synchronously so the PlotsListComponent effect fires
+    // and sets #hasClearedDefaultView=true before we insert the plot element.
+    // Without this, the async selectVariableById resolves later, triggers the
+    // effect, and wipes the rendered plot (requiring a second click to show it).
+    const lastUnderscore = variableEntryId.lastIndexOf('_')
+    const fieldShortName = variableEntryId.substring(lastUnderscore + 1)
+    const collectionId = variableEntryId.substring(0, lastUnderscore)
+    const stubVariable: Variable = {
+        dataFieldId: variableEntryId,
+        dataFieldShortName: fieldShortName,
+        dataFieldAccessName: fieldShortName,
+        dataFieldLongName: fieldShortName,
+        dataProductShortName: collectionId,
+        dataProductVersion: '',
+        dataProductLongName: collectionId,
+        dataProductTimeInterval: '',
+        dataProductWest: -180,
+        dataProductSouth: -90,
+        dataProductEast: 180,
+        dataProductNorth: 90,
+        dataProductSpatialResolution: '',
+        dataProductBeginDateTime: '',
+        dataProductEndDateTime: '',
+        dataFieldKeywords: [],
+        dataFieldUnits: '',
+        dataProductDescriptionUrl: '',
+        dataFieldDescriptionUrl: '',
+        dataProductInstrumentShortName: '',
+    }
+    variables.value = [new VariableComponent(stubVariable, fieldShortName)]
+
+    // Asynchronously replace the stub with real variable metadata (for the
+    // sidebar display). The effect won't wipe the plot because #hasClearedDefaultView
+    // is already true by the time this resolves.
+    selectVariableById(variableEntryId)
+
     const plotsEl = document.getElementById('plots')
     if (!plotsEl) return
 
@@ -178,4 +239,20 @@ function loadPlotFromHarmonyJob(job: SubsetJobStatus) {
 
     plotContainer.appendChild(plotEl)
     plotsEl.appendChild(plotContainer)
+}
+
+async function selectVariableById(variableEntryId: string) {
+    const browseComponent = document.querySelector('terra-browse-variables') as any
+    if (!browseComponent) return
+
+    const variable = await browseComponent.getVariable(variableEntryId)
+    if (!variable) {
+        console.warn('Variable with entry ID not found in browse component: ', variableEntryId)
+        // remove existing variable selection
+        variables.value = []
+        return
+    }
+
+    // select variable by setting state
+    variables.value = [new VariableComponent(variable, variable.dataFieldLongName)]
 }
