@@ -23,6 +23,7 @@ export class MapPlotComponent {
         this.#plotEl.applicationId = 'giovanni-ui'
         this.#plotEl.collection = collectionId
         this.#plotEl.variable = variableShortName
+        this.#plotEl.showHelp = false
         this.updateDateTimeRange(request.dateTimeRange)
         this.updateSpatialArea(request.spatialArea)
     }

@@ -23,6 +23,14 @@
 
     <body class="bg-gray-50 font-sans">
         <div class="flex flex-col h-screen">
+            <div id="emergency-banner-container" class="hidden"> 
+                <terra-banner id="emergency-banner" open closable> 
+                    <terra-icon slot="icon" name="solid-exclamation-triangle" library="heroicons" >
+                    </terra-icon> 
+                    <span id="emergency-banner-text"></span> 
+                </terra-banner>
+            </div>
+
             <terra-site-header>
                 <div slot="title" class="flex items-center space-x-3" slot="title">
                     <div>
@@ -37,6 +45,22 @@
                 </div>
 
                 <div class="flex items-center relative" slot="right">
+                    <div class="relative">
+                        <terra-button id="alertButton" variant="text">
+                            <span class="text-gray-200 hover:text-white flex items-center cursor-pointer relative">
+                                <terra-icon
+                                    name="solid-exclamation-triangle"
+                                    library="heroicons"
+                                    class="w-5 h-5 alert-icon"
+                                ></terra-icon>
+                                <sup id="alertCount"
+                                class="absolute -top-1 -right-3 text-white text-xs rounded-full hidden">
+                                    0
+                                </sup>
+                            </span>
+                        </terra-button>
+                    </div>
+
                     <div class="relative">
                         <terra-button id="helpButton" variant="text">
                             <span
@@ -87,7 +111,15 @@
                         </a>
                     </div>
 
-                    <terra-login id="login" button-label="Login" class="ml-3">
+                    <terra-button
+                        id="login-proxy"
+                        variant="primary"
+                        onclick=""
+                    >
+                        Login
+                    </terra-button>
+
+                    <terra-login id="login" button-label="Login" class="ml-3" style="display:none">
                         <div slot="logged-in" id="logout">
                             <!-- empty container that will be populated with the logout button -->
                         </div>
@@ -419,6 +451,15 @@
             </div>
         </div>
 
+        <terra-dialog label="Alerts" id="alert-dialog" style="--width: 80vw;">
+            <div id="alertsContainer" class="space-y-3">
+                Loading alerts...
+             </div>
+            <terra-button slot="footer" variant="primary">
+                Close
+            </terra-button>
+        </terra-dialog>
+
         <!-- used in time-series-plot to generate history thumbnails -->
         <script
             src="https://cdn.plot.ly/plotly-3.1.0.min.js"
@@ -436,7 +477,7 @@
                 if (!helpBtn.contains(e.target) && !helpMenu.contains(e.target)) {
                     helpMenu.classList.add('hidden')
                 }
-            })
+            }) 
         </script>
         <script>
             document.addEventListener("DOMContentLoaded", function () {

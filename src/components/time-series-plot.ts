@@ -21,6 +21,7 @@ export class TimeSeriesPlotComponent {
         this.#plotEl = document.createElement('terra-time-series')
 
         this.#plotEl.setAttribute('disable-auto-fetch', 'true')
+        this.#plotEl.showHelp = false
 
         this.element.appendChild(this.#plotEl)
 
