@@ -17,9 +17,9 @@
             href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
             rel="stylesheet"
         />
-      <script type="module" crossorigin src="./assets/index-f85GPU1j.js"></script>
+      <script type="module" crossorigin src="./assets/index-BvJKNFnX.js"></script>
       <link rel="modulepreload" crossorigin href="./assets/vendor-lC3ks3hR.js">
-      <link rel="stylesheet" crossorigin href="./assets/style-D3cVGP58.css">
+      <link rel="stylesheet" crossorigin href="./assets/style-Bya-iVxk.css">
     </head>
 
     <body class="bg-gray-50 font-sans">
@@ -88,7 +88,15 @@
                         </a>
                     </div>
 
-                    <terra-login id="login" button-label="Login" class="ml-3">
+                    <terra-button
+                        id="login-proxy"
+                        variant="primary"
+                        onclick=""
+                    >
+                        Login
+                    </terra-button>
+
+                    <terra-login id="login" button-label="Login" class="ml-3" style="display:none">
                         <div slot="logged-in" id="logout">
                             <!-- empty container that will be populated with the logout button -->
                         </div>
@@ -504,7 +512,7 @@
                 if (!helpBtn.contains(e.target) && !helpMenu.contains(e.target)) {
                     helpMenu.classList.add('hidden')
                 }
-            })
+            }) 
         </script>
         <script>
             document.addEventListener("DOMContentLoaded", function () {
