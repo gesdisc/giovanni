@@ -1,188 +1,18 @@
 /// <reference types="node" />
-import { test, expect, Page, Locator } from '@playwright/test'
+import { test, expect } from '@playwright/test'
+import {
+  openGiovanni,
+  dismissSplash,
+  selectVariable,
+  expectDateRejected,
+  setDateRange,
+  setPlotType,
+} from './helpers'
 
 // Resolved at runtime by global-setup.ts:
 // uses giovanni.uat.earthdata.gov when it's reachable, otherwise falls back to
 // the local Vite dev server at 127.0.0.1:5173 (started automatically if needed).
 const BASE_URL = process.env.GIOVANNI_BASE_URL ?? 'http://127.0.0.1:5173/'
-
-// Helper: navigate to Giovanni and ensure splash screen is shown
-async function openGiovanni(page: Page) {
-  await page.goto(BASE_URL)
-  await page.evaluate(() => {localStorage.removeItem('hideWelcomeScreen')})
-  await page.reload()
-}
-
-
-// Helper: dismiss the splash screen
- 
-async function dismissSplash(page: Page) {
-  const splashScreen = page.locator('#welcomeScreen.splash-overlay')
-  if (await splashScreen.isVisible()) {
-    const hideCheckbox = splashScreen.getByRole('checkbox', { name: 'Do not show this again' })
-    if (await hideCheckbox.isVisible().catch(() => false)) {
-      await hideCheckbox.check().catch(() => {})
-    }
-    await splashScreen.getByRole('button', { name: 'Skip' }).click()
-  }
-
-  // Persist hiding to prevent remounts from re-showing the overlay mid-test.
-  await page.evaluate(() => { localStorage.setItem('hideWelcomeScreen', 'true') })
-  await expect(splashScreen).toBeHidden()
-}
-
- // Helper: select a variable by keyword search so that the Generate Plot button becomes enabled
-async function selectVariable(page: Page, keyword = 'imerg', exactLabel?: string) {
-  // Scroll the add-variable button into view and click with force to avoid spatial-picker overlay issues
-  const selectVariableButton = page.locator('terra-button#add-variable-button')
-  await selectVariableButton.scrollIntoViewIfNeeded()
-  await selectVariableButton.click({ force: true })
-
-  const dialog = page.locator('terra-dialog#add-variable-dialog')
-  await expect(dialog).toBeVisible()
-
-  const browseVariables = page.locator('terra-browse-variables#variable-selector')
-  await expect(browseVariables).toBeVisible()
-
-  // Wait for the component to fully initialize before searching
-  const searchInput = page.getByRole('combobox', { name: /Enter search terms/i })
-  await expect(searchInput).toBeVisible()
-  await page.waitForTimeout(3000)
-
-  await searchInput.fill(keyword)
-
-  // Click the search button directly rather than relying on the keyword
-  // autocomplete dropdown (which depends on a flaky keyword suggestions API).
-  // The "Search for <keyword>." button triggers the variable search immediately.
-  const searchButton = page.locator(`[aria-label="Search for ${keyword}."] button, [title="Search for ${keyword}."] button`).first()
-  const fallbackSearchButton = page.getByRole('button', { name: new RegExp(`Search for ${keyword}`, 'i') })
-  
-  const searchBtn = await searchButton.isVisible().then(v => v ? searchButton : fallbackSearchButton)
-  await searchBtn.click({ timeout: 10000 })
-
-  // Wait for the keyword search API to respond and render variable results
-  const variableList = browseVariables.locator('ul.variable-list')
-  await expect(variableList).toBeVisible({ timeout: 30000 })
-  await expect(variableList.locator('li.variable-list-item').first()).toBeVisible({ timeout: 10000 })
-
-  // Close the keyword dropdown so it doesn't cover variables
-  await page.locator('terra-variable-keyword-search').evaluate((el: any) => el.close?.())
-  const keywordDropdown = page.getByRole('listbox', { name: /Keywords Matching/i })
-  await expect(keywordDropdown).toBeHidden({ timeout: 10000 })
-  await expect(dialog).toBeVisible({ timeout: 10000 })
-
-  const variableItems = browseVariables.locator('li.variable-list-item')
-  await expect(variableItems.first()).toBeVisible({ timeout: 10000 })
-
-  const variableToClick = exactLabel
-    ? browseVariables.locator('li.variable-list-item', { hasText: exactLabel }).first()
-    : variableItems.first()
-
-  if (exactLabel) {
-    await expect(variableToClick).toBeVisible({ timeout: 10000 })
-  }
-
-  // Click the selected variable result
-  await variableToClick.locator('label').click({ force: true })
-
-  const variableDialog = page.locator('terra-dialog#add-variable-dialog')
-  if (await variableDialog.isVisible().catch(() => false)) {
-    await variableDialog.evaluate((element: any) => element.hide?.()).catch(() => {})
-    await expect(variableDialog).toBeHidden({ timeout: 10000 }).catch(() => {})
-  }
-}
-
-// Helper: ensure an out-of-range date is rejected by the picker state.
-async function expectOutOfRangeDateRejected(datePicker: Locator, dateInput: Locator, invalidRange: string) {
-  await dateInput.fill(invalidRange)
-  await dateInput.press('Enter')
-
-  // Browsers differ in how the date picker surfaces validation state.
-  // Accept either an explicit validation signal or the unchanged invalid value.
-  await expect
-    .poll(async () => {
-      const hasInputValidationSignal = await dateInput.evaluate((input: HTMLInputElement) => {
-        if (input.validationMessage && /must be on or (after|before)/i.test(input.validationMessage)) {
-          return true
-        }
-        if (input.getAttribute('aria-invalid') === 'true') {
-          return true
-        }
-        const root = input.getRootNode() as ShadowRoot
-        const errorEl = root?.querySelector?.('.form-control__error-text')
-        return !!(errorEl?.textContent && /must be on or (after|before)/i.test(errorEl.textContent))
-      })
-
-      const hasPickerErrorText = await datePicker
-        .innerText()
-        .then((text) => /must be on or (after|before)/i.test(text))
-        .catch(() => false)
-
-      const inputValue = (await dateInput.inputValue()).trim()
-      return hasInputValidationSignal || hasPickerErrorText || inputValue === invalidRange
-    }, { timeout: 10000 })
-    .toBeTruthy()
-}
-
-async function expectInvalidDateFormatRejected(datePicker: Locator, dateInput: Locator, invalidRange: string) {
-  await dateInput.fill(invalidRange)
-  await dateInput.press('Enter')
-
-  await expect
-    .poll(async () => {
-      const hasInputValidationSignal = await dateInput.evaluate((input: HTMLInputElement) => {
-        if (input.validationMessage && /format|yyyy|invalid|date range/i.test(input.validationMessage)) {
-          return true
-        }
-        if (input.getAttribute('aria-invalid') === 'true') {
-          return true
-        }
-        const root = input.getRootNode() as ShadowRoot
-        const errorEl = root?.querySelector?.('.form-control__error-text')
-        return !!(errorEl?.textContent && /format|yyyy|invalid|date range/i.test(errorEl.textContent))
-      })
-
-      const hasPickerErrorText = await datePicker
-        .innerText()
-        .then((text) => /format|yyyy|invalid|date range/i.test(text))
-        .catch(() => false)
-
-      return hasInputValidationSignal || hasPickerErrorText
-    }, { timeout: 10000 })
-    .toBeTruthy()
-}
-
-async function setDateRange(datePicker: Locator, dateInput: Locator, startDate: string, endDate: string) {
-  await datePicker.evaluate((element, range) => {
-    const picker = element as any
-    picker.startDate = range.startDate
-    picker.endDate = range.endDate
-    picker.dispatchEvent(new CustomEvent('terra-date-range-change', {
-      detail: range,
-      bubbles: true,
-      composed: true,
-    }))
-  }, { startDate, endDate })
-
-  await expect(dateInput).toHaveValue(new RegExp(`${startDate}.*[-–].*${endDate}`), { timeout: 10000 })
-}
-
-async function setPlotType(page: Page, newPlotType: 'map' | 'plot') {
-  await page.evaluate((plotType) => {
-    document.dispatchEvent(new CustomEvent('plot-type-changed', {
-      detail: { plotType }
-    }))
-
-    const state = (window as any).__debugPlotTypeSetter
-    if (typeof state === 'function') {
-      state(plotType)
-      return
-    }
-
-    const button = document.querySelector<HTMLButtonElement>(plotType === 'map' ? '#map-button' : '#plot-button')
-    button?.click()
-  }, newPlotType)
-}
 
 test.describe('Giovanni regression', () => {
   test.describe.configure({ timeout: 90_000, retries: 1 })
@@ -588,9 +418,6 @@ test.describe('Giovanni regression', () => {
     const mapContainer = spatialPicker.locator('.spatial-picker__map-container')
     await expect(mapContainer).toBeVisible({ timeout: 10000 })
     await expect(mapContainer.locator('.leaflet-container')).toBeVisible({ timeout: 10000 })
-  
-    await expect(mapContainer).toBeVisible({ timeout: 10000 })
-    await expect(mapContainer.locator('.leaflet-container')).toBeVisible({ timeout: 10000 })
 
     // Verify the map rendered the region selection primitives (attached in DOM).
     const overlayCandidates = mapContainer.locator('.leaflet-overlay-pane path, path.leaflet-interactive')
@@ -648,14 +475,14 @@ test.describe('Giovanni regression', () => {
       .toBeTruthy()
 
     // Type an out-of-range date and assert rejection.
-    await expectOutOfRangeDateRejected(datePicker, dateInput, '2027-03-01 - 2027-03-05')
+    await expectDateRejected(datePicker, dateInput, '2027-03-01 - 2027-03-05', 'out-of-range')
 
     // Read the help text to confirm the available range is shown
     const helpText = datePicker.locator('.form-control__help-text, [slot="help-text"]')
     await expect(helpText).toContainText('Available range', { timeout: 5000 }).catch(() => {})
 
     // Type an invalid format and assert a format-related validation error.
-    await expectInvalidDateFormatRejected(datePicker, dateInput, '03-01-2026 - 03-05-2026')
+    await expectDateRejected(datePicker, dateInput, '03-01-2026 - 03-05-2026', 'invalid-format')
 
     // Enter a valid date range again and verify the button is enabled.
     await dateInput.fill('2026-03-01 - 2026-03-05')
@@ -686,8 +513,9 @@ test.describe('Giovanni regression', () => {
     // Select a variable to enable the button
     await selectVariable(page)
 
-    // Wait for date range to auto-populate
-    await page.waitForTimeout(3000)
+    // Wait for date range to auto-populate (dynamic wait instead of fixed sleep).
+    const dateInputForButton = page.locator('#date-range').locator('input[type="text"]').first()
+    await expect(dateInputForButton).toHaveValue(/.+/, { timeout: 10000 })
 
     await expect(generatePlotButton).toBeEnabled({ timeout: 10000 })
     await expect(generatePlotButton).toHaveClass(/bg-green-500/)
@@ -1664,7 +1492,7 @@ test.describe('Giovanni regression', () => {
     const helpText = datePicker.locator('.form-control__help-text, [slot="help-text"]')
     await expect(helpText).toContainText('Available range', { timeout: 5000 }).catch(() => {})
 
-    await expectOutOfRangeDateRejected(datePicker, dateInput, '1990-01-01 - 1990-01-05')
+    await expectDateRejected(datePicker, dateInput, '1990-01-01 - 1990-01-05', 'out-of-range')
 
     // Enter a valid date range that intersects with the variable's temporal coverage
     // TerraDatePicker does NOT revert invalid input — fill() clears it before typing

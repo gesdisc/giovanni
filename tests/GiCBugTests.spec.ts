@@ -1,51 +1,7 @@
-import { test, expect, Page } from '@playwright/test'
+import { test, expect } from '@playwright/test'
+import { dismissSplash, selectVariable, requireEarthdataCredentials } from './helpers'
 
 const BASE_URL = process.env.GIOVANNI_BASE_URL ?? 'http://127.0.0.1:5173/'
-
-// Helper function to dismiss the splash screen
-async function dismissSplash(page: Page) {
-  const splashScreen = page.locator('#welcomeScreen.splash-overlay')
-  if (await splashScreen.isVisible()) {
-    await splashScreen.getByRole('button', { name: 'Skip' }).click()
-  }
-  await expect(splashScreen).toBeHidden({ timeout: 10000 })
-}
-
-// Helper function to select a variable
-async function selectVariable(page: Page, keyword = 'imerg') {
-  const addVarButton = page.locator('terra-button#add-variable-button')
-  await addVarButton.scrollIntoViewIfNeeded()
-  await addVarButton.click({ force: true })
-
-  const dialog = page.locator('terra-dialog#add-variable-dialog')
-  await expect(dialog).toBeVisible({ timeout: 10000 })
-
-  const browseVariables = page.locator('terra-browse-variables#variable-selector')
-  await expect(browseVariables).toBeVisible()
-
-  const searchInput = page.getByRole('combobox', { name: /Enter search terms/i })
-  await expect(searchInput).toBeVisible()
-  await page.waitForTimeout(3000)
-  await searchInput.fill(keyword)
-
-  const searchButton = page.locator(`[aria-label="Search for ${keyword}."] button, [title="Search for ${keyword}."] button`).first()
-  const fallbackBtn = page.getByRole('button', { name: new RegExp(`Search for ${keyword}`, 'i') })
-  const searchBtn = await searchButton.isVisible().then(v => v ? searchButton : fallbackBtn)
-  await searchBtn.click({ timeout: 10000 })
-
-  const variableItems = browseVariables.locator('li.variable-list-item')
-  await expect(variableItems.first()).toBeVisible({ timeout: 30000 })
-
-  await page.locator('terra-variable-keyword-search').evaluate((el: any) => el.close?.()).catch(() => {})
-
-  await variableItems.first().locator('label').click({ force: true })
-
-  const variableDialog = page.locator('terra-dialog#add-variable-dialog')
-  if (await variableDialog.isVisible().catch(() => false)) {
-    await variableDialog.evaluate((element: any) => element.hide?.()).catch(() => {})
-    await expect(variableDialog).toBeHidden({ timeout: 10000 }).catch(() => {})
-  }
-}
 
 // Regression tests for known Giovanni bugs.
 test.describe('GiC Bug Tests', () => {
@@ -229,13 +185,9 @@ test.describe('GiC Bug Tests', () => {
   //
   // Requires EARTHDATA_USERNAME and EARTHDATA_PASSWORD env vars. Skipped without them.
   test('Constraints are lost after logout and login', async ({ page }) => {
-    const username = process.env.EARTHDATA_USERNAME ?? ''
-    const password = process.env.EARTHDATA_PASSWORD ?? ''
-
-    if (!username || !password) {
-      test.skip(true, 'EARTHDATA_USERNAME / EARTHDATA_PASSWORD env vars not set — skipping login flow test')
-      return
-    }
+    const creds = requireEarthdataCredentials(test)
+    if (!creds) return
+    const { username, password } = creds
 
     await page.goto(BASE_URL)
     await dismissSplash(page)
@@ -311,13 +263,9 @@ test.describe('GiC Bug Tests', () => {
   //
   // Requires EARTHDATA_USERNAME and EARTHDATA_PASSWORD env vars. Skipped without them.
   test('History items are not lost when a second plot is generated', async ({ page }) => {
-    const username = process.env.EARTHDATA_USERNAME ?? ''
-    const password = process.env.EARTHDATA_PASSWORD ?? ''
-
-    if (!username || !password) {
-      test.skip(true, 'EARTHDATA_USERNAME / EARTHDATA_PASSWORD env vars not set — skipping login flow test')
-      return
-    }
+    const creds = requireEarthdataCredentials(test)
+    if (!creds) return
+    const { username, password } = creds
 
     await page.goto(BASE_URL)
     await dismissSplash(page)
