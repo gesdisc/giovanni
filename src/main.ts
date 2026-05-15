@@ -1,4 +1,5 @@
 import { AddVariableDialogComponent } from './components/add-variable-dialog'
+import { AlertsComponent } from './components/alerts'
 import { PlotsListComponent } from './components/plots-list'
 import { SelectDateTimeRangeComponent } from './components/select-date-time-range'
 import { SelectSpatialAreaComponent } from './components/select-spatial-area'
@@ -22,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     new UrlsParamsComponent()
     new LoginComponent()
     new LoginModalComponent()
+    new AlertsComponent()
     new WelcomeSplashComponent()
     new AddVariableDialogComponent()
     new PlotTypeSelectorComponent()
