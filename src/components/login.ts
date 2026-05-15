@@ -23,7 +23,7 @@ export class LoginComponent {
             userState.value = {
                 ...userState.value,
                 user: e.detail.user?.uid ? (e.detail.user as User) : null,
-                userChecked: true,
+                userChecked: !e.detail.isLoading, // becomes true when auth finishes
             }
         })
     }
@@ -58,6 +58,8 @@ export class LoginComponent {
 
                     // use token based logout
                     this.#loginEl.logout()
+
+                    localStorage.removeItem('loginInitiated')
 
                     // also logout of URS
                     window.location.href = logoutUrl

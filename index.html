@@ -111,7 +111,15 @@
                         </a>
                     </div>
 
-                    <terra-login id="login" button-label="Login" class="ml-3">
+                    <terra-button
+                        id="login-proxy"
+                        variant="primary"
+                        onclick=""
+                    >
+                        Login
+                    </terra-button>
+
+                    <terra-login id="login" button-label="Login" class="ml-3" style="display:none">
                         <div slot="logged-in" id="logout">
                             <!-- empty container that will be populated with the logout button -->
                         </div>
@@ -536,7 +544,7 @@
                 if (!helpBtn.contains(e.target) && !helpMenu.contains(e.target)) {
                     helpMenu.classList.add('hidden')
                 }
-            })
+            }) 
         </script>
         <script>
             document.addEventListener("DOMContentLoaded", function () {

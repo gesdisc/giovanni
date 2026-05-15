@@ -20,9 +20,9 @@ localStorage.setItem('terra-environment', 'prod')
 
 document.addEventListener('DOMContentLoaded', () => {
     new UrlsParamsComponent()
-    new WelcomeSplashComponent()
     new LoginComponent()
     new LoginModalComponent()
+    new WelcomeSplashComponent()
     new AddVariableDialogComponent()
     new PlotTypeSelectorComponent()
     new SelectVariablesComponent()
