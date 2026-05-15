@@ -23,6 +23,14 @@
 
     <body class="bg-gray-50 font-sans">
         <div class="flex flex-col h-screen">
+            <div id="emergency-banner-container" class="hidden"> 
+                <terra-banner id="emergency-banner" open closable> 
+                    <terra-icon slot="icon" name="solid-exclamation-triangle" library="heroicons" >
+                    </terra-icon> 
+                    <span id="emergency-banner-text"></span> 
+                </terra-banner>
+            </div>
+
             <terra-site-header>
                 <div slot="title" class="flex items-center space-x-3" slot="title">
                     <div>
@@ -37,6 +45,22 @@
                 </div>
 
                 <div class="flex items-center relative" slot="right">
+                    <div class="relative">
+                        <terra-button id="alertButton" variant="text">
+                            <span class="text-gray-200 hover:text-white flex items-center cursor-pointer relative">
+                                <terra-icon
+                                    name="solid-exclamation-triangle"
+                                    library="heroicons"
+                                    class="w-5 h-5 alert-icon"
+                                ></terra-icon>
+                                <sup id="alertCount"
+                                class="absolute -top-1 -right-3 text-white text-xs rounded-full hidden">
+                                    0
+                                </sup>
+                            </span>
+                        </terra-button>
+                    </div>
+
                     <div class="relative">
                         <terra-button id="helpButton" variant="text">
                             <span
@@ -493,6 +517,15 @@
                 </div>
             </div>
         </div>
+
+        <terra-dialog label="Alerts" id="alert-dialog" style="--width: 80vw;">
+            <div id="alertsContainer" class="space-y-3">
+                Loading alerts...
+             </div>
+            <terra-button slot="footer" variant="primary">
+                Close
+            </terra-button>
+        </terra-dialog>
 
         <!-- used in time-series-plot to generate history thumbnails -->
         <script
