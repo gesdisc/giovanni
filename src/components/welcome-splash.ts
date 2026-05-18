@@ -1,4 +1,6 @@
 export class WelcomeSplashComponent {
+    #proxyLogin: HTMLElement
+    #login: HTMLElement
     #welcomeScreen: HTMLElement
     #skipBtn: HTMLElement
     #hideCheckbox: HTMLInputElement
@@ -8,25 +10,46 @@ export class WelcomeSplashComponent {
 
     constructor() {
         this.#welcomeScreen = document.getElementById('welcomeScreen')!
+        this.#proxyLogin = document.getElementById('login-proxy')!
+        this.#login = document.getElementById('login')!
         this.#skipBtn = document.getElementById('welcomeSkip')!
         this.#hideCheckbox = document.getElementById('hideWelcome') as HTMLInputElement
         this.#createMapWidget = document.getElementById('widget-create-map')
         this.#createTimeseriesWidget = document.getElementById('widget-create-timeseries')
         this.#userGuideWidget = document.getElementById('widget-user-guide')
 
+        this.#setupEventListeners()  
         this.#initialize()
     }
 
     #initialize() {
-        // Check if user opted out previously
-        const hide = localStorage.getItem('hideWelcomeScreen')
+        this.#welcomeScreen.style.display = 'none'  // Default to hidden
+        
+        const hide = localStorage.getItem('hideWelcomeScreen') === 'true'
+        const redirectFromLogin = localStorage.getItem('loginInitiated') === 'true'
 
-        this.#welcomeScreen.style.display = hide === 'true' ? 'none' : 'flex'
+        // If authentication is in progress, don't show welcome screen.
+        if (redirectFromLogin) {
+            this.#login.style.display = 'inline-flex'  // unhide actual login component
+            this.#proxyLogin.style.display = 'none'  // hide the proxy login button
+            localStorage.removeItem('loginInitiated')
+            return
+        }
 
-        this.#setupEventListeners()
+        this.#welcomeScreen.style.display = hide ? 'none' : 'flex'
     }
 
     #setupEventListeners() {
+
+        this.#proxyLogin.addEventListener('click', () => {
+            localStorage.setItem('loginInitiated', 'true')  // Set flag to indicate login initiated
+
+            const internalLoginBtn = this.#login.shadowRoot?.querySelector('terra-button')
+            internalLoginBtn?.click()
+            this.#login.style.display = 'inline-flex'   // unhide actual login component
+            this.#proxyLogin.style.display = 'none'     // hide the proxy login button 
+        })
+
         this.#skipBtn.addEventListener('click', () => this.#closeSplash())
 
         // Create Map Widget
@@ -51,7 +74,7 @@ export class WelcomeSplashComponent {
 
     #closeSplash() {
         if (this.#hideCheckbox.checked) {
-            localStorage.setItem('hideWelcomeScreen', 'true')
+            localStorage.setItem('hideWelcomeScreen', 'true')   // Save user preference to hide welcome screen
         }
         this.#welcomeScreen.style.display = 'none'
     }
