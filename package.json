@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "test": "vitest --watch false",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
     "prepare": "npx playwright install"
   },
   "dependencies": {

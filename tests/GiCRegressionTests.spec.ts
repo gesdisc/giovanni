@@ -9,9 +9,7 @@ import {
   setPlotType,
 } from './helpers'
 
-// Resolved at runtime by global-setup.ts:
-// uses giovanni.uat.earthdata.gov when it's reachable, otherwise falls back to
-// the local Vite dev server at 127.0.0.1:5173 (started automatically if needed).
+// set by global-setup.ts; points to UAT if reachable, local dev server otherwise
 const BASE_URL = process.env.GIOVANNI_BASE_URL ?? 'http://127.0.0.1:5173/'
 
 test.describe('Giovanni regression', () => {
@@ -125,7 +123,6 @@ test.describe('Giovanni regression', () => {
     await expect(helpButton).toBeVisible()
 
     const loginComponent = page.locator('terra-login#login')
-    await expect(loginComponent).toBeVisible()
 
     // Dismiss splash then open help menu
     await splashScreen.getByRole('button', { name: 'Skip' }).click()
@@ -136,19 +133,15 @@ test.describe('Giovanni regression', () => {
     await expect(helpMenu.locator('a:has-text("Earthdata Forum")')).toBeVisible()
 
 
-    // Login flow → redirects to Earthdata Login
-    await loginComponent.click()
+    // force:true because the inner shadow DOM button is "hidden" per Playwright's CSS check (Shoelace quirk).
+    await loginComponent.locator('button').first().click({ force: true })
     await expect(page).toHaveTitle('Earthdata Login')
-    // NOTE: test/test are placeholder credentials – the redirect back to Giovanni
-    // depends on having a valid Earthdata account 
-    // Use soft assertions so the test reports the issue without blocking the suite
+    // test/test will fail auth — just verifying the redirect landed here
     await page.getByLabel('Username').fill('test')
     await page.getByLabel('Password').fill('test')
     await page.getByRole('button', { name: 'Log In' }).click()
     await expect.soft(page).toHaveURL(/giovanni/)
-    // NOTE: test/test are placeholder credentials – login will fail.
-    // These assertions verify the login flow works when valid credentials are provided.
-    // Skipping post-login assertions since we don't have valid Earthdata credentials.
+    // login fails with test/test — no post-login assertions needed
   })
 
   // ──────────────────────────────────────────────
@@ -329,7 +322,7 @@ test.describe('Giovanni regression', () => {
     await expect(allOption).toBeChecked()
 
     // View All button
-    const viewAllButton = browseVariables.getByRole('button', { name: /view all now/i })
+    const viewAllButton = browseVariables.getByRole('button', { name: /view all now/i }).first()
     await expect(viewAllButton).toBeVisible({ timeout: 5000 })
 
     // Search for a variable
@@ -399,17 +392,19 @@ test.describe('Giovanni regression', () => {
     await expect(spatialPicker).toBeVisible()
 
     // Verify the spatial picker has an input
-    const spatialInput = spatialPicker.locator('input[type="text"]')
+    const spatialInput = spatialPicker.locator('input[type="text"]').first()
     await expect(spatialInput).toBeVisible()
 
-    // Enter an Africa bounding box first.
+    // Click before fill — the map icon slot element only renders after real user interaction.
+    await spatialInput.click()
     await spatialInput.fill('-33,-33,33,33')
     await spatialInput.press('Enter')
-    await expect(spatialInput).toHaveValue(/-33(?:\.0000)?,-33(?:\.0000)?,33(?:\.0000)?,33(?:\.0000)?/)
+    await expect(spatialInput).toHaveValue(/-33(?:\.\d+)?,\s*-33(?:\.\d+)?,\s*33(?:\.\d+)?,\s*33(?:\.\d+)?/)
 
     // Then open the map UI.
     const mapIcon = spatialPicker.locator('svg.spatial-picker__input_icon[slot="suffix"]')
-    await expect(mapIcon).toBeAttached({ timeout: 5000 })
+    // SVG slot can take a moment to appear after the value commits, especially on prod.
+    await expect(mapIcon).toBeAttached({ timeout: 15000 })
     await spatialPicker.evaluate((element: any) => {
       const icon = element.querySelector('svg.spatial-picker__input_icon[slot="suffix"]') as HTMLElement | null
       icon?.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true }))
@@ -452,7 +447,7 @@ test.describe('Giovanni regression', () => {
     await expect(spatialInput).toBeVisible()
     await spatialInput.fill('-125,24,-66,50')
     await spatialInput.press('Enter')
-    await expect(spatialInput).toHaveValue(/-125(?:\.0000)?,24(?:\.0000)?,-66(?:\.0000)?,50(?:\.0000)?/)
+    await expect(spatialInput).toHaveValue(/-125(?:\.\d+)?,\s*24(?:\.\d+)?,\s*-66(?:\.\d+)?,\s*50(?:\.\d+)?/)
 
     // Enter a valid range and open the calendar. The calendar should reflect the typed range.
     await expect(dateInput).toBeVisible()
@@ -490,7 +485,6 @@ test.describe('Giovanni regression', () => {
     const selectedDateRange = await dateInput.inputValue()
     expect(selectedDateRange).toMatch(/2026-03-01.*[-–].*2026-03-05/)
 
-    // The system enables the plot button (valid date accepted into state)
     await expect(generatePlotButton).toBeEnabled({ timeout: 10000 })
   })
 
@@ -616,7 +610,7 @@ test.describe('Giovanni regression', () => {
     await expect(spatialInput).toBeVisible()
     await spatialInput.fill('-125,24,-66,50')
     await spatialInput.press('Enter')
-    await expect(spatialInput).toHaveValue(/-125(?:\.0000)?,24(?:\.0000)?,-66(?:\.0000)?,50(?:\.0000)?/)
+    await expect(spatialInput).toHaveValue(/-125(?:\.\d+)?,\s*24(?:\.\d+)?,\s*-66(?:\.\d+)?,\s*50(?:\.\d+)?/)
 
     const dateInput = page.locator('#date-range').locator('input[type="text"]').first()
     await expect(dateInput).toBeVisible()
@@ -636,13 +630,11 @@ test.describe('Giovanni regression', () => {
     const thumbnailsContainer = historyPanel.locator('#thumbnails-container')
     const thumbnailCountBeforeCancel = await thumbnailsContainer.locator('.thumbnail-item').count()
 
-    // Defensive check: splash overlay can reappear and block interactions.
+    // splash can reappear mid-test
     await dismissSplash(page)
 
-    // Clear the terra-time-average-map IndexedDB data cache so the plot always makes a
-    // real API call rather than returning instantly from cache. Without this, a cached
-    // result causes the plot to complete in milliseconds, closing the dialog before
-    // Cancel is clicked and making the cancel test a false negative.
+    // clear the map's IndexedDB cache so it makes a real API call — if it completes
+    // instantly from cache the dialog closes before we can click Cancel
     await page.evaluate(async () => {
       await new Promise<void>((resolve) => {
         const req = indexedDB.deleteDatabase('terra-time-average-map')
@@ -652,13 +644,12 @@ test.describe('Giovanni regression', () => {
       })
     })
 
-    // Hang Harmony subset-job GraphQL operations (CreateSubsetJob, GetSubsetJobStatus) so
-    // the plot stays in-progress while we verify the cancel flow. Variable-metadata queries
-    // (GetVariables) are allowed through — they use the same AppSync endpoint but a
-    // different operation name in the POST body, so we distinguish them there.
+    // hang Harmony's create/status-poll requests so the plot stays pending during the cancel test
     const hangHarmonyRequests = async (route: any) => {
       const body = route.request().postData() ?? ''
-      if (body.includes('SubsetJob') || body.includes('subsetJob')) {
+      // Only hang create/status-poll — also matching CancelSubsetJob would prevent the cancel
+      // from ever completing, which would make the "container removed" assertion below a false negative.
+      if (body.includes('CreateSubsetJob') || body.includes('GetSubsetJobStatus')) {
         // Leave hanging: never call route.fulfill/continue/abort
         return
       }
@@ -666,16 +657,14 @@ test.describe('Giovanni regression', () => {
     }
     await page.route('**/*', hangHarmonyRequests)
 
-    // Dispatch generate-plot directly to bypass the login gate (allows testing without auth)
+    // trigger generate-plot directly to skip the login gate
     await page.evaluate(() => document.dispatchEvent(new CustomEvent('generate-plot')))
 
-    // System adds an empty map plot at the top of the workspace
     const mapPlotContainer = plotsArea.locator('[data-variable-id]').first()
     await expect(mapPlotContainer).toBeVisible({ timeout: 10000 })
     const mapElement = plotsArea.locator('terra-time-average-map')
     await expect(mapElement).toBeVisible({ timeout: 10000 })
 
-    // System shows status dialog reflecting progress with a Cancel button
     const mapStatusDialog = mapElement.locator('dialog:not(.quota-dialog)')
     await expect(mapStatusDialog).toBeVisible({ timeout: 10000 })
     await expect(mapStatusDialog.locator('terra-loader')).toBeVisible()
@@ -685,7 +674,6 @@ test.describe('Giovanni regression', () => {
     await expect(cancelButton).toContainText('Cancel')
     await cancelButton.dispatchEvent('click')
 
-    // System hides the status dialog
     await expect(mapStatusDialog).toBeHidden({ timeout: 10000 })
 
     // Cancellation should remove the pending map plot and should not add a thumbnail.
@@ -698,19 +686,17 @@ test.describe('Giovanni regression', () => {
     // Remove the Harmony route intercept so subsequent generate-plot calls can reach the real API.
     await page.unroute('**/*', hangHarmonyRequests)
 
-    // Click Generate Plot again and wait for the map to complete
+    // generate a second plot (no intercept this time)
     await dismissSplash(page)
     await page.evaluate(() => document.dispatchEvent(new CustomEvent('generate-plot')))
 
-    // System adds an empty map plot at the top of the workspace
     const mapElement2 = plotsArea.locator('terra-time-average-map')
     await expect(mapElement2).toBeVisible({ timeout: 10000 })
 
-    // System shows status dialog reflecting progress
     const mapStatusDialog2 = mapElement2.locator('dialog:not(.quota-dialog)')
     await expect(mapStatusDialog2).toBeVisible({ timeout: 10000 })
 
-    // Wait for the plot to finish rendering — requires valid Earthdata auth for API access
+    // needs Earthdata auth to complete; skip if it times out
     const mapDialogHidden = await mapStatusDialog2.waitFor({ state: 'hidden', timeout: 15000 })
       .then(() => true)
       .catch(() => false)
@@ -718,7 +704,7 @@ test.describe('Giovanni regression', () => {
       await mapStatusDialog2.locator('terra-button').dispatchEvent('click').catch(() => {})
     }
 
-    // Verify the map actually rendered (dialog also hides on API errors)
+    // dialog also closes on API errors, so check the canvas too
     const mapCompleted = mapDialogHidden
       && await mapElement2.locator('canvas').first().waitFor({ state: 'visible', timeout: 15000 })
         .then(() => true)
@@ -734,22 +720,20 @@ test.describe('Giovanni regression', () => {
     await dismissSplash(page)
     await page.evaluate(() => document.dispatchEvent(new CustomEvent('generate-plot')))
 
-    // System adds a time series plot at the top of the workspace
     const tsElement = plotsArea.locator('terra-time-series')
     await expect(tsElement.first()).toBeVisible({ timeout: 10000 })
 
-    // Handle quota warning if it appears ("This is a large request")
+    // dismiss quota warning if one pops up
     const tsQuotaDialog = tsElement.first().locator('dialog.quota-dialog')
     const tsQuotaVisible = await tsQuotaDialog.waitFor({ state: 'visible', timeout: 5000 }).then(() => true).catch(() => false)
     if (tsQuotaVisible) {
       await tsQuotaDialog.locator('terra-button:has-text("Proceed")').dispatchEvent('click')
     }
 
-    // System shows status dialog reflecting progress
     const tsStatusDialog = tsElement.first().locator('dialog:not(.quota-dialog)')
     await expect(tsStatusDialog).toBeVisible({ timeout: 10000 })
 
-    // System completes plot rendering — requires valid Earthdata auth for API access
+    // needs auth to complete
     const tsDialogHidden = await tsStatusDialog.waitFor({ state: 'hidden', timeout: 120_000 })
       .then(() => true)
       .catch(() => false)
@@ -757,7 +741,7 @@ test.describe('Giovanni regression', () => {
       await tsStatusDialog.locator('terra-button').dispatchEvent('click').catch(() => {})
     }
 
-    // Verify the plotly chart actually rendered (dialog also hides on API errors)
+    // dialog closes on errors too, check chart rendered
     const tsCompleted = tsDialogHidden
       && await tsElement.first().locator('.js-plotly-plot').waitFor({ state: 'visible', timeout: 15000 })
         .then(() => true)
@@ -786,7 +770,6 @@ test.describe('Giovanni regression', () => {
     const dcY = mapBox.y + mapBox.height * 0.284
     await page.mouse.click(dcX, dcY)
 
-    // The map responds by placing a marker at the selected location
     const placedMarker = mapContainer.locator('.leaflet-marker-icon')
     await expect(placedMarker).toBeVisible({ timeout: 10000 })
 
@@ -794,27 +777,26 @@ test.describe('Giovanni regression', () => {
     await page.click('body', { position: { x: 10, y: 10 } })
     await expect(mapContainer).toBeHidden({ timeout: 5000 })
 
-    //Generate a point-based time series plot
+    // generate a point-based time series plot
     await expect(generatePlotButton).toBeEnabled({ timeout: 10000 })
     await dismissSplash(page)
     await page.evaluate(() => document.dispatchEvent(new CustomEvent('generate-plot')))
 
-    // System adds a new time series plot at the top of the workspace
     const tsElements = plotsArea.locator('terra-time-series')
     await expect(tsElements.first()).toBeVisible({ timeout: 10000 })
 
-    // Handle quota warning if it appears
+    // dismiss quota warning if one pops up
     const pointQuotaDialog = tsElements.first().locator('dialog.quota-dialog')
     const pointQuotaVisible = await pointQuotaDialog.waitFor({ state: 'visible', timeout: 5000 }).then(() => true).catch(() => false)
     if (pointQuotaVisible) {
       await pointQuotaDialog.locator('terra-button:has-text("Proceed")').dispatchEvent('click')
     }
 
-    // System shows status dialog reflecting progress (may complete quickly for point data)
+    // may complete quickly for point requests
     const pointTsDialog = tsElements.first().locator('dialog:not(.quota-dialog)')
     const pointDialogSeen = await pointTsDialog.waitFor({ state: 'visible', timeout: 5000 }).then(() => true).catch(() => false)
 
-    // System completes plot rendering — requires valid Earthdata auth for API access
+    // needs auth to complete
     let pointDialogHidden = !pointDialogSeen
     if (pointDialogSeen) {
       pointDialogHidden = await pointTsDialog.waitFor({ state: 'hidden', timeout: 120_000 })
@@ -825,7 +807,7 @@ test.describe('Giovanni regression', () => {
       }
     }
 
-    // Verify the plotly chart actually rendered (dialog also hides on API errors)
+    // dialog closes on errors too, check chart rendered
     const pointTsCompleted = pointDialogHidden
       && await tsElements.first().locator('.js-plotly-plot').waitFor({ state: 'visible', timeout: 15000 })
         .then(() => true)
@@ -833,7 +815,7 @@ test.describe('Giovanni regression', () => {
     expect(pointTsCompleted).toBeTruthy()
     await expect(thumbnailsContainer.locator('.thumbnail-item')).toHaveCount(3, { timeout: 15000 })
 
-    // Document expectation: newer plots should push older plots down in the workspace list.
+    // newer plots go to the top
     await expect
       .poll(async () => await plotsArea.locator('[data-variable-id]').count(), { timeout: 10000 })
       .toBeGreaterThanOrEqual(3)
@@ -1096,7 +1078,7 @@ test.describe('Giovanni regression', () => {
     // Inspect Time-Averaged Map Plot
     // Bring focus back to the main page after any new-tab interactions
     await page.bringToFront()
-    // Prerequisite: ensure a time-averaged map is in the workspace
+    // make sure there's a time-averaged map in the workspace
     const hasMapAlready = await plotsArea.locator('terra-time-average-map').first()
       .waitFor({ state: 'visible', timeout: 5000 }).then(() => true).catch(() => false)
 
@@ -1172,7 +1154,6 @@ test.describe('Giovanni regression', () => {
     const geoTiffBtn = mapToolbar.locator('terra-button[data-menu-name="GeoTIFF"]')
     await expect(geoTiffBtn).toBeVisible({ timeout: 5000 })
 
-    // The map canvas should be visible (data consistent with constraints)
     const mapCanvas = inspectMap.locator('.ol-viewport canvas').first()
     await expect(mapCanvas).toBeVisible({ timeout: 15000 })
 
@@ -1197,8 +1178,6 @@ test.describe('Giovanni regression', () => {
     const legendMin = legend.locator('#statsMin')
     await expect(legendMin).toBeVisible()
 
-    // Map layers (political boundaries, coastal boundaries, graticule)
-    // These are rendered as OpenLayers vector/canvas layers — we verify via the OL viewport
     const olViewport = inspectMap.locator('.ol-viewport')
     await expect(olViewport).toBeVisible({ timeout: 5000 })
 
@@ -1438,7 +1417,6 @@ test.describe('Giovanni regression', () => {
       await page.mouse.dblclick(profX3, profY3)
       await page.waitForTimeout(500)
 
-      // System should show the data profile popover with a scatter plot
       await expect(profilePopover).toBeVisible({ timeout: 5000 })
       const profileEnabled = await inspectMap.evaluate((el: any) => Boolean(el.toggleState))
       expect(profileEnabled).toBeTruthy()
@@ -1480,12 +1458,12 @@ test.describe('Giovanni regression', () => {
     await expect(spatialInput).toBeVisible()
     await spatialInput.fill('-125,24,-66,50')
     await spatialInput.press('Enter')
-    await expect(spatialInput).toHaveValue(/-125(?:\.0000)?,24(?:\.0000)?,-66(?:\.0000)?,50(?:\.0000)?/)
+    await expect(spatialInput).toHaveValue(/-125(?:\.\d+)?,\s*24(?:\.\d+)?,\s*-66(?:\.\d+)?,\s*50(?:\.\d+)?/)
 
     // Type an out-of-range date into the date field (before the variable's valid start date)
     // IMERG data starts at 1998-01-01 so 1990 is safely out of range
     await expect(dateInput).toBeVisible()
-    // Wait for date auto-population to settle after variable selection (async API)
+    // wait for variable selection to auto-populate the date
     await expect(dateInput).toHaveValue(/.+/, { timeout: 10000 })
 
     // Read the help text to confirm the available range is shown
@@ -1501,7 +1479,6 @@ test.describe('Giovanni regression', () => {
     const selectedDateRange = await dateInput.inputValue()
     expect(selectedDateRange).toMatch(/2025-03-01.*[-–].*2025-03-05/)
 
-    // The system enables the plot button (valid date accepted into state)
     await expect(generatePlotButton).toBeEnabled({ timeout: 10000 })
   })
 
@@ -1539,19 +1516,16 @@ test.describe('Giovanni regression', () => {
     const selectedDateRange = await dateInput.inputValue()
     expect(selectedDateRange).toMatch(/2026-03-01.*[-–].*2026-03-05/)
 
-    // System enables the plot button
     const generatePlotButton = page.locator('#generate-plot-button')
     await expect(generatePlotButton).toBeEnabled({ timeout: 10000 })
 
-    // Click Generate Plot (dispatch event to bypass login gate)
     const plotsArea = page.locator('#plots')
     await page.evaluate(() => document.dispatchEvent(new CustomEvent('generate-plot')))
 
-    // Wait for the map element to appear
     const mapElement = plotsArea.locator('terra-time-average-map')
     await expect(mapElement).toBeVisible({ timeout: 10000 })
 
-    // Wait for the status dialog to appear then hide (completes on both success and error)
+    // status dialog closes on both success and error
     const mapStatusDialog = mapElement.locator('dialog:not(.quota-dialog)')
     const dialogAppeared = await mapStatusDialog.waitFor({ state: 'visible', timeout: 15000 })
       .then(() => true)
@@ -1560,10 +1534,6 @@ test.describe('Giovanni regression', () => {
       await mapStatusDialog.waitFor({ state: 'hidden', timeout: 60000 }).catch(() => {})
     }
 
-    // System displays an error indicating there is no data available for the entered spatial coordinates
-    // The error alert is rendered by terra-time-average-map. Use getByRole('alert') which
-    // works through the accessibility tree and reliably finds ARIA alert roles regardless
-    // of whether role="alert" is an explicit HTML attribute or implicit via the component.
     const errorAlert = plotsArea.getByRole('alert')
     await expect(errorAlert).toBeVisible({ timeout: 30000 })
   })

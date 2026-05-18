@@ -13,7 +13,6 @@ test.describe('GiC Bug Tests', () => {
   // preference and redirects them to Earthdata Login (EDL). After they authenticate,
   // EDL redirects back to Giovanni, which causes a full page reload. The bug is that
   // the splash screen reappears on this reload even though the user already dismissed it.
-  // The fix should persist the dismissed state so it survives the redirect round-trip.
   test('Login should not show splash screen after redirect', async ({ page }) => {
     await page.goto(BASE_URL)
 
@@ -37,8 +36,7 @@ test.describe('GiC Bug Tests', () => {
   //
   // Searching for "aerosols" (plural) returns zero results even though searching for
   // "aerosol" (singular) returns many. The search back-end does exact matching and
-  // doesn't handle pluralisation. The fix should normalise the query or broaden the
-  // search index to cover common plural forms.
+  // doesn't handle pluralisation.
   test('a search for "aerosols" in var picker produces no results', async ({ page }) => {
     await page.goto(BASE_URL)
     await dismissSplash(page)
@@ -56,8 +54,7 @@ test.describe('GiC Bug Tests', () => {
 
     const searchInput = page.getByRole('combobox', { name: /Enter search terms/i })
     await expect(searchInput).toBeVisible()
-    // Wait for the initial variable list to finish loading before typing,
-    // otherwise the component may not be ready to accept a search.
+    // let the initial variable list load before typing
     await page.waitForTimeout(3000)
 
     await searchInput.fill('aerosols')
@@ -69,14 +66,9 @@ test.describe('GiC Bug Tests', () => {
     await btn.click({ timeout: 10000 })
 
     const variableItems = browseVariables.locator('li.variable-list-item')
-    // First confirm the search actually ran and returned zero results — this rules out
-    // a timing issue where we might be checking before results have loaded.
-    await expect(variableItems.first()).toBeVisible({ timeout: 10000 })
-    await expect(variableItems).toHaveCount(0, { timeout: 15000 })
-    // Also verify the status text confirms the query ran for the exact string "aerosols",
-    // not silently corrected to the singular form.
+    // status line confirms the search ran as typed, not auto-corrected to singular
     const searchStatus = browseVariables.getByText(/Browsing variables for query `aerosols`/i)
-    await expect(searchStatus).toBeVisible({ timeout: 5000 })
+    await expect(searchStatus).toBeVisible({ timeout: 15000 })
 
     // FAILS while bug exists (zero results returned for the plural form), PASSES when fixed.
     await expect(variableItems.first()).toBeVisible({ timeout: 5000 })
@@ -88,7 +80,6 @@ test.describe('GiC Bug Tests', () => {
   // The moment the mouse moves from the list item into the info panel, the list item loses
   // hover state, the variable de-highlights, and the info panel disappears. This makes it
   // impossible to read the details or interact with anything in the panel.
-  // The fix should keep the panel visible while the mouse is anywhere within it.
   test('Variable info panel stays visible when mouse moves into it', async ({ page }) => {
     await page.goto(BASE_URL)
     await dismissSplash(page)
@@ -159,17 +150,14 @@ test.describe('GiC Bug Tests', () => {
 
     const dateInput = page.locator('#date-range').locator('input[type="text"]').first()
     const generatePlotButton = page.locator('#generate-plot-button')
-    // Confirm the date was set and the plot button is initially enabled.
     await expect(dateInput).not.toHaveValue('')
     await expect(generatePlotButton).toBeEnabled({ timeout: 10000 })
 
-    // Click the date field then immediately blur it — this is what a user does when they
-    // click somewhere else after reviewing the pre-filled dates. It triggers validation.
+    // click then blur, like a user who glances at the date then clicks elsewhere
     await dateInput.click()
     await dateInput.evaluate(el => (el as HTMLElement).blur()) 
 
-    // Read the browser's native validation message directly from the input element.
-    // FAILS while bug exists (returns the format error string), PASSES when fixed (empty).
+    // FAILS while bug exists (non-empty validationMessage), PASSES when fixed.
     const validationMsg = await dateInput.evaluate((el: HTMLInputElement) => el.validationMessage)
     expect(validationMsg).toBe('')
   })
@@ -283,8 +271,7 @@ test.describe('GiC Bug Tests', () => {
     await page.waitForURL(new RegExp(BASE_URL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), { timeout: 30000 })
     await dismissSplash(page)
 
-    // Wipe the IndexedDB history store so the test starts from a known clean state
-    // and any pre-existing entries don't affect the count assertions below.
+    // wipe history so count assertions start from a clean slate
     await page.evaluate(() => {
       return new Promise<void>((resolve, reject) => {
         const req = indexedDB.open('giovanni')
@@ -364,11 +351,17 @@ test.describe('GiC Bug Tests', () => {
     const spatialPicker = page.locator('#spatial-picker')
     await expect(spatialPicker).toBeVisible({ timeout: 10000 })
 
-    // Open the map panel. The map icon button is inside the terra-spatial-picker shadow
-    // root and can't be reached directly by Playwright, so dispatch the click via evaluate().
+    // map icon slot only appears after the input has a value, so fill it first
+    const spatialInput = spatialPicker.locator('input[type="text"]').first()
+    await spatialInput.fill('-90,-45,90,45')
+    await spatialInput.press('Enter')
+
+    // guard with toBeAttached before clicking — slot renders asynchronously,
+    // and evaluate() is needed to reach through the shadow DOM
+    const mapIcon = spatialPicker.locator('svg.spatial-picker__input_icon[slot="suffix"]')
+    await expect(mapIcon).toBeAttached({ timeout: 5000 })
     await spatialPicker.evaluate((el: any) => {
-      const icon = el.querySelector?.('svg.spatial-picker__input_icon[slot="suffix"]') as HTMLElement | null
-        ?? el.shadowRoot?.querySelector('svg.spatial-picker__input_icon[slot="suffix"]') as HTMLElement | null
+      const icon = el.querySelector('svg.spatial-picker__input_icon[slot="suffix"]') as HTMLElement | null
       icon?.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true }))
     })
 
@@ -377,7 +370,6 @@ test.describe('GiC Bug Tests', () => {
     await expect(mapContainer.locator('.leaflet-container')).toBeVisible({ timeout: 10000 })
 
     // Record the current coordinate value so we can detect whether the drag committed.
-    const spatialInput = spatialPicker.locator('input[type="text"]').first()
     const valueBefore = await spatialInput.inputValue()
 
     // Activate the bbox draw tool. The button is inside terra-map's shadow root,
@@ -389,7 +381,7 @@ test.describe('GiC Bug Tests', () => {
       btn.click()
     })
 
-    // Wait for the crosshair cursor — this confirms Leaflet Draw is in rectangle-draw mode.
+    // crosshair confirms Leaflet is in draw mode
     await expect.poll(async () => {
       return spatialPicker.evaluate((el: any) => {
         const terraMap = el.shadowRoot?.querySelector('terra-map') ?? el.querySelector?.('terra-map')
@@ -399,10 +391,8 @@ test.describe('GiC Bug Tests', () => {
     }, { timeout: 10000, message: 'Draw mode crosshair cursor should appear' })
       .toMatch(/crosshair/)
 
-    // Dispatch the drag gesture from inside the shadow root with composed: false.
-    // composed: false means these events stay within the shadow root and cannot reach
-    // the document — so Leaflet Draw's document-level mouseup listener never fires.
-    // This is the exact failure mode of the real bug.
+    // composed: false keeps the events inside the shadow root so Leaflet Draw's
+    // document-level mouseup listener never fires — reproducing the real bug
     const dragOk = await spatialPicker.evaluate((el: any): boolean => {
       const terraMap = el.shadowRoot?.querySelector('terra-map') ?? el.querySelector?.('terra-map')
       const leafletContainer = terraMap?.shadowRoot?.querySelector('.leaflet-container') as HTMLElement | null

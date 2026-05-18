@@ -1,7 +1,9 @@
 import { spawn } from 'child_process'
+import * as readline from 'readline/promises'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
+const PROD_URL = 'https://giovanni.earthdata.nasa.gov'
 const UAT_URL = 'https://giovanni.uat.earthdata.gov'
 const LOCAL_URL = 'http://127.0.0.1:5173'
 
@@ -15,15 +17,50 @@ async function isReachable(url: string): Promise<boolean> {
   }
 }
 
+const ENVS: Record<string, string> = {
+  prod: PROD_URL,
+  uat: UAT_URL,
+  local: LOCAL_URL,
+}
+
+async function promptEnv(): Promise<string> {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
+  try {
+    while (true) {
+      const answer = await rl.question(
+        '\nWhich Giovanni environment would you like to test?\n' +
+          '  [1] prod  — https://giovanni.earthdata.nasa.gov\n' +
+          '  [2] uat   — https://giovanni.uat.earthdata.gov\n' +
+          '  [3] local — http://127.0.0.1:5173\n' +
+          'Enter 1, 2, 3, or the name: ',
+      )
+      const map: Record<string, string> = { '1': 'prod', '2': 'uat', '3': 'local' }
+      const key = map[answer.trim()] ?? answer.trim().toLowerCase()
+      if (key in ENVS) return key
+      console.log(`  Invalid choice "${answer.trim()}" — please enter 1, 2, 3, prod, uat, or local.`)
+    }
+  } finally {
+    rl.close()
+  }
+}
+
 async function globalSetup() {
-  if (await isReachable(UAT_URL)) {
-    process.env.GIOVANNI_BASE_URL = UAT_URL
-    console.log(`\n[setup] Using UAT: ${UAT_URL}`)
-    return
+  let envKey = (process.env.TEST_ENV ?? '').toLowerCase()
+
+  if (!envKey || !(envKey in ENVS)) {
+    envKey = await promptEnv()
   }
 
-  console.log(`\n[setup] UAT unavailable — falling back to local dev server: ${LOCAL_URL}`)
-  process.env.GIOVANNI_BASE_URL = LOCAL_URL
+  const targetUrl = ENVS[envKey]
+  process.env.GIOVANNI_BASE_URL = targetUrl
+  console.log(`\n[setup] TEST_ENV=${envKey} — targeting: ${targetUrl}`)
+
+  if (envKey !== 'local') {
+    if (!(await isReachable(targetUrl))) {
+      throw new Error(`[setup] ${targetUrl} is not reachable. Check your network or VPN.`)
+    }
+    return
+  }
 
   if (await isReachable(LOCAL_URL)) {
     console.log('[setup] Local dev server already running — reusing it.')
