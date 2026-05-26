@@ -20,10 +20,17 @@ Set `TEST_ENV` to skip the environment prompt. Valid values: `prod`, `uat`, `loc
 $env:TEST_ENV="uat"; npx playwright test
 
 # bash
-TEST_ENV=uat npx playwright test
+TEST_ENV=uat 
+npx playwright test
 ```
 
-Without `TEST_ENV`, the setup script will prompt you to choose an environment interactively.
+Without `TEST_ENV`, when playwrite starts you are presented with the following options:
+
+Which Giovanni environment would you like to test?
+[1] prod — https://giovanni.earthdata.nasa.gov
+[2] uat — https://giovanni.uat.earthdata.gov
+[3] local — http://127.0.0.1:5173
+Enter 1, 2, 3, or the name:
 
 Selecting `local` starts the Vite dev server automatically if nothing is already running on `http://127.0.0.1:5173`.
 
