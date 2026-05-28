@@ -18,20 +18,10 @@ export type DateTimeRange = {
     endDate: string | null
 }
 
-export type TimeSeriesRequestHistoryItem = {
-    id: string
-    request: TimeSeriesRequest
-    createdAt: string
-    plotType?: 'map' | 'plot'
-}
-
 export type TimeSeriesRequest = {
     variable: Variable
     spatialArea: SpatialArea
     dateTimeRange: DateTimeRange
-    thumbnail?: Blob
-    colorMapName?: string
-    opacity?: number
 }
 
 export type UserState = {

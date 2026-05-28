@@ -1,5 +1,5 @@
 import { computed, effect, signal } from '@preact/signals-core'
-import { DateTimeRange, SpatialArea, SpatialAreaType, TimeSeriesRequestHistoryItem, UserState } from './types'
+import { DateTimeRange, SpatialArea, SpatialAreaType, UserState } from './types'
 import { VariableComponent } from './components/variable'
 import { getValidDateRangeFromVariables, getLastNAvailableDays } from './utilities/date'
 import { getDefaultSpatialAreaFromVariables, isGlobalSpatialArea } from './utilities/spatial'
@@ -9,8 +9,6 @@ import { getOptionsFromCurrentUrl } from './utilities/url'
 const existingOptions = getOptionsFromLocalStorage() || getOptionsFromCurrentUrl()
 
 export const userState = signal<UserState>({ userChecked: false, user: null })
-export const userHistory = signal<TimeSeriesRequestHistoryItem[]>([])
-export const loadingHistoryIds = signal<Set<string>>(new Set())
 export const plotType = signal<'map' | 'plot'>(existingOptions?.plotType ?? 'plot')
 export const variables = signal<VariableComponent[]>([])
 export const spatialArea = signal<SpatialArea | null>(existingOptions?.spatialArea ?? null)
