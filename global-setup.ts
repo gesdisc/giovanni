@@ -4,7 +4,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 const PROD_URL = 'https://giovanni.earthdata.nasa.gov'
-const UAT_URL = 'https://giovanni.uat.earthdata.gov'
+const UAT_URL = 'https://giovanni.uat.earthdata.nasa.gov'
 const LOCAL_URL = 'http://127.0.0.1:5173'
 
 async function isReachable(url: string): Promise<boolean> {
@@ -30,7 +30,7 @@ async function promptEnv(): Promise<string> {
       const answer = await rl.question(
         '\nWhich Giovanni environment would you like to test?\n' +
           '  [1] prod  — https://giovanni.earthdata.nasa.gov\n' +
-          '  [2] uat   — https://giovanni.uat.earthdata.gov\n' +
+          '  [2] uat   — https://giovanni.uat.earthdata.nasa.gov\n' +
           '  [3] local — http://127.0.0.1:5173\n' +
           'Enter 1, 2, 3, or the name: ',
       )

@@ -6,8 +6,7 @@ import { expect, Page, Locator } from '@playwright/test'
 
 /** Navigate to Giovanni and ensure the splash screen is shown. */
 export async function openGiovanni(page: Page) {
-  const BASE_URL = process.env.GIOVANNI_BASE_URL ?? 'http://127.0.0.1:5173/'
-  await page.goto(BASE_URL)
+  await page.goto('/')
   await page.evaluate(() => { localStorage.removeItem('hideWelcomeScreen') })
   await page.reload()
 }

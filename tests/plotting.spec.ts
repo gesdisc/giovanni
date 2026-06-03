@@ -1,600 +1,14 @@
-/// <reference types="node" />
 import { test, expect } from '@playwright/test'
-import {
-  openGiovanni,
-  dismissSplash,
-  selectVariable,
-  expectDateRejected,
-  setDateRange,
-  setPlotType,
-} from './helpers'
-
-// set by global-setup.ts; points to UAT if reachable, local dev server otherwise
-const BASE_URL = process.env.GIOVANNI_BASE_URL ?? 'http://127.0.0.1:5173/'
-
-test.describe('Giovanni regression', () => {
-  test.describe.configure({ timeout: 90_000, retries: 1 })
-
-  // ──────────────────────────────────────────────
-  // 1. Splash Screen
-  // ──────────────────────────────────────────────
-  test('Splash Screen', async ({ page }) => {
-    await openGiovanni(page)
-
-    const splashScreen = page.locator('#welcomeScreen.splash-overlay')
-
-    // Verify splash screen is visible with all expected elements
-    await expect(splashScreen).toBeVisible()
-    const helpDeskLink = splashScreen.getByRole('link', { name: 'Help Desk' }).first()
-    await expect(helpDeskLink).toBeVisible()
-    await expect(splashScreen.getByText('NOTE: This release has limited cloud')).toBeVisible()
-    await expect(splashScreen.getByRole('link', { name: 'Create Map' })).toBeVisible()
-    await expect(splashScreen.getByRole('link', { name: 'Create Time-Series' })).toBeVisible()
-    await expect(splashScreen.getByRole('link', { name: 'Read User Guide' })).toBeVisible()
-    await expect(splashScreen.getByRole('checkbox', { name: 'Do not show this again' })).toBeVisible()
-    await expect(splashScreen.getByRole('button', { name: 'Skip' })).toBeVisible()
-
-    //Click the help desk link
-    await expect(helpDeskLink).toHaveText(/Help Desk/)
-    await expect(helpDeskLink).toHaveAttribute('href', /^(mailto:|#|\/)/)
-
-    // Click "Create Map" – splash hides and Map button is selected
-    await splashScreen.getByRole('link', { name: 'Create Map' }).first().click()
-    await expect(splashScreen).toBeHidden()
-    await expect(page.getByTestId('plot-type-selector--map-button')).toHaveClass('plot-type-button plot-type-button--selected')
-
-    // Reload – splash returns; click "Create Time-Series"
-    await page.reload()
-    await expect(splashScreen).toBeVisible()
-    await splashScreen.getByRole('link', { name: 'Create Time-Series' }).first().click()
-    await expect(splashScreen).toBeHidden()
-    await expect(page.getByTestId('plot-type-selector--plot-button')).toHaveClass('plot-type-button plot-type-button--selected')
-
-    // Reload – splash returns; click "Read User Guide" → opens new tab
-    await page.reload()
-    await expect(splashScreen).toBeVisible()
-    const popupPromise = page.waitForEvent('popup', { timeout: 5000 }).catch(() => null)
-    await splashScreen.getByRole('link', { name: 'Read User Guide' }).first().click()
-    await expect(splashScreen).toBeHidden()
-    const newPage = await popupPromise
-    // Popup opens but User Guide server on localhost may not be running – just verify popup opened
-    if (newPage) {
-      await expect(newPage).toHaveURL(/user-guide|guide|help/i)
-      await newPage.close()
-    }
-
-    // Reload – splash returns; click "Skip"
-    await page.reload()
-    await expect(splashScreen).toBeVisible()
-    await splashScreen.getByRole('button', { name: 'Skip' }).first().click()
-    await expect(splashScreen).toBeHidden()
-
-    // Click outside of splash screen to make it disappear, then reload to show it again
-    await page.click('body', { position: { x: 10, y: 10 } })
-    await expect(splashScreen).toBeHidden()
-    await page.reload()
-    await expect(splashScreen).toBeVisible()
-
-    // Reload – splash returns; check "Do not show" + Skip → stays hidden after reload
-    await splashScreen.getByRole('checkbox', { name: 'Do not show this again' }).check()
-    await splashScreen.getByRole('button', { name: 'Skip' }).first().click()
-    await expect(splashScreen).toBeHidden()
-    await page.reload()
-    await expect(splashScreen).toBeHidden()
-
-    // Reset localStorage so splash returns
-    await page.evaluate(() => {localStorage.setItem('hideWelcomeScreen', 'false')})
-    await page.reload()
-    await expect(splashScreen).toBeVisible()
-  })
-
-  // ──────────────────────────────────────────────
-  // 2. Header
-  // ──────────────────────────────────────────────
-  test('Header', async ({ page }) => {
-    await page.goto(BASE_URL)
-
-    const header = page.locator('terra-site-header')
-    await expect(header).toBeVisible()
-
-    // Sidebar, workspace, and splash are visible
-    await expect(page.locator('aside#sidebar')).toBeVisible()
-    await expect(page.locator('main').first()).toBeVisible()
-
-    const splashScreen = page.locator('#welcomeScreen.splash-overlay')
-    await expect(splashScreen).toBeVisible()
-    await expect(splashScreen).toHaveCSS('justify-content', 'center')
-
-    // NASA logo
-    const nasaLogoIcon = page.locator('terra-icon[name="nasa-logo"][aria-hidden="true"]')
-    await expect(nasaLogoIcon).toBeVisible()
-
-    // Identity and slogan
-    const giovanniTitle = header.locator('h1')
-    await expect(giovanniTitle).toBeVisible()
-    await expect(giovanniTitle).toContainText('Giovanni')
-
-    const slogan = header.locator('p.inter-italic')
-    await expect(slogan).toBeVisible()
-    await expect(slogan).toContainText('The bridge between data and science')
-
-    // Help button and login
-    const helpButton = page.locator('terra-button:has-text("Help")')
-    await expect(helpButton).toBeVisible()
-
-    const loginComponent = page.locator('terra-login#login')
-
-    // Dismiss splash then open help menu
-    await splashScreen.getByRole('button', { name: 'Skip' }).click()
-    await helpButton.click()
-    const helpMenu = page.locator('#helpMenu')
-    await expect(helpMenu).toBeVisible()
-    await expect(helpMenu.locator('a:has-text("User Guide")')).toBeVisible()
-    await expect(helpMenu.locator('a:has-text("Earthdata Forum")')).toBeVisible()
-
-
-    // force:true because the inner shadow DOM button is "hidden" per Playwright's CSS check (Shoelace quirk).
-    await loginComponent.locator('button').first().click({ force: true })
-    await expect(page).toHaveTitle('Earthdata Login')
-    // test/test will fail auth — just verifying the redirect landed here
-    await page.getByLabel('Username').fill('test')
-    await page.getByLabel('Password').fill('test')
-    await page.getByRole('button', { name: 'Log In' }).click()
-    await expect.soft(page).toHaveURL(/giovanni/)
-    // login fails with test/test — no post-login assertions needed
-  })
-
-  // ──────────────────────────────────────────────
-  // 3. Constraints Panel
-  // ──────────────────────────────────────────────
-  test('Constraints Panel', async ({ page }) => {
-    await page.goto(BASE_URL)
-    await dismissSplash(page)
-
-    const constraintsPanel = page.locator('aside#sidebar')
-    await expect(constraintsPanel).toBeVisible()
-
-    // Plot Type section
-    const plotTypeSection = constraintsPanel.locator('section').filter({ has: page.locator('text=Plot Type') }).first()
-    await expect(plotTypeSection).toBeVisible()
-    const mapButton = page.getByTestId('plot-type-selector--map-button')
-    const timeSeriesButton = page.getByTestId('plot-type-selector--plot-button')
-    await expect(mapButton).toBeVisible()
-    await expect(timeSeriesButton).toBeVisible()
-
-    // Variables section
-    const variablesSection = constraintsPanel.locator('section').filter({ has: page.locator('text=Variables') }).first()
-    await expect(variablesSection).toBeVisible()
-    const selectVariableButton = page.locator('terra-button#add-variable-button')
-    await expect(selectVariableButton).toBeVisible()
-    await expect(selectVariableButton).toContainText('Select a Variable')
-    await expect(page.locator('#selected-variables')).toBeVisible()
-
-    // Location section
-    const locationSection = constraintsPanel.locator('section').filter({ has: page.locator('text=Location / Region') }).first()
-    await expect(locationSection).toBeVisible()
-    await expect(page.locator('#spatial-picker')).toBeVisible()
-    const spatialPickerHeading = page.locator('#spatial-picker-heading')
-    await expect(spatialPickerHeading).toBeVisible()
-    await expect(spatialPickerHeading).toContainText('Location / Region')
-
-    // Date Range section
-    const dateRangeSection = constraintsPanel.locator('section').filter({ has: page.locator('text=Date Range') }).first()
-    await expect(dateRangeSection).toBeVisible()
-    await expect(page.locator('#date-range')).toBeVisible()
-
-    // Generate Plot button
-    const generatePlotButton = page.locator('#generate-plot-button')
-    await expect(generatePlotButton).toBeVisible()
-    await expect(generatePlotButton).toContainText('Generate Plot')
-    await expect(generatePlotButton).toBeDisabled()
-
-    // All sections are inside the sidebar
-    const allPanels = [plotTypeSection, variablesSection, locationSection, dateRangeSection]
-    for (const panel of allPanels) {
-      const panelBox = await panel.boundingBox()
-      const sidebarBox = await constraintsPanel.boundingBox()
-      expect(panelBox).toBeTruthy()
-      expect(sidebarBox).toBeTruthy()
-    }
-
-    // Map button has icon and label
-    await expect(mapButton.locator('svg.plot-type-icon')).toBeVisible()
-    await expect(mapButton.locator('.plot-type-label')).toContainText('Map')
-
-    // Time Series button has icon and label
-    await expect(timeSeriesButton.locator('svg.plot-type-icon')).toBeVisible()
-    await expect(timeSeriesButton.locator('.plot-type-label')).toContainText('Time Series')
-
-    // Both buttons are enabled
-    await expect(mapButton).toBeEnabled()
-    await expect(timeSeriesButton).toBeEnabled()
-
-    // Toggle selections
-    await mapButton.click()
-    await expect(mapButton).toHaveClass(/selected/)
-    await timeSeriesButton.click()
-    await expect(timeSeriesButton).toHaveClass(/selected/)
-
-    // No variables selected yet
-    await expect(variablesSection.getByText('No variables selected yet')).toBeVisible()
-    await expect(selectVariableButton).toBeEnabled()
-
-    // Spatial input and icon
-    const spatialInput = locationSection.locator('input[type="text"]')
-    const placeholder = await spatialInput.getAttribute('placeholder')
-    expect(placeholder).toBeDefined()
-    expect(placeholder).toContain('-180, -90, 180, 90')
-    await expect(locationSection.locator('svg.spatial-picker__input_icon')).toBeVisible()
-
-    // Date range input and icon
-    const dateRangeInput = dateRangeSection.locator('#date-range').locator('input[type="text"]').first()
-    await expect(dateRangeInput).toBeVisible()
-    const dateRangePlaceholder = await dateRangeInput.getAttribute('placeholder')
-    if (dateRangePlaceholder) {
-      expect(dateRangePlaceholder).toContain('Select a date range')
-    }
-    await expect(dateRangeSection.locator('svg.date-picker__icon')).toBeVisible()
-  })
-
-  // ──────────────────────────────────────────────
-  // 4. Plot Type
-  // ──────────────────────────────────────────────
-  test('Plot Type', async ({ page }) => {
-    await page.goto(BASE_URL)
-    await dismissSplash(page)
-
-    const mapButton = page.getByTestId('plot-type-selector--map-button')
-    const timeSeriesButton = page.getByTestId('plot-type-selector--plot-button')
-
-    // Select Map
-    await mapButton.click()
-    await expect(mapButton).toHaveClass(/selected/)
-    await expect(mapButton).not.toHaveClass(/unselected/)
-    await expect(timeSeriesButton).toHaveClass(/unselected/)
-    await expect(mapButton.locator('.plot-type-label')).toHaveClass(/selected/)
-    await expect(mapButton.locator('svg.plot-type-icon')).toHaveClass(/selected/)
-
-    // Select Time Series
-    await timeSeriesButton.click()
-    await expect(timeSeriesButton).toHaveClass(/selected/)
-    await expect(timeSeriesButton).not.toHaveClass(/unselected/)
-    await expect(mapButton).toHaveClass(/unselected/)
-    await expect(timeSeriesButton.locator('.plot-type-label')).toHaveClass(/selected/)
-    await expect(timeSeriesButton.locator('svg.plot-type-icon')).toHaveClass(/selected/)
-
-    // Toggle back to Map
-    await mapButton.click()
-    await expect(mapButton).toHaveClass(/selected/)
-    await expect(timeSeriesButton).toHaveClass(/unselected/)
-
-    // Only one button is selected at a time
-    const selectedButtons = page.locator('button.plot-type-button.plot-type-button--selected')
-    await expect(selectedButtons).toHaveCount(1)
-  })
-
-  // ──────────────────────────────────────────────
-  // 5. Variable Selection
-  // ──────────────────────────────────────────────
-  test('Variable Selection', async ({ page }) => {
-    await page.goto(BASE_URL)
-    await dismissSplash(page)
-
-    const selectVariableButton = page.locator('terra-button#add-variable-button')
-    await selectVariableButton.click()
-
-    const dialog = page.locator('terra-dialog#add-variable-dialog')
-    await expect(dialog).toBeVisible()
-
-    const browseVariables = page.locator('terra-browse-variables#variable-selector')
-    await expect(browseVariables).toBeVisible()
-
-    // Search input
-    const searchInput = page.getByRole('combobox')
-    await expect(searchInput).toBeVisible()
-    const searchPlaceholder = await searchInput.getAttribute('placeholder')
-    if (searchPlaceholder) {
-      expect(searchPlaceholder).toMatch(/enter search terms/i)
-    }
-
-    // Browse categories
-    await expect(browseVariables.getByText(/observations/i)).toBeVisible({ timeout: 5000 })
-    await expect(browseVariables.getByText(/research areas?/i)).toBeVisible({ timeout: 5000 })
-    await expect(browseVariables.getByText(/measurements/i)).toBeVisible({ timeout: 5000 })
-    await expect(browseVariables.getByText(/sources/i)).toBeVisible({ timeout: 5000 })
-
-    // Observations heading
-    const observationsHeading = browseVariables.locator('h3:has-text("Observations")').first()
-    await expect(observationsHeading).toBeVisible({ timeout: 5000 })
-    const observationsSection = observationsHeading.locator('xpath=ancestor::aside').first()
-    await expect(observationsSection).toBeVisible()
-
-    // Radio buttons (these are native inputs that may be visually hidden by custom styling)
-    const allOption = browseVariables.locator('input[type="radio"][value="All"]')
-    const modelOption = browseVariables.locator('input[type="radio"][value="Model"]')
-    const observationOption = browseVariables.locator('input[type="radio"][value="Observation"]')
-    const reanalysisOption = browseVariables.locator('input[type="radio"][value="Reanalysis"]')
-    await page.waitForTimeout(5000)
-    await expect(allOption).toBeAttached()
-    await expect(modelOption).toBeAttached()
-    await expect(observationOption).toBeAttached()
-    await expect(reanalysisOption).toBeAttached()
-    await expect(allOption).toBeChecked()
-
-    // View All button
-    const viewAllButton = browseVariables.getByRole('button', { name: /view all now/i }).first()
-    await expect(viewAllButton).toBeVisible({ timeout: 5000 })
-
-    // Search for a variable
-    await searchInput.fill('imerg')
-    await expect(searchInput).toHaveValue('imerg')
-    await searchInput.press('Enter')
-
-    await page.locator('terra-variable-keyword-search').evaluate((el: any) => el.close?.())
-    await expect(page.getByRole('listbox', { name: /Keywords Matching/i })).toBeHidden()
-    await expect(dialog).toBeVisible()
-
-    const variableList = browseVariables.locator('ul.variable-list')
-    await expect(variableList).toBeVisible()
-    await expect(variableList).toContainText(/imerg/i)
-
-    const variableItems = browseVariables.locator('li.variable-list-item')
-    await expect(variableItems.first()).toBeVisible()
-
-    // Select first variable
-    const removedVariableText = (await variableItems.first().innerText()).trim()
-    await variableItems.first().locator('label').click({ force: true })
-
-    const selectedVariablesContainer = page.locator('#selected-variables')
-    await expect(selectedVariablesContainer).not.toContainText('No variables selected yet')
-
-    // Remove variable
-    const removeButton = selectedVariablesContainer.locator('button[aria-label*="Remove"]').first()
-    await expect(removeButton).toBeVisible()
-    await removeButton.click()
-    await expect(selectedVariablesContainer).toContainText('No variables selected yet')
-
-    // Re-open and select a different variable
-    await selectVariableButton.click()
-    await expect(dialog).toBeVisible()
-    await expect(browseVariables).toBeVisible()
-
-    const reopenedVariableItems = browseVariables.locator('li.variable-list-item')
-    await expect(reopenedVariableItems.first()).toBeVisible()
-    await reopenedVariableItems.nth(1).locator('label').click({ force: true })
-
-    // The variable removed in step #5 should not remain selected.
-    await expect(selectedVariablesContainer).not.toContainText(removedVariableText)
-  })
-
-  // ──────────────────────────────────────────────
-  // 6. Location / Region Selection
-  // ──────────────────────────────────────────────
-  test('Location / Region Selection', async ({ page }) => {
-    await page.goto(BASE_URL)
-    await dismissSplash(page)
-
-    // Heading says "Location / Region" when plot type is Time Series
-    const heading = page.locator('#spatial-picker-heading')
-    await expect(heading).toContainText('Location / Region')
-
-    // Switch to Map – heading changes to "Region"
-    await page.getByTestId('plot-type-selector--map-button').click()
-    await expect(heading).toContainText('Region')
-    await expect(heading).not.toContainText('Location / Region')
-
-    // Switch back to Time Series – heading shows "Location / Region" again
-    await page.getByTestId('plot-type-selector--plot-button').click()
-    await expect(heading).toContainText('Location / Region')
-
-    // Spatial picker element is present
-    const spatialPicker = page.locator('#spatial-picker')
-    await expect(spatialPicker).toBeVisible()
-
-    // Verify the spatial picker has an input
-    const spatialInput = spatialPicker.locator('input[type="text"]').first()
-    await expect(spatialInput).toBeVisible()
-
-    // Click before fill — the map icon slot element only renders after real user interaction.
-    await spatialInput.click()
-    await spatialInput.fill('-33,-33,33,33')
-    await spatialInput.press('Enter')
-    await expect(spatialInput).toHaveValue(/-33(?:\.\d+)?,\s*-33(?:\.\d+)?,\s*33(?:\.\d+)?,\s*33(?:\.\d+)?/)
-
-    // Then open the map UI.
-    const mapIcon = spatialPicker.locator('svg.spatial-picker__input_icon[slot="suffix"]')
-    // SVG slot can take a moment to appear after the value commits, especially on prod.
-    await expect(mapIcon).toBeAttached({ timeout: 15000 })
-    await spatialPicker.evaluate((element: any) => {
-      const icon = element.querySelector('svg.spatial-picker__input_icon[slot="suffix"]') as HTMLElement | null
-      icon?.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true }))
-    })
-
-    const mapContainer = spatialPicker.locator('.spatial-picker__map-container')
-    await expect(mapContainer).toBeVisible({ timeout: 10000 })
-    await expect(mapContainer.locator('.leaflet-container')).toBeVisible({ timeout: 10000 })
-
-    // Verify the map rendered the region selection primitives (attached in DOM).
-    const overlayCandidates = mapContainer.locator('.leaflet-overlay-pane path, path.leaflet-interactive')
-    await expect(overlayCandidates.first()).toBeAttached({ timeout: 10000 })
-
-  })
-
-  // ──────────────────────────────────────────────
-  // 7. Date Range Selection
-  // ──────────────────────────────────────────────
-  test('Date Range Selection', async ({ page }) => {
-    await page.goto(BASE_URL)
-    await dismissSplash(page)
-
-    const generatePlotButton = page.locator('#generate-plot-button')
-    const datePicker = page.locator('#date-range')
-    const dateInput = datePicker.locator('input[type="text"]').first()
-
-    // Select Map plot type
-    const mapButton = page.getByTestId('plot-type-selector--map-button')
-    await expect(mapButton).toBeVisible()
-    await mapButton.click()
-    await expect(mapButton).toHaveClass(/selected/)
-
-    // Select variable: Daily mean precipitation rate (combined microwave-IR) estimate - Final Run
-    const variableLabel = 'Daily mean precipitation rate (combined microwave-IR) estimate - Final Run'
-    await selectVariable(page, 'imerg', variableLabel)
-    await expect(page.locator('#selected-variables')).toContainText('Daily mean precipitation rate', { timeout: 10000 })
-
-    // Set region to CONUS
-    const spatialInput = page.locator('#spatial-picker').locator('input[type="text"]').first()
-    await expect(spatialInput).toBeVisible()
-    await spatialInput.fill('-125,24,-66,50')
-    await spatialInput.press('Enter')
-    await expect(spatialInput).toHaveValue(/-125(?:\.\d+)?,\s*24(?:\.\d+)?,\s*-66(?:\.\d+)?,\s*50(?:\.\d+)?/)
-
-    // Enter a valid range and open the calendar. The calendar should reflect the typed range.
-    await expect(dateInput).toBeVisible()
-    await expect(dateInput).toHaveValue(/.+/, { timeout: 10000 })
-    await dateInput.fill('2026-03-01 - 2026-03-04')
-    await dateInput.press('Enter')
-    await expect(dateInput).toHaveValue(/2026-03-01.*[-–].*2026-03-04/)
-
-    const dateIcon = datePicker.locator('svg.date-picker__icon').first()
-    await expect(dateIcon).toBeVisible({ timeout: 5000 })
-    await dateIcon.click({ force: true })
-
-    await expect
-      .poll(async () => {
-        return await datePicker.evaluate((element: any) => {
-          const root = (element as HTMLElement).shadowRoot ?? element
-          return !!root.querySelector('.calendar, .date-picker__calendar, [role="dialog"], [aria-label*="calendar" i]')
-        })
-      }, { timeout: 10000 })
-      .toBeTruthy()
-
-    // Type an out-of-range date and assert rejection.
-    await expectDateRejected(datePicker, dateInput, '2027-03-01 - 2027-03-05', 'out-of-range')
-
-    // Read the help text to confirm the available range is shown
-    const helpText = datePicker.locator('.form-control__help-text, [slot="help-text"]')
-    await expect(helpText).toContainText('Available range', { timeout: 5000 }).catch(() => {})
-
-    // Type an invalid format and assert a format-related validation error.
-    await expectDateRejected(datePicker, dateInput, '03-01-2026 - 03-05-2026', 'invalid-format')
-
-    // Enter a valid date range again and verify the button is enabled.
-    await dateInput.fill('2026-03-01 - 2026-03-05')
-    await dateInput.press('Enter')
-    const selectedDateRange = await dateInput.inputValue()
-    expect(selectedDateRange).toMatch(/2026-03-01.*[-–].*2026-03-05/)
-
-    await expect(generatePlotButton).toBeEnabled({ timeout: 10000 })
-  })
-
-  // ──────────────────────────────────────────────
-  // 8. Plot Button
-  // ──────────────────────────────────────────────
-  test('Plot Button', async ({ page }) => {
-    await page.goto(BASE_URL)
-    await dismissSplash(page)
-
-    const generatePlotButton = page.locator('#generate-plot-button')
-    await expect(generatePlotButton).toBeVisible()
-    await expect(generatePlotButton).toContainText('Generate Plot')
-
-    // Button should be disabled when no variables are selected
-    await expect(generatePlotButton).toBeDisabled()
-    await expect(generatePlotButton).toHaveClass(/bg-gray-300/)
-    await expect(generatePlotButton).toHaveClass(/cursor-not-allowed/)
-
-    // Select a variable to enable the button
-    await selectVariable(page)
-
-    // Wait for date range to auto-populate (dynamic wait instead of fixed sleep).
-    const dateInputForButton = page.locator('#date-range').locator('input[type="text"]').first()
-    await expect(dateInputForButton).toHaveValue(/.+/, { timeout: 10000 })
-
-    await expect(generatePlotButton).toBeEnabled({ timeout: 10000 })
-    await expect(generatePlotButton).toHaveClass(/bg-green-500/)
-
-    // Confirm the button disables again if the selected variable is removed
-    const selectedVariablesContainer = page.locator('#selected-variables')
-    const removeButton = selectedVariablesContainer.locator('button[aria-label*="Remove"]').first()
-    await expect(removeButton).toBeVisible()
-    await removeButton.click()
-    await expect(selectedVariablesContainer).toContainText('No variables selected yet')
-    await expect(generatePlotButton).toBeDisabled()
-    await expect(generatePlotButton).toHaveClass(/bg-gray-300/)
-  })
-
-  // ──────────────────────────────────────────────
-  // 9. Vertical Slider (Sidebar Resize Handle)
-  // ──────────────────────────────────────────────
-  test('Vertical Slider', async ({ page }) => {
-    await page.goto(BASE_URL)
-    await dismissSplash(page)
-
-    const resizeHandle = page.locator('#resize-handle')
-    await expect(resizeHandle).toBeVisible()
-    await expect(resizeHandle).toHaveCSS('cursor', 'col-resize')
-
-    const sidebar = page.locator('aside#sidebar')
-    const initialWidth = await sidebar.evaluate(el => (el as HTMLElement).offsetWidth)
-    expect(initialWidth).toBe(500) // default width from inline style
-
-    // Drag the resize handle to the right to widen the sidebar
-    const handleBox = await resizeHandle.boundingBox()
-    expect(handleBox).toBeTruthy()
-
-    await page.mouse.move(handleBox!.x + handleBox!.width / 2, handleBox!.y + handleBox!.height / 2)
-    await page.mouse.down()
-    await page.mouse.move(handleBox!.x + 100, handleBox!.y + handleBox!.height / 2, { steps: 5 })
-    await page.mouse.up()
-
-    const newWidth = await sidebar.evaluate(el => (el as HTMLElement).offsetWidth)
-    expect(newWidth).toBeGreaterThan(initialWidth)
-
-    // Drag back to the left to narrow the sidebar again
-    const handleBoxAfterRightDrag = await resizeHandle.boundingBox()
-    expect(handleBoxAfterRightDrag).toBeTruthy()
-    await page.mouse.move(handleBoxAfterRightDrag!.x + handleBoxAfterRightDrag!.width / 2, handleBoxAfterRightDrag!.y + handleBoxAfterRightDrag!.height / 2)
-    await page.mouse.down()
-    await page.mouse.move(handleBoxAfterRightDrag!.x - 200, handleBoxAfterRightDrag!.y + handleBoxAfterRightDrag!.height / 2, { steps: 5 })
-    await page.mouse.up()
-
-    const narrowWidth = await sidebar.evaluate(el => (el as HTMLElement).offsetWidth)
-    expect(narrowWidth).toBeLessThan(newWidth)
-
-    // Sidebar should respect the min-width of 300px
-    expect(narrowWidth).toBeGreaterThanOrEqual(300)
-  })
-
-  // ──────────────────────────────────────────────
-  // 10. Workspace
-  // ──────────────────────────────────────────────
-  test('Workspace', async ({ page }) => {
-    await page.goto(BASE_URL)
-    await dismissSplash(page)
-
-    // Main workspace area is visible
-    const workspace = page.locator('main').first()
-    await expect(workspace).toBeVisible()
-
-    // Plots container exists
-    const plotsArea = page.locator('#plots')
-    await expect(plotsArea).toBeVisible()
-
-    // Default view shows the "no plots" message
-    await expect(plotsArea).toContainText('Configure your plot settings')
-    await expect(plotsArea).toContainText('Add variables to analyze')
-    await expect(plotsArea).toContainText('Select plot type and date range')
-    await expect(plotsArea).toContainText('Choose spatial area of interest')
-  })
-
-  // ──────────────────────────────────────────────
-  // 11. Plotting (contains history carousel, point-based time series plot, and area-averaged time series plot tests as well)
-  // ──────────────────────────────────────────────
+import { dismissSplash, selectVariable, setDateRange, setPlotType, requireEarthdataCredentials } from './helpers'
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Plotting — Regression
+// ──────────────────────────────────────────────────────────────────────────────
+test.describe('Plotting', () => {
   test('Plotting', async ({ page }) => {
     test.setTimeout(900_000)
 
-    await page.goto(BASE_URL)
+    await page.goto('/')
     await dismissSplash(page)
 
     const mapButton = page.getByTestId('plot-type-selector--map-button')
@@ -1001,7 +415,7 @@ test.describe('Giovanni regression', () => {
     const glossaryHref = await glossaryLink.getAttribute('href')
     expect(glossaryHref).toBeTruthy()
 
-    // Download panel 
+    // Download panel
     // Hover over download icon → panel with PNG, JPG, CSV options
     await downloadBtn.hover()
     await expect(menu).toBeVisible({ timeout: 5000 })
@@ -1042,7 +456,7 @@ test.describe('Giovanni regression', () => {
       expect(csvDownload.suggestedFilename()).toMatch(/\.csv$/i)
     }
 
-    // Help panel 
+    // Help panel
     // Hover over help icon → menu with User Guide and Earthdata Forum
     await helpBtn.hover()
     await expect(menu).toBeVisible({ timeout: 5000 })
@@ -1073,7 +487,7 @@ test.describe('Giovanni regression', () => {
       expect(jupyterHref).toBeTruthy()
     }
 
-    } 
+    }
 
     // Inspect Time-Averaged Map Plot
     // Bring focus back to the main page after any new-tab interactions
@@ -1428,113 +842,97 @@ test.describe('Giovanni regression', () => {
       const minifyBtn = profilePopover.locator('terra-button.minify-btn')
       await expect(minifyBtn).toBeVisible({ timeout: 5000 })
     }
-
   })
+})
 
-  // ──────────────────────────────────────────────
-  // 12. Out of temporal range error
-  // ──────────────────────────────────────────────
-  test('Out of temporal range error', async ({ page }) => {
-    await page.goto(BASE_URL)
+// ──────────────────────────────────────────────────────────────────────────────
+// Plotting — Bugs
+// ──────────────────────────────────────────────────────────────────────────────
+test.describe('Plotting - Bugs', () => {
+  // Bug 6 — History entries disappear when a second plot is generated.
+  //
+  // After generating a first plot (which adds it to the history panel), generating a
+  // second plot causes the first entry to vanish. Root cause: storeTimeSeriesRequestInHistory()
+  // and updateHistoryItemThumbnail() both do a read-modify-write on the same IndexedDB key
+  // without any locking. When they run concurrently (as they do when a plot completes),
+  // one write overwrites the other, deleting entries the other call had just written.
+  //
+  // Requires EARTHDATA_USERNAME and EARTHDATA_PASSWORD env vars. Skipped without them.
+  test('History items are not lost when a second plot is generated', async ({ page }) => {
+    const creds = requireEarthdataCredentials(test)
+    if (!creds) return
+    const { username, password } = creds
+
+    // Keep a local reference to the base URL for waitForURL regex matching.
+    const baseUrl = process.env.GIOVANNI_BASE_URL ?? 'http://127.0.0.1:5173/'
+
+    await page.goto('/')
     await dismissSplash(page)
 
-    const generatePlotButton = page.locator('#generate-plot-button')
-    const datePicker = page.locator('#date-range')
-    const dateInput = datePicker.locator('input[type="text"]').first()
+    // Log in first — the history panel only activates for authenticated users.
+    const loginComponent = page.locator('terra-login#login')
+    await expect(loginComponent).toBeVisible({ timeout: 10000 })
+    await loginComponent.click()
 
-    // Select Map plot type
-    const mapButton = page.getByTestId('plot-type-selector--map-button')
-    await expect(mapButton).toBeVisible()
-    await mapButton.click()
-    await expect(mapButton).toHaveClass(/selected/)
+    await expect(page).toHaveTitle(/Earthdata Login/i, { timeout: 30000 })
+    await page.getByLabel('Username').fill(username)
+    await page.getByLabel('Password').fill(password)
+    await page.getByRole('button', { name: 'Log In' }).click()
 
-    // Select variable: Daily mean precipitation rate (combined microwave-IR) estimate - Final Run
-    const variableLabel = 'Daily mean precipitation rate (combined microwave-IR) estimate - Final Run'
-    await selectVariable(page, 'imerg', variableLabel)
-    await expect(page.locator('#selected-variables')).toContainText('Daily mean precipitation rate', { timeout: 10000 })
-
-    // Set region to CONUS
-    const spatialInput = page.locator('#spatial-picker').locator('input[type="text"]').first()
-    await expect(spatialInput).toBeVisible()
-    await spatialInput.fill('-125,24,-66,50')
-    await spatialInput.press('Enter')
-    await expect(spatialInput).toHaveValue(/-125(?:\.\d+)?,\s*24(?:\.\d+)?,\s*-66(?:\.\d+)?,\s*50(?:\.\d+)?/)
-
-    // Type an out-of-range date into the date field (before the variable's valid start date)
-    // IMERG data starts at 1998-01-01 so 1990 is safely out of range
-    await expect(dateInput).toBeVisible()
-    // wait for variable selection to auto-populate the date
-    await expect(dateInput).toHaveValue(/.+/, { timeout: 10000 })
-
-    // Read the help text to confirm the available range is shown
-    const helpText = datePicker.locator('.form-control__help-text, [slot="help-text"]')
-    await expect(helpText).toContainText('Available range', { timeout: 5000 }).catch(() => {})
-
-    await expectDateRejected(datePicker, dateInput, '1990-01-01 - 1990-01-05', 'out-of-range')
-
-    // Enter a valid date range that intersects with the variable's temporal coverage
-    // TerraDatePicker does NOT revert invalid input — fill() clears it before typing
-    await dateInput.fill('2025-03-01 - 2025-03-05')
-    await dateInput.press('Enter')
-    const selectedDateRange = await dateInput.inputValue()
-    expect(selectedDateRange).toMatch(/2025-03-01.*[-–].*2025-03-05/)
-
-    await expect(generatePlotButton).toBeEnabled({ timeout: 10000 })
-  })
-
-  // ──────────────────────────────────────────────
-  // 13. Out of spatial range error
-  // ──────────────────────────────────────────────
-  test('Out of spatial range error', async ({ page }) => {
-    test.setTimeout(120_000)
-
-    await page.goto(BASE_URL)
+    await page.waitForURL(new RegExp(baseUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), { timeout: 30000 })
     await dismissSplash(page)
 
-    // Select Map plot type
-    const mapButton = page.getByTestId('plot-type-selector--map-button')
-    await expect(mapButton).toBeVisible()
-    await mapButton.click()
-    await expect(mapButton).toHaveClass(/selected/)
+    // wipe history so count assertions start from a clean slate
+    await page.evaluate(() => {
+      return new Promise<void>((resolve, reject) => {
+        const req = indexedDB.open('giovanni')
+        req.onsuccess = (e) => {
+          const db = (e.target as IDBOpenDBRequest).result
+          const tx = db.transaction('history', 'readwrite')
+          tx.objectStore('history').clear()
+          tx.oncomplete = () => { db.close(); resolve() }
+          tx.onerror = () => { db.close(); reject(tx.error) }
+        }
+        req.onerror = () => reject(req.error)
+      })
+    })
 
-    // Select variable: NLDAS, 2-meter above ground Specific humidity
-    const variableLabel = '2-meter above ground Specific humidity'
-    await selectVariable(page, 'nldas', variableLabel)
-    await expect(page.locator('#selected-variables')).toContainText('Specific humidity', { timeout: 10000 })
+    await page.reload()
+    await dismissSplash(page)
 
-    // Set region outside the variable's spatial coverage
-    const spatialInput = page.locator('#spatial-picker').locator('input[type="text"]').first()
-    await expect(spatialInput).toBeVisible()
-    await spatialInput.fill('63.2813,2.2446,92.8125,36.1759')
-    await spatialInput.press('Enter')
+    const thumbnailsContainer = page.locator('#thumbnails-container')
+    const thumbnailItems = thumbnailsContainer.locator('.thumbnail-item')
 
-    // Type a valid date range into the date field
+    // Confirm the history panel is empty before we start.
+    await expect(page.locator('#history-panel')).not.toHaveClass(/visible/, { timeout: 10000 })
+
+    // Set up a plot request and generate the first plot.
+    await selectVariable(page)
+
     const dateInput = page.locator('#date-range').locator('input[type="text"]').first()
-    await expect(dateInput).toBeVisible()
-    await dateInput.fill('2026-03-01 - 2026-03-05')
-    await dateInput.press('Enter')
-    const selectedDateRange = await dateInput.inputValue()
-    expect(selectedDateRange).toMatch(/2026-03-01.*[-–].*2026-03-05/)
+    await expect(dateInput).not.toHaveValue('', { timeout: 10000 })
 
     const generatePlotButton = page.locator('#generate-plot-button')
     await expect(generatePlotButton).toBeEnabled({ timeout: 10000 })
+    await generatePlotButton.click()
 
-    const plotsArea = page.locator('#plots')
-    await page.evaluate(() => document.dispatchEvent(new CustomEvent('generate-plot')))
+    // After the first plot, the history panel should show exactly one entry.
+    // Record its data-id so we can check it survives the second plot.
+    await expect(page.locator('#history-panel')).toHaveClass(/visible/, { timeout: 15000 })
+    await expect(thumbnailItems).toHaveCount(1, { timeout: 15000 })
 
-    const mapElement = plotsArea.locator('terra-time-average-map')
-    await expect(mapElement).toBeVisible({ timeout: 10000 })
+    const firstItemId = await thumbnailItems.first().getAttribute('data-id')
+    expect(firstItemId).toBeTruthy()
 
-    // status dialog closes on both success and error
-    const mapStatusDialog = mapElement.locator('dialog:not(.quota-dialog)')
-    const dialogAppeared = await mapStatusDialog.waitFor({ state: 'visible', timeout: 15000 })
-      .then(() => true)
-      .catch(() => false)
-    if (dialogAppeared) {
-      await mapStatusDialog.waitFor({ state: 'hidden', timeout: 60000 }).catch(() => {})
-    }
+    // Generate a second plot.
+    await page.waitForTimeout(500)
+    await generatePlotButton.click()
 
-    const errorAlert = plotsArea.getByRole('alert')
-    await expect(errorAlert).toBeVisible({ timeout: 30000 })
+    // Both entries should now be present.
+    await expect(thumbnailItems).toHaveCount(2, { timeout: 15000 })
+
+    // FAILS while bug exists (first entry overwritten by the concurrent write), PASSES when fixed.
+    await expect(thumbnailsContainer.locator(`.thumbnail-item[data-id="${firstItemId}"]`))
+      .toBeVisible({ timeout: 5000 })
   })
 })
