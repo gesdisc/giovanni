@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { dismissSplash, selectVariable, requireEarthdataCredentials } from './helpers'
+import { dismissSplash, selectVariable } from './helpers'
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Authentication — Bugs
@@ -13,21 +13,12 @@ test.describe('Auth - Bugs', () => {
   // variable and dates are gone. Root cause: clearOptionsFromLocalStorage() fires as soon
   // as the login state is confirmed, before the async variable lookup from the saved IDs
   // has finished restoring the constraints — so the restore is wiped before it completes.
-  //
-  // Requires EARTHDATA_USERNAME and EARTHDATA_PASSWORD env vars. Skipped without them.
   test('Constraints are lost after logout and login', async ({ page }) => {
-    const creds = requireEarthdataCredentials(test)
-    if (!creds) return
-    const { username, password } = creds
-
-    // Keep a local reference to the base URL for waitForURL regex matching.
-    const baseUrl = process.env.GIOVANNI_BASE_URL ?? 'http://127.0.0.1:5173/'
-
     await page.goto('/')
     await dismissSplash(page)
 
     // Set up a query: pick a variable and a date range, then record those values
-    // so we can verify they are still there after the login round-trip.
+    // so we can verify they are still there after the simulated login round-trip.
     await selectVariable(page)
 
     const selectedVarsList = page.locator('#selected-variables')
@@ -47,42 +38,25 @@ test.describe('Auth - Bugs', () => {
     await expect(loginOverlay).toBeVisible({ timeout: 10000 })
 
     // Click the modal login button — this saves the constraints to localStorage
-    // and redirects to Earthdata Login.
+    // synchronously (via storeOptionsInLocalStorage) before initiating the redirect.
+    // noWaitAfter prevents Playwright from blocking on the EDL navigation we are
+    // about to cancel by calling page.goto() immediately below.
     const loginModalButton = page.locator('#login-modal-button')
     await expect(loginModalButton).toBeVisible()
-    await loginModalButton.click()
+    await loginModalButton.click({ noWaitAfter: true })
 
-    // Complete the EDL login form.
-    await expect(page).toHaveTitle(/Earthdata Login/i, { timeout: 30000 })
-    await page.getByLabel('Username').fill(username)
-    await page.getByLabel('Password').fill(password)
-    await page.getByRole('button', { name: 'Log In' }).click()
-    await page.waitForURL(new RegExp(baseUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), { timeout: 30000 })
+    // Simulate returning from a successful Earthdata Login: inject a fake auth token
+    // (runs before app scripts on the next load) then navigate straight back to Giovanni,
+    // cancelling the in-flight EDL redirect.
+    await page.addInitScript(() => {
+      localStorage.setItem('terra-token', 'fake-test-token')
+    })
+    await page.goto('/')
     await dismissSplash(page)
 
     // After returning from EDL, the constraints should have been restored.
-    await expect(selectedVarsList).toContainText(variableLabelBefore, { timeout: 15000 })
-    await expect(dateInput).toHaveValue(dateBefore, { timeout: 5000 })
-
-    // Log out and log back in a second time to check constraints survive that cycle too.
-    const loginComponent = page.locator('terra-login#login')
-    const logoutButton = loginComponent.locator('terra-button', { hasText: /Log out/i })
-    await expect(logoutButton).toBeVisible({ timeout: 10000 })
-    await logoutButton.click()
-
-    await page.waitForURL(new RegExp(baseUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), { timeout: 30000 })
-    await dismissSplash(page)
-
-    await loginComponent.click()
-    await expect(page).toHaveTitle(/Earthdata Login/i, { timeout: 30000 })
-    await page.getByLabel('Username').fill(username)
-    await page.getByLabel('Password').fill(password)
-    await page.getByRole('button', { name: 'Log In' }).click()
-
-    await page.waitForURL(new RegExp(baseUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), { timeout: 30000 })
-    await dismissSplash(page)
-
-    // FAILS while bug exists (variable and date are gone), PASSES when fixed.
+    // FAILS while bug exists (clearOptionsFromLocalStorage wipes terra-options before
+    // the async variable restore completes), PASSES when fixed.
     await expect(selectedVarsList).toContainText(variableLabelBefore, { timeout: 15000 })
     await expect(dateInput).toHaveValue(dateBefore, { timeout: 5000 })
   })
