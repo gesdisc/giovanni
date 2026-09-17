@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, mockState } from './fixtures'
 import { dismissSplash, selectVariable, setDateRange, setPlotType, requireEarthdataCredentials } from './helpers'
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -58,18 +58,8 @@ test.describe('Plotting', () => {
       })
     })
 
-    // hang Harmony's create/status-poll requests so the plot stays pending during the cancel test
-    const hangHarmonyRequests = async (route: any) => {
-      const body = route.request().postData() ?? ''
-      // Only hang create/status-poll — also matching CancelSubsetJob would prevent the cancel
-      // from ever completing, which would make the "container removed" assertion below a false negative.
-      if (body.includes('CreateSubsetJob') || body.includes('GetSubsetJobStatus')) {
-        // Leave hanging: never call route.fulfill/continue/abort
-        return
-      }
-      await route.continue()
-    }
-    await page.route('**/*', hangHarmonyRequests)
+    // hang Harmony's status-poll requests so the plot stays pending during the cancel test
+    mockState.hangJobPolls = true
 
     // trigger generate-plot directly to skip the login gate
     await page.evaluate(() => document.dispatchEvent(new CustomEvent('generate-plot')))
@@ -97,8 +87,8 @@ test.describe('Plotting', () => {
     // Generate Plot button should remain enabled
     await expect(generatePlotButton).toBeEnabled({ timeout: 5000 })
 
-    // Remove the Harmony route intercept so subsequent generate-plot calls can reach the real API.
-    await page.unroute('**/*', hangHarmonyRequests)
+    // Allow subsequent generate-plot calls' status polls to resolve normally.
+    mockState.hangJobPolls = false
 
     // generate a second plot (no intercept this time)
     await dismissSplash(page)

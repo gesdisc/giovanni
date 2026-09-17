@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures'
 import { dismissSplash } from './helpers'
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -36,7 +36,10 @@ test.describe('Header', () => {
     const helpButton = page.locator('terra-button:has-text("Help")')
     await expect(helpButton).toBeVisible()
 
-    const loginComponent = page.locator('terra-login#login')
+    // The real `terra-login` component starts hidden (display:none) behind a
+    // visible proxy button (#login-proxy) until the user initiates login.
+    const loginProxyButton = page.locator('#login-proxy')
+    await expect(loginProxyButton).toBeVisible()
 
     // Dismiss splash then open help menu
     await splashScreen.getByRole('button', { name: 'Skip' }).click()
@@ -47,8 +50,7 @@ test.describe('Header', () => {
     await expect(helpMenu.locator('a:has-text("Earthdata Forum")')).toBeVisible()
 
     // Verify clicking the login button redirects to Earthdata Login
-    // force:true because the inner shadow DOM button is "hidden" per Playwright's CSS check (Shoelace quirk).
-    await loginComponent.locator('button').first().click({ force: true })
+    await loginProxyButton.click()
     await expect(page).toHaveTitle('Earthdata Login')
   })
 })
