@@ -21,7 +21,7 @@ import { VariableComponent } from './components/variable'
 
 type HarmonyJob = { jobID: string; request: string; labels?: string[] }
 
-setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.137/cdn/')
+setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.199/cdn/')
 
 localStorage.setItem('terra-environment', 'prod')
 
