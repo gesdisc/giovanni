@@ -1,0 +1,50 @@
+name: Release
+
+on:
+    push:
+        tags: ['v*']
+
+permissions:
+    contents: write
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout latest code
+              uses: actions/checkout@v3
+              with:
+                  fetch-depth: 0
+
+            - name: Set up NodeJS v22
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 22
+                  cache: 'npm'
+                  cache-dependency-path: package-lock.json
+
+            - name: Verify tag matches package.json version
+              run: |
+                  PKG_VERSION="v$(node -p "require('./package.json').version")"
+                  if [ "$PKG_VERSION" != "${{ github.ref_name }}" ]; then
+                    echo "Tag ${{ github.ref_name }} does not match package.json version $PKG_VERSION"
+                    exit 1
+                  fi
+
+            - name: Install dependencies
+              run: npm install
+
+            - name: Build project
+              run: npm run build
+
+            - name: Create tarball of dist
+              run: tar -czf giovanni.tar.gz dist
+
+            - name: Create GitHub release
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  gh release create "${{ github.ref_name }}" giovanni.tar.gz \
+                    --title "${{ github.ref_name }}" \
+                    --generate-notes
