@@ -36,10 +36,3 @@ jobs:
                   name: giovanni-tarball
                   path: giovanni.tar.gz
                   overwrite: true
-
-            - name: Release Github Pages
-              uses: peaceiris/actions-gh-pages@v3
-              with:
-                  publish_dir: dist
-                  publish_branch: gh-pages
-                  github_token: ${{ secrets.DEPLOY_TOKEN }}
